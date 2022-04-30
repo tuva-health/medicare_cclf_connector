@@ -1,0 +1,15 @@
+
+version: 2
+
+sources:
+  - name: medicare_cclf
+    database: medicare_saf
+    schema: cclf
+    tables:
+      - name: beneficiary_demographics
+      - name: partb_physicians
+      - name: partb_dme
+      - name: parta_claims_header
+      - name: parta_diagnosis_code
+      - name: parta_procedure_code
+      - name: parta_claims_revenue_center_detail

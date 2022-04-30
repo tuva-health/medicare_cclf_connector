@@ -1,0 +1,8 @@
+claim_facility_type_code,claim_facility_type_name
+1,Hospital
+2,Skilled Nursing Facility (SNF)
+3,Home Health Agency (HHA)
+4,Religious Non-medical (hospital)
+6,Intermediate Care
+7,Clinic services or hospital-based renal dialysis facility
+8,Ambulatory Surgery Center (ASC) or other special facility (e.g. Hospice)
