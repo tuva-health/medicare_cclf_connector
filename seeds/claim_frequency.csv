@@ -1,0 +1,16 @@
+claim_frequency_code,claim_frequency_name
+0,Non-payment / zero claim
+1,Admit thru discharge claim
+2,Interim - first claim
+3,Interim - continuing claim
+4,Interim - last claim
+5,Late charges only claim
+7,Replacement of prior claim
+8,Void / cancel prior claim
+9,Final claim (for HH PPS = process as debit/credit to RAP claim)
+G,Common Working File (CWF) adjustment claim
+H,CMS generated adjustment claim
+I,"Misc adjustment claim (from QIO, etc)"
+J,Other adjustment request
+M,Medicare secondary payer (MSP) adjustment
+P,Adjustment required by QIO
