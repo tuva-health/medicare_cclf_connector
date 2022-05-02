@@ -2,7 +2,7 @@
 
 
 select
-  COALESCE(cc.encounter_id, l.encounter_id, u.encounter_id) as encounter_id
+  COALESCE(cc.encounter_id, c.encounter_id, o.encounter_id, u.encounter_id) as encounter_id
   ,u.CUR_CLM_UNIQ_ID
   ,u.PRVDR_OSCAR_NUM
   ,u.BENE_MBI_ID
@@ -43,5 +43,7 @@ select
 from {{ ref('inst_claims_unique')}} u
 left join {{ ref('inst_continuous_stay_crosswalk')}} cc
 	on u.cur_clm_uniq_id = cc.cur_clm_uniq_id
-left join {{ref('inst_overlap_crosswalk')}} l
-	on u.cur_clm_uniq_id = l.cur_clm_uniq_id 
+left join {{ref('inst_encounter_chain_crosswalk')}} c
+	on u.cur_clm_uniq_id = c.cur_clm_uniq_id 
+left join {{ref('inst_overlap_crosswalk')}} o
+	on u.cur_clm_uniq_id = o.cur_clm_uniq_id 

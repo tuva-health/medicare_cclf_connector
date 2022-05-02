@@ -25,7 +25,7 @@ f.encounter_id
 , r.HCPCS_4_MDFR_CD
 , r.HCPCS_5_MDFR_CD
 , r.CLM_REV_APC_HIPPS_CD
-from cclf.parta_claims_revenue_center_detail r
-inner join staging.inst_claims_final f
+from {{ source('medicare_cclf','parta_claims_revenue_center_detail')}} r
+inner join {{ ref('inst_claims_final')}} f
 	on r.cur_clm_uniq_id = f.cur_clm_uniq_id
    order by r.cur_clm_uniq_id, clm_line_num

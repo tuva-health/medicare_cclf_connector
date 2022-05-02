@@ -33,16 +33,19 @@ clean-targets:         # directories to be removed by `dbt clean`
 # using the `{{ config(...) }}` macro.
 models:
   medicare_cclf_to_tuva_core:
-    +materialized: table
+    +materialized: view
     +schema: staging
-  core:
-    +materialized: table
-    +schema: core
+    core:
+      +materialized: table
+      +schema: core
 
 seeds:
   medicare_cclf_to_tuva_core:
     +schema: terminology
     saf_state_codes:
+      +column_types:
+        state_code: varchar(4)
+    place_of_service:
       +column_types:
         state_code: varchar(4)
       
