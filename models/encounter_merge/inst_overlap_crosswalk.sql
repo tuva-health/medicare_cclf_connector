@@ -1,29 +1,18 @@
-{{ config(materialized='table') }}
 
-
-/**  Need to consolidate both the claim ids from the previous claim but also the current claim.  
-		This ensures that the first claim in the series in captured.
-**/
-with stage_crosswalk as(
-  select 
-      encounter_id
-      ,previous_claim as cur_clm_uniq_id
-      ,bene_mbi_id
-  from {{ ref('inst_encounter_chain_prep')}}
-  union
-  select 
-      encounter_id
-      ,cur_clm_uniq_id as cur_clm_uniq_id
-      ,bene_mbi_id
-  from {{ ref('inst_encounter_chain_prep')}}
-)
-
-/**  Creating a crosswalk from encounter to claims  **/
 select 
-  max(encounter_id) as encounter_id
-  ,cur_clm_uniq_id
-  ,bene_mbi_id
-from stage_crosswalk
+    max(h1.encounter_id) as encounter_id
+    ,h1.cur_clm_uniq_id
+    ,h1.bene_mbi_id
+from {{ ref('inst_claims_unique')}} h1
+inner join {{ ref('inst_claims_unique')}} h2
+	on h1.bene_mbi_id = h2.bene_mbi_id
+    and h1.clm_type_cd = h2.clm_type_cd
+    and h1.fac_prvdr_npi_num = h2.fac_prvdr_npi_num
+    and h1.cur_clm_uniq_id <> h2.cur_clm_uniq_id
+where 1=1
+and h1.clm_type_cd <> '40' 
+and ((h2.clm_from_dt > h1.clm_from_dt and h2.clm_from_dt < h1.clm_thru_dt)
+		or (h2.clm_thru_dt > h1.clm_from_dt and h2.clm_thru_dt < h1.clm_thru_dt))
 group by
-  cur_clm_uniq_id
-  ,bene_mbi_id
+    h1.cur_clm_uniq_id
+    ,h1.bene_mbi_id

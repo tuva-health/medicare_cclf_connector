@@ -1,5 +1,5 @@
 
-  select 
+  select distinct
       fac_prvdr_npi_num as facility_npi
     , NULL as facility_name
     , NULL as facility_type
