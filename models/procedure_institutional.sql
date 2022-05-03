@@ -1,4 +1,4 @@
-select
+select distinct
    cast(encounter_id as varchar) as encounter_id
   , cast(c.bene_mbi_id as varchar) as patient_id
   , cast(c.clm_prcdr_prfrm_dt as datetime) as procedure_date

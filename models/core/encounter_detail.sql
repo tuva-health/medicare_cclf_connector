@@ -23,11 +23,11 @@ with stage as(
     , cast(clm_line_srvc_unit_qty as varchar) as service_unit_quantity
     , cast(clm_line_cvrd_pd_amt as float) as detail_paid_amount
     , cast(clm_line_hcpcs_cd as varchar) as hcpcs_code
-    , cast(hcpcs_1_mdfr_cd as varchar) as hcpcs_code_modified_1
-    , cast(hcpcs_2_mdfr_cd as varchar) as hcpcs_code_modified_2
-    , cast(hcpcs_3_mdfr_cd as varchar) as hcpcs_code_modified_3
-    , cast(hcpcs_4_mdfr_cd as varchar) as hcpcs_code_modified_4
-    , cast(hcpcs_5_mdfr_cd as varchar) as hcpcs_code_modified_5
+    , cast(hcpcs_1_mdfr_cd as varchar) as hcpcs_modifier_1
+    , cast(hcpcs_2_mdfr_cd as varchar) as hcpcs_modifier_2
+    , cast(hcpcs_3_mdfr_cd as varchar) as hcpcs_modifier_3
+    , cast(hcpcs_4_mdfr_cd as varchar) as hcpcs_modifier_4
+    , cast(hcpcs_5_mdfr_cd as varchar) as hcpcs_modifier_5
     , cast(NULL as varchar) as physician_npi
   from {{ ref('inst_revenue_center_final')}} f
   left join {{ ref('revenue_center')}}  r
@@ -54,11 +54,11 @@ union all
     , cast(clm_line_srvc_unit_qty as varchar) as service_unit_quantity
     , cast(clm_line_cvrd_pd_amt as float) as detail_paid_amount
     , cast(clm_line_hcpcs_cd as varchar) as hcpcs_code
-    , cast(hcpcs_1_mdfr_cd as varchar) as hcpcs_code_modified_1
-    , cast(hcpcs_2_mdfr_cd as varchar) as hcpcs_code_modified_2
-    , cast(hcpcs_3_mdfr_cd as varchar) as hcpcs_code_modified_3
-    , cast(hcpcs_4_mdfr_cd as varchar) as hcpcs_code_modified_4
-    , cast(hcpcs_5_mdfr_cd as varchar) as hcpcs_code_modified_5
+    , cast(hcpcs_1_mdfr_cd as varchar) as hcpcs_modifier_1
+    , cast(hcpcs_2_mdfr_cd as varchar) as hcpcs_modifier_2
+    , cast(hcpcs_3_mdfr_cd as varchar) as hcpcs_modifier_3
+    , cast(hcpcs_4_mdfr_cd as varchar) as hcpcs_modifier_4
+    , cast(hcpcs_5_mdfr_cd as varchar) as hcpcs_modifier_5
     , cast(rndrg_prvdr_npi_num as varchar) as physician_npi
   from {{ ref('prof_claims_final')}} f
   left join {{ ref('place_of_service')}} s
