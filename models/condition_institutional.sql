@@ -14,6 +14,7 @@ with admit_diag as(
     , cast(NULL as varchar) as present_on_admit
     , cast('cclf' as varchar) as data_source
   from {{ ref('inst_claims_final')}}
+  where admtg_dgns_cd is not null
 )
 
 select

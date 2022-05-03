@@ -1,6 +1,6 @@
 with hcpcs_pivot as(
   select
-     cast(encounter_id as varchar) as encounter_id
+     cast(bene_mbi_id || replace(clm_thru_dt,'-','') || clm_pos_cd || clm_type_cd || payto_prvdr_npi_num as varchar) as encounter_id
   	, cur_clm_uniq_id
   	, clm_line_num
     , cast(bene_mbi_id as varchar) as patient_id
@@ -10,7 +10,7 @@ with hcpcs_pivot as(
     , cast(NULL as varchar) as description
     , cast(NULL as varchar) as physician_npi
     , cast('cclf' as varchar) as data_source
-    from {{ ref('prof_dme_final')}}
+    from {{ source('medicare_cclf','partb_dme')}}
     	unpivot(
           code for diagnosis_sequence in (CLM_LINE_HCPCS_CD)
           )hcpcs
@@ -20,14 +20,14 @@ with hcpcs_pivot as(
   cur_clm_uniq_id
   , clm_line_num
   , physician_npi
-  from {{ ref('prof_dme_final')}}
+  from {{ source('medicare_cclf','partb_dme')}}
   	unpivot(
     	physician_npi for provider in (payto_prvdr_npi_num)
 		)npi
 )
 
 
-select
+select distinct
    cast(h.encounter_id as varchar) as encounter_id
   , cast(h.patient_id as varchar) as patient_id
   , cast(h.procedure_date as datetime) as procedure_date

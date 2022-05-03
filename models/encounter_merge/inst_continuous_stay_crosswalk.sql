@@ -15,7 +15,6 @@ with population_stage as(
 )
 /**  Group together claim types for the same patient on the same day that have been ranked together.  
 		Then filter on those with multiple counts (meaning multiple claims)
-
 **/
 , population as(
   select 

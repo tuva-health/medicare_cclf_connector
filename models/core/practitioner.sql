@@ -15,7 +15,7 @@ with specialty_stage as(
     , NULL as name
     , NULL as specialty
     , NULL as sub_specialty
-  from {{ ref('prof_dme_final')}}
+  from {{ source('medicare_cclf','partb_dme')}}
 
   union
 
@@ -24,7 +24,7 @@ with specialty_stage as(
     , NULL as name
     , NULL as specialty
     , NULL as sub_specialty
-  from {{ ref('prof_dme_final')}}
+  from {{ source('medicare_cclf','partb_dme')}}
 
   union
 

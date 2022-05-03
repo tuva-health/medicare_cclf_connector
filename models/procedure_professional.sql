@@ -27,7 +27,7 @@ with hcpcs_pivot as(
 )
 
 
-select
+select distinct
    cast(h.encounter_id as varchar) as encounter_id
   , cast(h.patient_id as varchar) as patient_id
   , cast(h.procedure_date as datetime) as procedure_date

@@ -3,6 +3,7 @@ select
     , cast(patient_id as varchar) as patient_id
     , cast(condition_date as varchar) as condition_date
     , cast(condition_type as varchar) as condition_type
+    , cast(code_type as varchar) as code_type
     , cast(code as varchar) as code
     , cast(description as varchar) as description
     , cast(diagnosis_rank as varchar) as diagnosis_rank
