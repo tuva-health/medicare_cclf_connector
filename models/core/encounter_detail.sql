@@ -64,5 +64,35 @@ union all
   left join {{ ref('place_of_service')}} s
   	on f.clm_pos_cd = s.place_of_service_code
 
+union all 
+  
+  select
+      cast(bene_mbi_id || replace(clm_thru_dt,'-','') || clm_pos_cd || clm_type_cd || payto_prvdr_npi_num as varchar) as encounter_id
+    , cast(bene_mbi_id || cur_clm_uniq_id || clm_line_num || clm_type_cd as varchar) as encounter_detail_id
+    , cast(clm_line_num as varchar) as encounter_detail_line
+    , cast(bene_mbi_id as varchar) as patient_id
+    , cast(case clm_type_cd
+          when '81' then 'dmerc; dmepos'
+          when '82' then 'dmerc; non dmepos'
+    end as varchar) as encounter_detail_type
+    , cast(clm_line_from_dt as date) as detail_start_date
+    , cast(clm_line_thru_dt as date) as detail_end_date
+    , cast(NULL as varchar) as revenue_center_code
+  	, cast(NULL as varchar) as revenue_center_description
+    , cast(clm_pos_cd as varchar) as place_of_service_code
+  	, cast(s.description as varchar) as place_of_service_description
+    , cast(NULL as date) as revenue_center_date
+    , cast(NULL as varchar) as service_unit_quantity
+    , cast(clm_line_cvrd_pd_amt as float) as detail_paid_amount
+    , cast(clm_line_hcpcs_cd as varchar) as hcpcs_code
+    , cast(NULL as varchar) as hcpcs_modifier_1
+    , cast(NULL as varchar) as hcpcs_modifier_2
+    , cast(NULL as varchar) as hcpcs_modifier_3
+    , cast(NULL as varchar) as hcpcs_modifier_4
+    , cast(NULL as varchar) as hcpcs_modifier_5
+    , cast(NULL as varchar) as physician_npi
+  from {{ source('medicare_cclf','partb_dme')}} f
+  left join {{ ref('place_of_service')}} s
+  	on f.clm_pos_cd = s.place_of_service_code
   )
   select * from stage
