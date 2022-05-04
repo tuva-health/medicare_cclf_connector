@@ -15,8 +15,8 @@ select
 	cast(e.encounter_id as varchar) as encounter_id
   , cast(e.patient_id as varchar) as patient_id
   , cast(case clm_type_cd
-		when '72' then 'office visit'
-  		when '71' then 'dme'
+		  when '72' then 'dme'
+  		when '71' then 'office visit'
   end as varchar) as encounter_type
   , cast(e.encounter_start_date as varchar) as encounter_start_date
   , cast(e.encounter_end_date as varchar) as encounter_end_date

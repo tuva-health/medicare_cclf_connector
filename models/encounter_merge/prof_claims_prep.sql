@@ -1,8 +1,7 @@
 {{ config(materialized='table') }}
 
-with stage as(
   select
-      bene_mbi_id || replace(clm_thru_dt,'-','') || clm_pos_cd || clm_type_cd || rndrg_prvdr_npi_num || clm_line_dgns_cd as encounter_id
+      bene_mbi_id || replace(clm_thru_dt,'-','') || clm_pos_cd || clm_type_cd || rndrg_prvdr_npi_num || clm_dgns_1_cd as encounter_id
       ,bene_mbi_id || cur_clm_uniq_id || clm_line_num || clm_type_cd as encounter_detail_id
       ,CUR_CLM_UNIQ_ID
       ,CLM_LINE_NUM
@@ -53,8 +52,4 @@ with stage as(
       ,CLM_DGNS_11_CD
       ,CLM_DGNS_12_CD
       ,HCPCS_BETOS_CD
-  	  ,row_number() over (partition by bene_mbi_id || replace(clm_thru_dt,'-','') || clm_pos_cd || clm_type_cd || rndrg_prvdr_npi_num || clm_line_dgns_cd) as row_number
   from {{ source('medicare_cclf','partb_physicians')}}
-)
-
-select * from stage where row_number = 1
