@@ -9,7 +9,7 @@ with population_stage as(
     ,h.clm_type_cd
     ,dense_rank() over (partition by h.bene_mbi_id,h.clm_type_cd order by h.clm_from_dt) as claim_grouper
     ,h.clm_from_dt
-  from {{ ref('inst_claims_unique')}} h
+  from {{ ref('inst_claims_prep')}} h
   where 1=1
   and h.clm_type_cd <> '40' -- No outpatient
 )
@@ -42,7 +42,7 @@ with population_stage as(
     ,h.cur_clm_uniq_id
     ,h.clm_from_dt
     ,h.clm_thru_dt
-  from {{ ref('inst_claims_unique')}} h
+  from {{ ref('inst_claims_prep')}} h
   inner join {{ source('medicare_cclf','parta_claims_revenue_center_detail')}} r
   on h.cur_clm_uniq_id = r.cur_clm_uniq_id
   and r.clm_line_num = 1

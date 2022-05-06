@@ -1,8 +1,12 @@
-{{ config(materialized='table') }}
-
-
+with merges as(
+select * from {{ ref('inst_continuous_stay_crosswalk')}}
+union all
+select * from {{ ref('inst_encounter_chain_crosswalk')}}
+union all
+select * from {{ ref('inst_overlap_crosswalk')}}
+)
 select
-  COALESCE(cc.encounter_id, c.encounter_id, o.encounter_id, u.encounter_id) as encounter_id
+  COALESCE(m.encounter_id, u.encounter_id) as encounter_id
   ,u.CUR_CLM_UNIQ_ID
   ,u.PRVDR_OSCAR_NUM
   ,u.BENE_MBI_ID
@@ -40,10 +44,6 @@ select
   ,u.CLM_MDCR_IP_PPS_DSPRPRTNT_AMT
   ,u.CLM_HIPPS_UNCOMPD_CARE_AMT
   ,u.CLM_OPRTNL_DSPRTNT_AMT
-from {{ ref('inst_claims_unique')}} u
-left join {{ ref('inst_continuous_stay_crosswalk')}} cc
-	on u.cur_clm_uniq_id = cc.cur_clm_uniq_id
-left join {{ref('inst_encounter_chain_crosswalk')}} c
-	on u.cur_clm_uniq_id = c.cur_clm_uniq_id 
-left join {{ref('inst_overlap_crosswalk')}} o
-	on u.cur_clm_uniq_id = o.cur_clm_uniq_id 
+from {{ref('inst_claims_prep')}} u
+left join merges m
+	on u.cur_clm_uniq_id = m.cur_clm_uniq_id

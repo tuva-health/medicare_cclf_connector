@@ -21,8 +21,8 @@ with stage_crosswalk as(
 /**  Creating a crosswalk from encounter to claims  **/
 select 
   max(encounter_id) as encounter_id
-  ,cur_clm_uniq_id
   ,bene_mbi_id
+  ,cur_clm_uniq_id
 from stage_crosswalk
 group by
   cur_clm_uniq_id

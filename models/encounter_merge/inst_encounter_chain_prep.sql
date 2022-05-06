@@ -14,7 +14,7 @@ with date_union as(
     ,admtg_dgns_cd
     ,fac_prvdr_npi_num
     ,bene_ptnt_stus_cd
-  from {{ ref('inst_claims_unique')}} h
+  from {{ ref('inst_claims_prep')}} h
   left join {{ ref('inst_continuous_stay_crosswalk')}} c
   	on h.cur_clm_uniq_id = c.cur_clm_uniq_id
   where clm_type_cd <> '40'
@@ -35,7 +35,7 @@ union all
     ,admtg_dgns_cd
     ,fac_prvdr_npi_num
     ,bene_ptnt_stus_cd
-  from {{ ref('inst_claims_unique')}} h
+  from {{ ref('inst_claims_prep')}} h
   left join {{ ref('inst_continuous_stay_crosswalk')}} c
   	on h.cur_clm_uniq_id = c.cur_clm_uniq_id
   where clm_type_cd <> '40'

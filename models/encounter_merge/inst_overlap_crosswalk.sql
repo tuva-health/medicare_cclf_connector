@@ -1,10 +1,10 @@
 
 select 
     max(h1.encounter_id) as encounter_id
-    ,h1.cur_clm_uniq_id
     ,h1.bene_mbi_id
-from {{ ref('inst_claims_unique')}} h1
-inner join {{ ref('inst_claims_unique')}} h2
+    ,h1.cur_clm_uniq_id
+from {{ ref('inst_claims_prep')}} h1
+inner join {{ ref('inst_claims_prep')}} h2
 	on h1.bene_mbi_id = h2.bene_mbi_id
     and h1.clm_type_cd = h2.clm_type_cd
     and h1.fac_prvdr_npi_num = h2.fac_prvdr_npi_num
