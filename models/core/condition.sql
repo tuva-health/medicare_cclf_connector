@@ -10,7 +10,7 @@ with stage as(
     , cast(diagnosis_rank as int) as diagnosis_rank
     , cast(present_on_admit as varchar) as present_on_admit
     , cast(data_source as varchar) as data_source
-  from "medicare_saf"."staging"."condition_institutional"
+  from {{ ref('condition_institutional')}}
   
   union all
   
@@ -25,7 +25,7 @@ with stage as(
     , cast(diagnosis_rank as int) as diagnosis_rank
     , cast(present_on_admit as varchar) as present_on_admit
     , cast(data_source as varchar) as data_source
-  from "medicare_saf"."staging"."condition_professional"
+  from {{ ref('condition_professional')}}
 )
 , duplicates as (
   select 

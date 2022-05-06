@@ -17,7 +17,7 @@ select
   , cast(coalesce(i.location, p.location) as varchar) as location
   , cast(coalesce(i.facility_npi, p.facility_npi) as varchar) as facility_npi 
   , cast(coalesce(i.ms_drg, p.ms_drg) as varchar) as ms_drg
-  , cast(coalesce(i.paid_amount+p.paid_amount, p.paid_amount) as float) as paid_amount
+  , cast(coalesce(i.paid_amount+ISNULL(p.paid_amount,0), p.paid_amount) as float) as paid_amount
   , cast(coalesce(i.data_source, p.data_source) as varchar) as data_source
 from {{ ref('inst_encounter_core')}} i
 full join {{ ref('prof_encounter_core')}} p

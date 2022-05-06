@@ -3,7 +3,7 @@ with stage as(
   select
     cast(encounter_id as varchar) as encounter_id
     , cast(encounter_detail_id as varchar) as encounter_detail_id
-    , cast(clm_line_num as varchar) as encounter_detail_line
+    , cast(clm_line_num as int) as encounter_detail_line
     , cast(bene_mbi_id as varchar) as patient_id
     , cast(case clm_type_cd
       	when '60' then 'acute inpatient'
@@ -38,7 +38,7 @@ union all
   select
       cast(encounter_id as varchar) as encounter_id
     , cast(encounter_detail_id as varchar) as encounter_detail_id
-    , cast(clm_line_num as varchar) as encounter_detail_line
+    , cast(clm_line_num as int) as encounter_detail_line
     , cast(bene_mbi_id as varchar) as patient_id
     , cast(case clm_type_cd
           when '72' then 'office visit'
@@ -69,7 +69,7 @@ union all
   select
       cast(bene_mbi_id || replace(clm_thru_dt,'-','') || clm_pos_cd || clm_type_cd || payto_prvdr_npi_num as varchar) as encounter_id
     , cast(bene_mbi_id || cur_clm_uniq_id || clm_line_num || clm_type_cd as varchar) as encounter_detail_id
-    , cast(clm_line_num as varchar) as encounter_detail_line
+    , cast(clm_line_num as int) as encounter_detail_line
     , cast(bene_mbi_id as varchar) as patient_id
     , cast(case clm_type_cd
           when '81' then 'dmerc; dmepos'
