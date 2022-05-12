@@ -11,7 +11,7 @@ where CLM_LINE_NUM = 1
   select	  
   	    h.encounter_id
   	  , p.bene_mbi_id || p.cur_clm_uniq_id || p.clm_line_num || p.clm_type_cd as encounter_detail_id
-	  , p.cur_clm_uniq_id
+	    , p.cur_clm_uniq_id
       , p.CLM_LINE_NUM
       , p.BENE_MBI_ID
       , p.BENE_HIC_NUM

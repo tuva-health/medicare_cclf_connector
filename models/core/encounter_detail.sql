@@ -5,20 +5,9 @@ with stage as(
     , cast(encounter_detail_id as varchar) as encounter_detail_id
     , cast(clm_line_num as int) as encounter_detail_line
     , cast(bene_mbi_id as varchar) as patient_id
-    , cast(case clm_type_cd
-      	when '60' then 'acute inpatient'
-      	when '50' then 'hospice'
-      	when '40' then 'outpatient'
-      	when '30' then 'swing bed skilled nursing'
-      	when '20' then 'non swing bed skilled nursing'
-      	when '10' then 'home health'
-      end as varchar) as encounter_detail_type
+    , cast(r.description as varchar) as encounter_detail_type
     , cast(clm_from_dt as date) as detail_start_date
     , cast(clm_thru_dt as date) as detail_end_date
-    , cast(clm_line_prod_rev_ctr_cd as varchar) as revenue_center_code
-  	, cast(r.description as varchar) as revenue_center_description
-    , cast(NULL as varchar) as place_of_service_code
-  	, cast(NULL as varchar) as place_of_service_description
     , cast(clm_line_instnl_rev_ctr_dt as date) as revenue_center_date
     , cast(clm_line_srvc_unit_qty as varchar) as service_unit_quantity
     , cast(clm_line_cvrd_pd_amt as float) as detail_paid_amount
@@ -40,16 +29,9 @@ union all
     , cast(encounter_detail_id as varchar) as encounter_detail_id
     , cast(clm_line_num as int) as encounter_detail_line
     , cast(bene_mbi_id as varchar) as patient_id
-    , cast(case clm_type_cd
-          when '72' then 'office visit'
-          when '71' then 'dme'
-    end as varchar) as encounter_detail_type
+    , cast(s.description as varchar) as encounter_detail_type
     , cast(clm_line_from_dt as date) as detail_start_date
     , cast(clm_line_thru_dt as date) as detail_end_date
-    , cast(NULL as varchar) as revenue_center_code
-  	, cast(NULL as varchar) as revenue_center_description
-    , cast(clm_pos_cd as varchar) as place_of_service_code
-  	, cast(s.description as varchar) as place_of_service_description
     , cast(NULL as date) as revenue_center_date
     , cast(clm_line_srvc_unit_qty as varchar) as service_unit_quantity
     , cast(clm_line_cvrd_pd_amt as float) as detail_paid_amount
@@ -71,16 +53,9 @@ union all
     , cast(bene_mbi_id || cur_clm_uniq_id || clm_line_num || clm_type_cd as varchar) as encounter_detail_id
     , cast(clm_line_num as int) as encounter_detail_line
     , cast(bene_mbi_id as varchar) as patient_id
-    , cast(case clm_type_cd
-          when '81' then 'dmerc; dmepos'
-          when '82' then 'dmerc; non dmepos'
-    end as varchar) as encounter_detail_type
+    , cast(s.description + ' - dme' as varchar) as encounter_detail_type
     , cast(clm_line_from_dt as date) as detail_start_date
     , cast(clm_line_thru_dt as date) as detail_end_date
-    , cast(NULL as varchar) as revenue_center_code
-  	, cast(NULL as varchar) as revenue_center_description
-    , cast(clm_pos_cd as varchar) as place_of_service_code
-  	, cast(s.description as varchar) as place_of_service_description
     , cast(NULL as date) as revenue_center_date
     , cast(NULL as varchar) as service_unit_quantity
     , cast(clm_line_cvrd_pd_amt as float) as detail_paid_amount

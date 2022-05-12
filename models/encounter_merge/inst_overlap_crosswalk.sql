@@ -1,10 +1,24 @@
+with population as(
+select 
+    p.encounter_id
+    ,p.bene_mbi_id
+    ,p.cur_clm_uniq_id
+  	,p.clm_type_cd
+  	,p.fac_prvdr_npi_num
+  	,p.clm_from_dt
+  	,p.clm_thru_dt
+from {{ ref('inst_claims_prep')}} p
+left join {{ ref('inst_continuous_stay_crosswalk')}} c
+  on p.cur_clm_uniq_id = c.cur_clm_uniq_id
+where c.cur_clm_uniq_id is null
+ )
 
 select 
     max(h1.encounter_id) as encounter_id
     ,h1.bene_mbi_id
     ,h1.cur_clm_uniq_id
-from {{ ref('inst_claims_prep')}} h1
-inner join {{ ref('inst_claims_prep')}} h2
+from population h1
+inner join population h2
 	on h1.bene_mbi_id = h2.bene_mbi_id
     and h1.clm_type_cd = h2.clm_type_cd
     and h1.fac_prvdr_npi_num = h2.fac_prvdr_npi_num

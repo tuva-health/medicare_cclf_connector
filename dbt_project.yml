@@ -47,6 +47,6 @@ seeds:
         state_code: varchar(4)
     place_of_service:
       +column_types:
-        state_code: varchar(4)
+        place_of_service_code: varchar(4)
       
 

@@ -30,6 +30,3 @@ select
   ,encounter_id
 from duplicates
 where row_number = 1
-
-
- 
