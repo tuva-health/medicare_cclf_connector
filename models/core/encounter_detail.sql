@@ -8,7 +8,9 @@ with stage as(
     , cast(r.description as varchar) as encounter_detail_type
     , cast(clm_from_dt as date) as detail_start_date
     , cast(clm_thru_dt as date) as detail_end_date
+    , cast(f.clm_line_prod_rev_ctr_cd as varchar) as revenue_center_code
     , cast(clm_line_instnl_rev_ctr_dt as date) as revenue_center_date
+    , cast(NULL as varchar) as place_of_service_code
     , cast(clm_line_srvc_unit_qty as varchar) as service_unit_quantity
     , cast(clm_line_cvrd_pd_amt as float) as detail_paid_amount
     , cast(clm_line_hcpcs_cd as varchar) as hcpcs_code
@@ -32,7 +34,9 @@ union all
     , cast(s.description as varchar) as encounter_detail_type
     , cast(clm_line_from_dt as date) as detail_start_date
     , cast(clm_line_thru_dt as date) as detail_end_date
+    , cast(NULL as varchar) as revenue_center_code
     , cast(NULL as date) as revenue_center_date
+    , cast(clm_pos_cd as varchar) as place_of_service_code
     , cast(clm_line_srvc_unit_qty as varchar) as service_unit_quantity
     , cast(clm_line_cvrd_pd_amt as float) as detail_paid_amount
     , cast(clm_line_hcpcs_cd as varchar) as hcpcs_code
@@ -56,7 +60,9 @@ union all
     , cast(s.description + ' - dme' as varchar) as encounter_detail_type
     , cast(clm_line_from_dt as date) as detail_start_date
     , cast(clm_line_thru_dt as date) as detail_end_date
+    , cast(NULL as varchar) as revenue_center_code
     , cast(NULL as date) as revenue_center_date
+    , cast(NULL as varchar) as place_of_service_code
     , cast(NULL as varchar) as service_unit_quantity
     , cast(clm_line_cvrd_pd_amt as float) as detail_paid_amount
     , cast(clm_line_hcpcs_cd as varchar) as hcpcs_code
