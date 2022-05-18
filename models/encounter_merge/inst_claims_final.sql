@@ -12,7 +12,7 @@ select
   ,u.BENE_MBI_ID
   ,u.BENE_HIC_NUM
   ,u.CLM_TYPE_CD
-  ,u.CLM_FROM_DT
+  ,coalesce(u.CLM_FROM_DT,u.CLM_THRU_DT) as CLM_FROM_DT
   ,u.CLM_THRU_DT
   ,u.CLM_BILL_FAC_TYPE_CD
   ,u.CLM_BILL_CLSFCTN_CD

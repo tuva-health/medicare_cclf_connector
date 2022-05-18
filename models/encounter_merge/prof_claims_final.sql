@@ -53,6 +53,6 @@ select
   ,e.CLM_DGNS_12_CD
   ,e.HCPCS_BETOS_CD
 from {{ ref('prof_claims_prep')}} e
-left join {{ ref('prof_encounter_crosswalk_union')}} c
+left join {{ ref('prof_inst_encounter_crosswalk')}} c
 	on e.cur_clm_uniq_id = c.cur_clm_uniq_id
-    and e.bene_mbi_id = c.bene_mbi_id
+  and e.clm_line_num = c.clm_line_num
