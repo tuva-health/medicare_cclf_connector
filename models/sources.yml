@@ -2,7 +2,7 @@
 version: 2
 
 sources:
-  - name: medicare_cclf
+  - name: cclf
     database: medicare_saf
     schema: cclf
     tables:

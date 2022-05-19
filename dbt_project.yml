@@ -32,7 +32,7 @@ clean-targets:         # directories to be removed by `dbt clean`
 # as tables. These settings can be overridden in the individual model files
 # using the `{{ config(...) }}` macro.
 models:
-  medicare_cclf_to_tuva_core:
+  medicare_cclf_connector:
     +materialized: view
     +schema: staging
     core:
@@ -40,7 +40,7 @@ models:
       +schema: core
 
 seeds:
-  medicare_cclf_to_tuva_core:
+  medicare_cclf_connector:
     +schema: terminology
     saf_state_codes:
       +column_types:
