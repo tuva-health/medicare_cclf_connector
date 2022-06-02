@@ -8,7 +8,8 @@ with diagnois_pivot as(
           ,clm_dgns_cd
           ,clm_val_sqnc_num
           ,dgns_prcdr_icd_ind
-       from {{ source('cclf','parta_diagnosis_code')}})
+       from {{ var('parta_diagnosis_code')}}
+       )
   pivot(
       max(clm_dgns_cd) for clm_val_sqnc_num in (1 as diagnosis_code_1
                                               , 2 as diagnosis_code_2
@@ -47,7 +48,8 @@ with diagnois_pivot as(
           ,bene_mbi_id
           ,clm_poa_ind
           ,clm_val_sqnc_num
-       from {{ source('cclf','parta_diagnosis_code')}})
+       from {{ var('parta_diagnosis_code')}}
+       )
   pivot(
       max(clm_poa_ind) for clm_val_sqnc_num in (1 as diagnosis_poa_1
                                               , 2 as diagnosis_poa_2

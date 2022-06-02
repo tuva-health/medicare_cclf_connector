@@ -131,10 +131,10 @@ select
     ,cast(px.procedure_date_23 as date) as procedure_date_23
     ,cast(px.procedure_date_24 as date) as procedure_date_24
     ,cast(px.procedure_date_25 as date) as procedure_date_25
-from {{ source('cclf','parta_claims_header')}} h
-inner join {{ source('cclf','parta_claims_revenue_center_detail')}} d
+from {{ var('parta_claims_header')}} h
+inner join {{ var('parta_claims_revenue_center_detail')}} d
 	on h.cur_clm_uniq_id = d.cur_clm_uniq_id
-left join {{ref('procedure_pivot')}} px
+left join {{ ref('procedure_pivot')}} px
 	on h.cur_clm_uniq_id = px.cur_clm_uniq_id
-left join {{ref('diagnosis_pivot')}} dx
+left join {{ ref('diagnosis_pivot')}} dx
 	on h.cur_clm_uniq_id = dx.cur_clm_uniq_id

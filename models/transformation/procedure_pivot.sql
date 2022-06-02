@@ -8,7 +8,8 @@ with procedure_pivot as(
           ,clm_prcdr_cd
           ,clm_val_sqnc_num
           ,dgns_prcdr_icd_ind
-       from {{ source('cclf','parta_procedure_code')}})
+       from {{ var('parta_procedure_code')}}
+       )
   pivot(
       max(clm_prcdr_cd) for clm_val_sqnc_num in (1 as procedure_code_1
                                                 , 2 as procedure_code_2
@@ -47,7 +48,8 @@ with procedure_pivot as(
           ,bene_mbi_id
           ,clm_prcdr_prfrm_dt
           ,clm_val_sqnc_num
-       from {{ source('cclf','parta_procedure_code')}})
+       from {{ var('parta_procedure_code')}}
+       )
   pivot(
       max(clm_prcdr_prfrm_dt) for clm_val_sqnc_num in (1 as procedure_date_1
                                                       , 2 as procedure_date_2
