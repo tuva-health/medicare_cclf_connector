@@ -28,6 +28,6 @@ select
     ,cast(bene_mdcr_stus_cd as varchar) as medicare_status
     ,cast(date_part(month, bene_member_month) as int) as month
     ,cast(date_part(year, bene_member_month) as int) as year
-from {{ source('cclf','beneficiary_demographics')}} b
+from {{ var('beneficiary_demographics')}} b
 left join {{ ref('medicare_state_fips')}} sf
 	on b.bene_fips_state_cd = sf.fips_code

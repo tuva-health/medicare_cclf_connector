@@ -1,5 +1,5 @@
 select
-    cast(h.cur_clm_uniq_id as varchar) as claim_id
+    cast(h.cur_clm_uniq_id || h.bene_mbi_id as varchar) as claim_id
     ,cast(h.clm_line_num as int) as claim_line_number
     ,cast(h.bene_mbi_id as varchar) as patient_id
     ,cast(h.clm_from_dt as date) as claim_start_date
@@ -131,4 +131,4 @@ select
     ,cast(NULL as date) as procedure_date_23
     ,cast(NULL as date) as procedure_date_24
     ,cast(NULL as date) as procedure_date_25
-from {{ source('cclf','partb_dme')}} h
+from {{ var('partb_dme')}} h
