@@ -23,7 +23,8 @@ select
     ,cast(d.hcpcs_3_mdfr_cd as varchar) as hcpcs_modifier_3
     ,cast(d.hcpcs_4_mdfr_cd as varchar) as hcpcs_modifier_4
     ,cast(d.hcpcs_5_mdfr_cd as varchar) as hcpcs_modifier_5
-    ,cast(h.atndg_prvdr_npi_num as varchar) as physician_npi
+    ,cast(h.atndg_prvdr_npi_num as varchar) as rendering_npi
+    ,cast(null as varchar) as billing_npi
     ,cast(h.fac_prvdr_npi_num as varchar) as facility_npi
     ,cast(NULL as date) as paid_date
     ,cast(h.clm_pmt_amt as float) as paid_amount

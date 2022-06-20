@@ -23,7 +23,8 @@ select
   ,hcpcs_modifier_3
   ,hcpcs_modifier_4
   ,hcpcs_modifier_5
-  ,physician_npi
+  ,rendering_npi
+  ,billing_npi
   ,facility_npi
   ,paid_date
   ,paid_amount
@@ -160,7 +161,8 @@ select
   ,hcpcs_modifier_3
   ,hcpcs_modifier_4
   ,hcpcs_modifier_5
-  ,physician_npi
+  ,rendering_npi
+  ,billing_npi
   ,facility_npi
   ,paid_date
   ,paid_amount
@@ -297,7 +299,8 @@ select
   ,hcpcs_modifier_3
   ,hcpcs_modifier_4
   ,hcpcs_modifier_5
-  ,physician_npi
+  ,rendering_npi
+  ,billing_npi
   ,facility_npi
   ,paid_date
   ,paid_amount
