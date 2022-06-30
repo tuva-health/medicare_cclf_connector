@@ -1,3 +1,7 @@
+{{
+    config( materialized='ephemeral' )
+}}
+
 with procedure_pivot as(
   select 
       *

@@ -2,7 +2,7 @@
 # Name your project! Project names should contain only lowercase characters
 # and underscores. A good package name should reflect your organization's
 # name or the intended use of these models
-name: 'medicare_cclf_connector'
+name: 'syntegra_cclf_fhir_staging'
 version: '1.0.0'
 config-version: 2
 
@@ -11,8 +11,8 @@ profile: 'default'
 
 vars:
     source_database: medicare_saf         # configuration required (name of the database where your data is stored)
-    source_schema: cclf      # configuration required (name of the schema where you created staging tables)
-    source_name: cclf        # configuration required (name of your source dataset e.g. cms_claims)
+    source_schema: cclf_syn      # configuration required (name of the schema where you created staging tables)
+    source_name: cclf_syn        # configuration required (name of your source dataset e.g. cms_claims)
 
     beneficiary_demographics: "{{ source(var('source_name'),'beneficiary_demographics') }}"
     parta_claims_header: "{{ source(var('source_name'),'parta_claims_header') }}"
@@ -44,15 +44,11 @@ clean-targets:         # directories to be removed by `dbt clean`
 # as tables. These settings can be overridden in the individual model files
 # using the `{{ config(...) }}` macro.
 models:
-  medicare_cclf_connector:
-    +materialized: table
-    +schema: staging
-    core:
-      +materialized: table
-      +schema: core
+  syntegra_cclf_fhir_staging:
+    +schema: fhir_syn
 
 seeds:
-  medicare_cclf_connector:
+  syntegra_cclf_fhir_staging:
     +schema: terminology
     saf_state_codes:
       +column_types:

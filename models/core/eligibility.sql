@@ -1,3 +1,7 @@
+{{
+    config( materialized='ephemeral' )
+}}
+
 select 
 	cast(bene_mbi_id as varchar) as patient_id
     ,cast(case bene_sex_cd

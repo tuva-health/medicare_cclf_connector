@@ -1,3 +1,7 @@
+{{
+    config( materialized='ephemeral' )
+}}
+
 with diagnois_pivot as(
   select 
       *

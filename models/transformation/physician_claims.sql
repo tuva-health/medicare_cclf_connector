@@ -1,3 +1,7 @@
+{{
+    config( materialized='ephemeral' )
+}}
+
 select
     cast(h.cur_clm_uniq_id as varchar) as claim_id
     ,cast(h.clm_line_num as int) as claim_line_number
