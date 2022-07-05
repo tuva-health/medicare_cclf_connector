@@ -1,0 +1,10 @@
+version: 2
+
+seeds:
+  - name: medicare_state_fips
+    config:
+      database:  "{{ var('output_database') }}"
+      schema:  "{{ var('source_name')}}_{{ var('output_schema')}}"
+      tags: terminology
+      column_types:
+        fips_code: varchar(4)

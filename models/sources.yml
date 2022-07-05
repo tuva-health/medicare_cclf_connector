@@ -2,8 +2,8 @@ version: 2
 
 sources:
   - name: "{{ var('source_name') }}"
-    database: "{{ var('source_database') }}"
-    schema:  "{{ var('source_schema') }}"
+    database: "{{ var('input_database') }}"
+    schema:  "{{ var('input_schema') }}"
     tables:
       - name: partb_dme
       - name: parta_claims_header

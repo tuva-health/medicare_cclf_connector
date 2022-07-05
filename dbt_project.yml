@@ -10,17 +10,28 @@ config-version: 2
 profile: 'default'
 
 vars:
-    source_database: medicare_saf         # configuration required (name of the database where your data is stored)
-    source_schema: cclf      # configuration required (name of the schema where you created staging tables)
-    source_name: cclf        # configuration required (name of your source dataset e.g. cms_claims)
+  source_name: cclf                     # configuration required
+                                        # name describing the dataset feeding this project
 
-    beneficiary_demographics: "{{ source(var('source_name'),'beneficiary_demographics') }}"
-    parta_claims_header: "{{ source(var('source_name'),'parta_claims_header') }}"
-    parta_claims_revenue_center_detail: "{{ source(var('source_name'),'parta_claims_revenue_center_detail') }}"
-    parta_diagnosis_code: "{{ source(var('source_name'),'parta_diagnosis_code') }}"
-    parta_procedure_code: "{{ source(var('source_name'),'parta_procedure_code') }}"
-    partb_physicians: "{{ source(var('source_name'),'partb_physicians') }}"
-    partb_dme: "{{ source(var('source_name'),'partb_dme') }}"
+  input_database: medicare_saf          # configuration required
+                                        # name of the database where sources feeding this project are stored
+
+  input_schema:  cclf                   # configuration required
+                                        # name of the schema where sources feeding this project is stored
+
+  output_database: tuva                 # configuration required
+                                        # name of the database where output of this project should be written
+
+  output_schema: claims_input           # configuration required
+                                        # name of the schema where output of this project should be written
+
+  beneficiary_demographics: "{{ source(var('source_name'),'beneficiary_demographics') }}"
+  parta_claims_header: "{{ source(var('source_name'),'parta_claims_header') }}"
+  parta_claims_revenue_center_detail: "{{ source(var('source_name'),'parta_claims_revenue_center_detail') }}"
+  parta_diagnosis_code: "{{ source(var('source_name'),'parta_diagnosis_code') }}"
+  parta_procedure_code: "{{ source(var('source_name'),'parta_procedure_code') }}"
+  partb_physicians: "{{ source(var('source_name'),'partb_physicians') }}"
+  partb_dme: "{{ source(var('source_name'),'partb_dme') }}"
 # These configurations specify where dbt should look for different types of files.
 # The `source-paths` config, for example, states that models in this project can be
 # found in the "models/" directory. You probably won't need to change these!
@@ -49,16 +60,5 @@ models:
     +schema: staging
     core:
       +materialized: table
-      +schema: claims_preprocessing
-
-seeds:
-  medicare_cclf_connector:
-    +schema: terminology
-    saf_state_codes:
-      +column_types:
-        state_code: varchar(4)
-    place_of_service:
-      +column_types:
-        place_of_service_code: varchar(4)
-      
+      +schema: claims_input
 
