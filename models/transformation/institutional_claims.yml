@@ -1,7 +1,7 @@
 version: 2
 
 models:
-    - name: institutional_claim
+    - name: institutional_claims
       description: >
         Mapping of institution claims to 
         Tuva claims preprocessing input layer
