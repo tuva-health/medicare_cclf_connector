@@ -5,3 +5,6 @@ models:
       description: Pivot of procedures from long (1 row/procedure) to wide (multiple procedure per row)
       config:
         schema: "{{ var('source_name')}}_{{ var('output_schema')}}"
+      tests:
+         - unique:
+             column_name: "(cur_clm_uniq_id)"

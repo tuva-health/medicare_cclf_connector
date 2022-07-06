@@ -5,3 +5,6 @@ models:
       description: Pivot of diagnosis from long (1 row/diagnosis) to wide (multiple diagnosis per row)
       config:
         schema: "{{ var('source_name')}}_{{ var('output_schema')}}"
+      tests:
+         - unique:
+             column_name: "(cur_clm_uniq_id)"
