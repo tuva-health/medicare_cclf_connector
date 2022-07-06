@@ -1,0 +1,10 @@
+version: 2
+
+models:
+    - name: eligibility
+      description: Member enrollment and demographic detail
+      config:
+        schema: "{{ var('source_name')}}_{{ var('output_schema')}}"
+      tests:
+         - unique:
+             column_name: "(patient_id || '-' || payer || '-' || month || '-' || year)"

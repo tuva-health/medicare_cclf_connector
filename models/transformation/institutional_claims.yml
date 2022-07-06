@@ -1,0 +1,9 @@
+version: 2
+
+models:
+    - name: institutional_claim
+      description: >
+        Mapping of institution claims to 
+        Tuva claims preprocessing input layer
+      config:
+        schema: "{{ var('source_name')}}_{{ var('output_schema')}}"
