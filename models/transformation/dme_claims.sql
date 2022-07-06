@@ -1,5 +1,5 @@
 select
-    cast(h.cur_clm_uniq_id || h.bene_mbi_id as varchar) as claim_id
+    cast(h.cur_clm_uniq_id as varchar) as claim_id
     ,cast(h.clm_line_num as int) as claim_line_number
     ,cast(h.bene_mbi_id as varchar) as patient_id
     ,cast(h.clm_from_dt as date) as claim_start_date
