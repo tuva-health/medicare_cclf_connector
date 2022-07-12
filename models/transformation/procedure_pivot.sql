@@ -11,33 +11,36 @@ with procedure_pivot as(
        from {{ var('parta_procedure_code')}}
        )
   pivot(
-      max(clm_prcdr_cd) for clm_val_sqnc_num in (1 as procedure_code_1
-                                                , 2 as procedure_code_2
-                                                , 3 as procedure_code_3
-                                                , 4 as procedure_code_4
-                                                , 5 as procedure_code_5
-                                                , 6 as procedure_code_6
-                                                , 7 as procedure_code_7
-                                                , 8 as procedure_code_8
-                                                , 9 as procedure_code_9
-                                                , 10 as procedure_code_10
-                                                , 11 as procedure_code_11
-                                                , 12 as procedure_code_12
-                                                , 13 as procedure_code_13
-                                                , 14 as procedure_code_14
-                                                , 15 as procedure_code_15
-                                                , 16 as procedure_code_16
-                                                , 17 as procedure_code_17
-                                                , 18 as procedure_code_18
-                                                , 19 as procedure_code_19
-                                                , 20 as procedure_code_20
-                                                , 21 as procedure_code_21
-                                                , 22 as procedure_code_22
-                                                , 23 as procedure_code_23
-                                                , 24 as procedure_code_24
-                                                , 25 as procedure_code_25
+      max(clm_prcdr_cd) for clm_val_sqnc_num in (1
+                                                , 2
+                                                , 3
+                                                , 4
+                                                , 5
+                                                , 6
+                                                , 7
+                                                , 8
+                                                , 9
+                                                , 10
+                                                , 11
+                                                , 12
+                                                , 13
+                                                , 14
+                                                , 15
+                                                , 16
+                                                , 17
+                                                , 18
+                                                , 19
+                                                , 20
+                                                , 21
+                                                , 22
+                                                , 23
+                                                , 24
+                                                , 25
                                                 )
-    )piv
+    )piv (cur_clm_uniq_id, bene_mbi_id, dgns_prcdr_icd_ind, procedure_code_1, procedure_code_2, procedure_code_3, procedure_code_4, procedure_code_5, procedure_code_6
+         , procedure_code_7, procedure_code_8, procedure_code_9, procedure_code_10, procedure_code_11, procedure_code_12, procedure_code_13, procedure_code_14, procedure_code_15
+         , procedure_code_16, procedure_code_17, procedure_code_18, procedure_code_19, procedure_code_20, procedure_code_21, procedure_code_22, procedure_code_23, procedure_code_24
+         , procedure_code_25)
 )
 , date_pivot as(
   select 
@@ -51,33 +54,36 @@ with procedure_pivot as(
        from {{ var('parta_procedure_code')}}
        )
   pivot(
-      max(clm_prcdr_prfrm_dt) for clm_val_sqnc_num in (1 as procedure_date_1
-                                                      , 2 as procedure_date_2
-                                                      , 3 as procedure_date_3
-                                                      , 4 as procedure_date_4
-                                                      , 5 as procedure_date_5
-                                                      , 6 as procedure_date_6
-                                                      , 7 as procedure_date_7
-                                                      , 8 as procedure_date_8
-                                                      , 9 as procedure_date_9
-                                                      , 10 as procedure_date_10
-                                                      , 11 as procedure_date_11
-                                                      , 12 as procedure_date_12
-                                                      , 13 as procedure_date_13
-                                                      , 14 as procedure_date_14
-                                                      , 15 as procedure_date_15
-                                                      , 16 as procedure_date_16
-                                                      , 17 as procedure_date_17
-                                                      , 18 as procedure_date_18
-                                                      , 19 as procedure_date_19
-                                                      , 20 as procedure_date_20
-                                                      , 21 as procedure_date_21
-                                                      , 22 as procedure_date_22
-                                                      , 23 as procedure_date_23
-                                                      , 24 as procedure_date_24
-                                                      , 25 as procedure_date_25
+      max(clm_prcdr_prfrm_dt) for clm_val_sqnc_num in (1
+                                                      , 2
+                                                      , 3
+                                                      , 4
+                                                      , 5
+                                                      , 6
+                                                      , 7
+                                                      , 8
+                                                      , 9
+                                                      , 10
+                                                      , 11
+                                                      , 12
+                                                      , 13
+                                                      , 14
+                                                      , 15
+                                                      , 16
+                                                      , 17
+                                                      , 18
+                                                      , 19
+                                                      , 20
+                                                      , 21
+                                                      , 22
+                                                      , 23
+                                                      , 24
+                                                      , 25
                                                       )
-            )piv
+    )piv (cur_clm_uniq_id, bene_mbi_id, procedure_date_1, procedure_date_2, procedure_date_3, procedure_date_4, procedure_date_5, procedure_date_6
+         , procedure_date_7, procedure_date_8, procedure_date_9, procedure_date_10, procedure_date_11, procedure_date_12, procedure_date_13, procedure_date_14, procedure_date_15
+         , procedure_date_16, procedure_date_17, procedure_date_18, procedure_date_19, procedure_date_20, procedure_date_21, procedure_date_22, procedure_date_23, procedure_date_24
+         , procedure_date_25)
   )
   
 select
