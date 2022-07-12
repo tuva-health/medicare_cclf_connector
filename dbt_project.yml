@@ -22,7 +22,7 @@ vars:
   output_database: syntegra_synthetic_sample                 # configuration required
                                         # name of the database where output of this project should be written
 
-  output_schema: cclf_claim_input           # configuration required
+  output_schema: claim_input           # configuration required
                                         # name of the schema where output of this project should be written
 
   beneficiary_demographics: "{{ source(var('source_name'),'beneficiary_demographics') }}"
