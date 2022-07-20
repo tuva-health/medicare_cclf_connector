@@ -29,7 +29,7 @@ select
     ,cast(NULL as date) as paid_date
     ,cast(h.clm_line_cvrd_pd_amt as float) as paid_amount
     ,cast(h.clm_line_alowd_chrg_amt as float) as charge_amount
-    ,cast(isnull(h.clm_adjsmt_type_cd, 'O') as varchar) as adjustment_type_code
+    ,cast(h.clm_adjsmt_type_cd as varchar) as adjustment_type_code
     ,cast(NULL as varchar) as diagnosis_code_1
     ,cast(NULL as varchar) as diagnosis_code_2
     ,cast(NULL as varchar) as diagnosis_code_3

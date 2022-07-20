@@ -13,13 +13,13 @@ vars:
   source_name: cclf                     # configuration required
                                         # name describing the dataset feeding this project
 
-  input_database: cclf          # configuration required
+  input_database: tuva                  # configuration required
                                         # name of the database where sources feeding this project are stored
 
   input_schema:  cclf                   # configuration required
                                         # name of the schema where sources feeding this project is stored
 
-  output_database: cclf                 # configuration required
+  output_database: tuva                 # configuration required
                                         # name of the database where output of this project should be written
 
   output_schema: claims_input           # configuration required

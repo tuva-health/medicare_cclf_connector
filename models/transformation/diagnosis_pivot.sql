@@ -11,33 +11,36 @@ with diagnois_pivot as(
        from {{ var('parta_diagnosis_code')}}
        )
   pivot(
-      max(clm_dgns_cd) for clm_val_sqnc_num in (1 as diagnosis_code_1
-                                              , 2 as diagnosis_code_2
-                                              , 3 as diagnosis_code_3
-                                              , 4 as diagnosis_code_4
-                                              , 5 as diagnosis_code_5
-                                              , 6 as diagnosis_code_6
-                                              , 7 as diagnosis_code_7
-                                              , 8 as diagnosis_code_8
-                                              , 9 as diagnosis_code_9
-                                              , 10 as diagnosis_code_10
-                                              , 11 as diagnosis_code_11
-                                              , 12 as diagnosis_code_12
-                                              , 13 as diagnosis_code_13
-                                              , 14 as diagnosis_code_14
-                                              , 15 as diagnosis_code_15
-                                              , 16 as diagnosis_code_16
-                                              , 17 as diagnosis_code_17
-                                              , 18 as diagnosis_code_18
-                                              , 19 as diagnosis_code_19
-                                              , 20 as diagnosis_code_20
-                                              , 21 as diagnosis_code_21
-                                              , 22 as diagnosis_code_22
-                                              , 23 as diagnosis_code_23
-                                              , 24 as diagnosis_code_24
-                                              , 25 as diagnosis_code_25
+      max(clm_dgns_cd) for clm_val_sqnc_num in ('1'
+                                              , '2'
+                                              , '3'
+                                              , '4'
+                                              , '5'
+                                              , '6'
+                                              , '7'
+                                              , '8'
+                                              , '9'
+                                              , '10' 
+                                              , '11' 
+                                              , '12' 
+                                              , '13' 
+                                              , '14' 
+                                              , '15' 
+                                              , '16' 
+                                              , '17' 
+                                              , '18' 
+                                              , '19' 
+                                              , '20' 
+                                              , '21' 
+                                              , '22' 
+                                              , '23' 
+                                              , '24' 
+                                              , '25' 
                                               )
-    )piv
+    )piv (cur_clm_uniq_id, bene_mbi_id, dgns_prcdr_icd_ind, diagnosis_code_1, diagnosis_code_2, diagnosis_code_3, diagnosis_code_4, diagnosis_code_5, diagnosis_code_6
+         , diagnosis_code_7, diagnosis_code_8, diagnosis_code_9, diagnosis_code_10, diagnosis_code_11, diagnosis_code_12, diagnosis_code_13, diagnosis_code_14, diagnosis_code_15
+         , diagnosis_code_16, diagnosis_code_17, diagnosis_code_18, diagnosis_code_19, diagnosis_code_20, diagnosis_code_21, diagnosis_code_22, diagnosis_code_23, diagnosis_code_24
+         , diagnosis_code_25)
 )
 , poa_pivot as(
   select 
@@ -51,33 +54,36 @@ with diagnois_pivot as(
        from {{ var('parta_diagnosis_code')}}
        )
   pivot(
-      max(clm_poa_ind) for clm_val_sqnc_num in (1 as diagnosis_poa_1
-                                              , 2 as diagnosis_poa_2
-                                              , 3 as diagnosis_poa_3
-                                              , 4 as diagnosis_poa_4
-                                              , 5 as diagnosis_poa_5
-                                              , 6 as diagnosis_poa_6
-                                              , 7 as diagnosis_poa_7
-                                              , 8 as diagnosis_poa_8
-                                              , 9 as diagnosis_poa_9
-                                              , 10 as diagnosis_poa_10
-                                              , 11 as diagnosis_poa_11
-                                              , 12 as diagnosis_poa_12
-                                              , 13 as diagnosis_poa_13
-                                              , 14 as diagnosis_poa_14
-                                              , 15 as diagnosis_poa_15
-                                              , 16 as diagnosis_poa_16
-                                              , 17 as diagnosis_poa_17
-                                              , 18 as diagnosis_poa_18
-                                              , 19 as diagnosis_poa_19
-                                              , 20 as diagnosis_poa_20
-                                              , 21 as diagnosis_poa_21
-                                              , 22 as diagnosis_poa_22
-                                              , 23 as diagnosis_poa_23
-                                              , 24 as diagnosis_poa_24
-                                              , 25 as diagnosis_poa_25
+      max(clm_poa_ind) for clm_val_sqnc_num in ('1'
+                                              , '2'
+                                              , '3'
+                                              , '4'
+                                              , '5'
+                                              , '6'
+                                              , '7'
+                                              , '8'
+                                              , '9'
+                                              , '10' 
+                                              , '11' 
+                                              , '12' 
+                                              , '13' 
+                                              , '14' 
+                                              , '15' 
+                                              , '16' 
+                                              , '17' 
+                                              , '18' 
+                                              , '19' 
+                                              , '20' 
+                                              , '21' 
+                                              , '22' 
+                                              , '23' 
+                                              , '24' 
+                                              , '25' 
                                               )
-    )piv
+    )piv (cur_clm_uniq_id, bene_mbi_id, diagnosis_poa_1, diagnosis_poa_2, diagnosis_poa_3, diagnosis_poa_4, diagnosis_poa_5, diagnosis_poa_6
+         , diagnosis_poa_7, diagnosis_poa_8, diagnosis_poa_9, diagnosis_poa_10, diagnosis_poa_11, diagnosis_poa_12, diagnosis_poa_13, diagnosis_poa_14, diagnosis_poa_15
+         , diagnosis_poa_16, diagnosis_poa_17, diagnosis_poa_18, diagnosis_poa_19, diagnosis_poa_20, diagnosis_poa_21, diagnosis_poa_22, diagnosis_poa_23, diagnosis_poa_24
+         , diagnosis_poa_25)
   )
   
 select
@@ -137,4 +143,3 @@ select
 from diagnois_pivot dx
 inner join poa_pivot poa
 	on dx.cur_clm_uniq_id = poa.cur_clm_uniq_id
- 
