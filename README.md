@@ -42,4 +42,4 @@ If so, we highly encourage and welcome contributions!
 Join the conversation on [Slack](https://tuvahealth.slack.com/ssb/redirect#/shared-invite/email)!  We'd love to hear from you on the #claims-preprocessing channel.
 
 ## Database Support
-This package has been written for Redshift.
+This package has been written for Snowflake.
