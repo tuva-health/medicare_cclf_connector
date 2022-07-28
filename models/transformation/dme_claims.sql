@@ -8,7 +8,7 @@ select
     ,cast(NULL as date) as discharge_date
     ,cast(h.clm_line_from_dt as date) as claim_line_start_date
     ,cast(h.clm_line_thru_dt as date) as claim_line_end_date
-    ,cast('DME' as varchar) as claim_type
+    ,cast('P' as varchar) as claim_type
     ,cast(NULL as varchar) as bill_type_code
     ,cast(h.clm_pos_cd as varchar) as place_of_service_code
     ,cast(NULL as varchar) as admit_source_code
