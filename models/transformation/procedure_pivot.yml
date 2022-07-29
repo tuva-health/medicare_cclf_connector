@@ -4,6 +4,7 @@ models:
     - name: procedure_pivot
       description: Pivot of procedures from long (1 row/procedure) to wide (multiple procedure per row)
       config:
+        database: "{{ var('output_database')}}"
         schema: "{{ var('output_schema')}}"
       tests:
          - unique:
