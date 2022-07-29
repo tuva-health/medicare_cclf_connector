@@ -6,6 +6,7 @@ models:
         Mapping of institution claims to 
         Tuva claims preprocessing input layer
       config:
+        database: "{{ var('output_database')}}"
         schema: "{{ var('output_schema')}}"
       tests:
          - unique:

@@ -4,6 +4,7 @@ models:
     - name: medical_claim
       description: Claim line level medical data
       config:
+        database: "{{ var('output_database')}}"
         schema: "{{ var('output_schema')}}"
       tests:
          - unique:

@@ -7,22 +7,22 @@ version: '1.0.0'
 config-version: 2
 
 # This setting configures which "profile" dbt uses for this project.
-profile: 'default'
+profile: 'tuva'
 
 vars:
   source_name: cclf                     # configuration required
                                         # name describing the dataset feeding this project
 
-  input_database: tuva                  # configuration required
+  input_database: syntegra_synthetic_sample                  # configuration required
                                         # name of the database where sources feeding this project are stored
 
   input_schema:  cclf                   # configuration required
                                         # name of the schema where sources feeding this project is stored
 
-  output_database: tuva                 # configuration required
+  output_database: demo                 # configuration required
                                         # name of the database where output of this project should be written
 
-  output_schema: claims_input           # configuration required
+  output_schema: claims_input_layer     # configuration required
                                         # name of the schema where output of this project should be written
 
   beneficiary_demographics: "{{ source(var('source_name'),'beneficiary_demographics') }}"

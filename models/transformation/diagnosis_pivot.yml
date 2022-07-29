@@ -4,6 +4,7 @@ models:
     - name: diagnosis_pivot
       description: Pivot of diagnosis from long (1 row/diagnosis) to wide (multiple diagnosis per row)
       config:
+        database: "{{ var('output_database')}}"
         schema: "{{ var('output_schema')}}"
       tests:
          - unique:
