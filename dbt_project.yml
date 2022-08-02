@@ -1,4 +1,5 @@
 
+
 # Name your project! Project names should contain only lowercase characters
 # and underscores. A good package name should reflect your organization's
 # name or the intended use of these models
@@ -10,7 +11,7 @@ config-version: 2
 profile: 'default'
 
 vars:
-    source_database: medicare_saf         # configuration required (name of the database where your data is stored)
+    source_database: tuva         # configuration required (name of the database where your data is stored)
     source_schema: cclf_syn      # configuration required (name of the schema where you created staging tables)
     source_name: cclf_syn        # configuration required (name of your source dataset e.g. cms_claims)
 

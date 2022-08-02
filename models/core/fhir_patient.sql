@@ -4,12 +4,13 @@
 
 select 
 p.bene_mbi_id,
+replace(replace(
 '{
 	"resourceType" : "Patient",
 	"id" : "'||p.bene_mbi_id||'",
 	"meta" : {
-		"lastUpdated" : "'||p.bene_member_month||'T00:00:00Z",
-		"source" : "Organization/ZZZPayerOrganizationExample1",
+		"lastUpdated" : "'||p.bene_member_month||'T23:59:59.000Z",
+		"source" : "Organization/Syntegra",
 		"profile" : [
 			"http://hl7.org/fhir/us/carin-bb/StructureDefinition/C4BB-Patient|1.2.0"
 		]
@@ -17,8 +18,42 @@ p.bene_mbi_id,
 	"language" : "en-US",
 	"text" : {
 		"status" : "generated",
-		"div" : "ZZZ<div xmlns=\\"http://www.w3.org/1999/xhtml\\" xml:lang=\\"en-US\\" lang=\\"en-US\\"><p><b>Generated Narrative</b></p><div style=\\"display: inline-block; background-color: #d9e0e7; padding: 6px; margin: 4px; border: 1px solid #8da1b4; border-radius: 5px; line-height: 60%\\"><p style=\\"margin-bottom: 0px\\">Resource \\"ExamplePatient1\\" Updated \\"2020-10-30T13:48:01.851Z\\"	(Language \\"en-US\\") </p><p style=\\"margin-bottom: 0px\\">Information Source: Organization/PayerOrganizationExample1!</p><p style=\\"margin-bottom: 0px\\">Profile: <a href=\\"StructureDefinition-C4BB-Patient.html\\">C4BB Patient (version 1.2.0)</a></p></div><p><b>identifier</b>: An identifier for the insured of an insurance policy (this insured always has a subscriber), usually assigned by the insurance carrier.: 88800933501</p><p><b>active</b>: true</p><p><b>name</b>: Member 01 Test </p><p><b>telecom</b>: ph: 5555555551, ph: 5555555552, ph: 5555555553, ph: 5555555554, ph: 5555555555(HOME), ph: 5555555556(WORK), <a href=\\"mailto:GXXX@XXXX.com\\">GXXX@XXXX.com</a>, fax: 5555555557</p><p><b>gender</b>: male</p><p><b>birthDate</b>: 1943-01-01</p><p><b>address</b>: </p><ul><li>123 Main Street PITTSBURGH PA 15239 </li><li>456 Murray Avenue PITTSBURGH PA 15217 </li></ul><p><b>maritalStatus</b>: unknown <span style=\\"background: LightGoldenRodYellow; margin: 4px; border: 1px solid khaki\\"> (<a href=\\"http://terminology.hl7.org/2.1.0/CodeSystem-v3-NullFlavor.html\\">NullFlavor</a>#UNK)</span></p><h3>Communications</h3><table class=\\"grid\\"><tr><td>-</td><td><b>Language</b></td><td><b>Preferred</b></td></tr><tr><td>*</td><td>English <span style=\\"background: LightGoldenRodYellow; margin: 4px; border: 1px solid khaki\\"> (<a href=\\"http://terminology.hl7.org/2.1.0/CodeSystem-v3-ietf3066.html\\">Tags for the Identification of Languages</a>#en)</span></td><td>true</td></tr></table><p><b>managingOrganization</b>: <a href=\\"Organization-PayerOrganizationExample1.html\\">Organization/PayerOrganizationExample1: UPMC Health Plan</a> \\"UPMC Health Plan\\"</p></div>"
+		"div" : ""
 	},
+	'||isnull('"extension": [
+		{
+			' || isnull('"extension": [
+				{
+					"url": "ombCategory",
+					"valueCoding": {
+						"system": "urn:oid:2.16.840.1.113883.6.238",
+						"code": "' || bene_race_cd || '",
+						"display": "' || case bene_race_cd
+          when '0' then 'unknown'
+          when '1' then 'white'
+          when '2' then 'black'
+          when '3' then 'other'
+          when '4' then 'asian'
+          when '5' then 'hispanic'
+          when '6' then 'north american native'
+     end || '"
+					}
+				},','')|| '
+				{
+					"url": "text",
+					"valueString": "' ||   case bene_race_cd
+          when '0' then 'unknown'
+          when '1' then 'white'
+          when '2' then 'black'
+          when '3' then 'other'
+          when '4' then 'asian'
+          when '5' then 'hispanic'
+          when '6' then 'north american native'
+     end ||  '"
+				}
+			],
+			"url": "http://hl7.org/fhir/us/core/StructureDefinition/us-core-race"
+		}],','')||'
 	"identifier" : [
 		{
 			"type" : {
@@ -31,11 +66,11 @@ p.bene_mbi_id,
 				],
 				"text" : "An identifier for the insured of an insurance policy (this insured always has a subscriber), usually assigned by the insurance carrier."
 			},
-			"system" : "https://www.syntegra.io/memberidentifier",
+			"system" : "https://www.medicare.gov/",
 			"value" : "'||p.bene_mbi_id||'",
 			"assigner" : {
-				"reference" : "OrganizationZZZMedicarePayerOrganizationExample1",
-				"display" : "ZZZMedicare?UPMC Health Plan"
+				"reference" : "Organizatio/Medicare",
+				"display" : "Medicare"
 			}
 		}
 	],
@@ -67,23 +102,26 @@ p.bene_mbi_id,
           when '2' then 'female'
 		  else '' 
      end  ||'",
-	"birthDate" : "'||left(cast(bene_dob as varchar),10)||'",
-	"address" : [
+	"birthDate" : "'||left(cast(bene_dob as varchar),10)||'",' ||
+	isnull('"deceasedDateTime" : "'|| left(cast(bene_death_dt as varchar),10)||'",','')
+	||'"address" : [
 		{
 			"type" : "physical",
 			"line" : [
 				"123 Fake Street"
 			],
 			"city" : "",
-			"state" : "''",
+			"state" : "'||isnull(st.state,'')||'",
 			"postalCode" : ""
 		}
 	],
 	"managingOrganization" : {
-		"reference" : "Organization/ZZZMedicare?PayerOrganizationExample1",
-		"display" : "ZZZMedicareUPMC Health Plan"
+		"reference" : "Organization/Medicare",
+		"display" : "Medicare"
 	}
-}' as fhirPatient
+}' 
+,chr(9),''),chr(10),'')
+as  fhir
 from {{var('beneficiary_demographics')}}  p
 inner join (
 	select  

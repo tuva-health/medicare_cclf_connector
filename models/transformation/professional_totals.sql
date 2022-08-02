@@ -1,7 +1,7 @@
 select 
     cur_clm_uniq_id
     ,bene_mbi_id
-    ,
+    ,replace(replace(
 '   {
         "category" : {
             "coding" : [
@@ -33,7 +33,8 @@ select
         "value" : '||sum(clm_line_cvrd_pd_amt)||',
         "currency" : "USD"
         }
-    }' total
+    }',chr(9),''),chr(10),'')
+     total
 
 
 from {{var('partb_physicians')}}  pc
