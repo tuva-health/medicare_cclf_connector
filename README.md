@@ -2,11 +2,13 @@
 
 # Medicare CCLF Connector
 
-Check out the [Tuva Data Models](https://docs.google.com/spreadsheets/d/1NuMEhcx6D6MSyZEQ6yk0LWU0HLvaeVma8S-5zhOnbcE/edit?usp=sharing)
+Check out the Tuva Project [Docs](http://thetuvaproject.com/)
+Check out the Tuva Project [Data Models](https://docs.google.com/spreadsheets/d/1NuMEhcx6D6MSyZEQ6yk0LWU0HLvaeVma8S-5zhOnbcE/edit?usp=sharing)
+Check out the [DAG]()
 
-Check out our [Docs](http://thetuvaproject.com/)
 
-This connector models Medicare CCLF into the Tuva Claims Input Layer which enables you to run most of the other components of the Tuva Project with very little effort.
+## Description
+This connector transforms raw Medicare CCLF claims data into the Tuva Claims Input Layer which enables you to run most of the other components of the Tuva Project with very little effort.
 
 ## Pre-requisites
 1. You have Medicare CCLF claims data loaded into a data warehouse
@@ -18,7 +20,8 @@ This connector models Medicare CCLF into the Tuva Claims Input Layer which enabl
 Complete the following steps to configure the package to run in your environment.
 
 1. [Clone](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository) this repo to your local machine or environment
-2. Run the following command, filling in your input (i.e. where your source data is located) and output (i.e. where you want the data processed by this module to be written to) data locations: dbt build --vars '{key: value, input_database: syntegra_synthetic_sample, input_schema: cclf, output_database: demo, output_schema: claims_input_layer}'
+2. Update the dbt_project.yml file to use the dbt profile connected to your data warehouse.
+3. Run dbt build command while specifying the specific database and schema locations you want to read/write data fromt/to: dbt build --vars '{key: value, input_database: syntegra_synthetic_sample, input_schema: cclf, output_database: demo, output_schema: claims_input_layer}'
 
 Note: The source data table names need to match the table names in [sources.yml](models/sources.yml).  These table names match the [Medicare CCLF data dictionary](https://www.cms.gov/files/document/cclf-file-data-elements-resource.pdf).  If you rename any tables make sure you:
     - Update table names in sources.yml
