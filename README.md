@@ -27,8 +27,8 @@ Complete the following steps to configure the package to run in your environment
     > dbt build --vars '{key: value, input_database: syntegra_synthetic_sample, input_schema: cclf, output_database: demo, output_schema: claims_input_layer}'
 
 Note: The source data table names need to match the table names in [sources.yml](models/sources.yml).  These table names match the [Medicare CCLF data dictionary](https://www.cms.gov/files/document/cclf-file-data-elements-resource.pdf).  If you rename any tables make sure you:
-    * Update table names in sources.yml
-    * Update table name in medical_claim and eligibility jinja function
+- Update table names in sources.yml
+- Update table name in medical_claim and eligibility jinja function
 
 ## Contributions
 Have an opinion on the mappings? Notice any bugs when installing and running the package? 
@@ -38,5 +38,5 @@ Join the conversation on [Slack](https://tuvahealth.slack.com/ssb/redirect#/shar
 
 ## Database Support
 This package has been built and tested on:
-    * Snowflake
-    * Redshift
+- Snowflake
+- Redshift
