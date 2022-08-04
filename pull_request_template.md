@@ -16,6 +16,6 @@ n/a
 - [] My code runs without errors
 - [] I have implemented primary key tests
 - [] Every model has a corresponding yml file
-- [ ] I have generated the DAG locally with dbt and updated the files in the `docs/` path
+- [] I have generated the DAG locally with dbt and updated the files in the `docs/` path
 
 ## Gif of how this PR makes you feel
