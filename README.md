@@ -2,15 +2,14 @@
 
 # Medicare CCLF Connector
 
-Check out the [Claims Preprocessing Data Model](https://docs.google.com/spreadsheets/d/1NuMEhcx6D6MSyZEQ6yk0LWU0HLvaeVma8S-5zhOnbcE/edit#gid=1991587675)
+Check out the [Tuva Data Models](https://docs.google.com/spreadsheets/d/1NuMEhcx6D6MSyZEQ6yk0LWU0HLvaeVma8S-5zhOnbcE/edit?usp=sharing)
 
 Check out our [Docs](http://thetuvaproject.com/)
 
-This connector models Medicare CCLF into the Tuva claims input layer for downstream processing and analytics.
-
+This connector models Medicare CCLF into the Tuva Claims Input Layer which enables you to run most of the other components of the Tuva Project with very little effort.
 
 ## Pre-requisites
-1. You have Medicare CCLF data
+1. You have Medicare CCLF claims data loaded into a data warehouse
 2. You have [dbt](https://www.getdbt.com/) installed and configured (i.e. connected to your data warehouse)
 
 [Here](https://docs.getdbt.com/dbt-cli/installation) are instructions for installing dbt.
@@ -19,9 +18,7 @@ This connector models Medicare CCLF into the Tuva claims input layer for downstr
 Complete the following steps to configure the package to run in your environment.
 
 1. [Clone](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository) this repo to your local machine or environment
-2. Create a database called 'tuva' in your data warehouse
-    - Note: this is optional, see step 4 for further detail
-3. Configure [dbt_project.yml](/dbt_project.yml)
+2. Configure [dbt_project.yml](/dbt_project.yml)
     - Fill in vars (variables):
         - source_name - description of the dataset feeding this project
         - input_database - database where sources feeding this project are stored
