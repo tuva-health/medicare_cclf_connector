@@ -6,7 +6,7 @@ Check out the Tuva Project [Docs](http://thetuvaproject.com/)
 
 Check out the Tuva Project [Data Models](https://docs.google.com/spreadsheets/d/1NuMEhcx6D6MSyZEQ6yk0LWU0HLvaeVma8S-5zhOnbcE/edit?usp=sharing)
 
-Check out the [DAG](https://tuva-health.github.io/medicare_cclf_connector/#!/overview?g_v=1)
+Check out the [DAG](https://tuva-health.github.io/medicare_cclf_connector/#!/overview?g_v=1) for this dbt project
 
 ## Description
 This connector transforms raw Medicare CCLF claims data into the Tuva Claims Input Layer which enables you to run most of the other components of the Tuva Project with very little effort.
