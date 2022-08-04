@@ -18,18 +18,11 @@ This connector models Medicare CCLF into the Tuva Claims Input Layer which enabl
 Complete the following steps to configure the package to run in your environment.
 
 1. [Clone](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository) this repo to your local machine or environment
-2. Configure [dbt_project.yml](/dbt_project.yml)
-    - Fill in vars (variables):
-        - source_name - description of the dataset feeding this project
-        - input_database - database where sources feeding this project are stored
-        - input_schema - schema where sources feeding this project is stored
-        - output_database - database where output of this project should be written.  
-        We suggest using the Tuva database but any database will work.
-        - output_schema - name of the schema where output of this project should be written
-4. Review [sources.yml](models/sources.yml).  The table names listed are the same as in the [Medicare CCLF data dictionary](https://www.cms.gov/files/document/cclf-file-data-elements-resource.pdf).  If you decided to rename these tables:
+2. Run the following command, filling in your input (i.e. where your source data is located) and output (i.e. where you want the data processed by this module to be written to) data locations: dbt build --vars '{key: value, input_database: syntegra_synthetic_sample, input_schema: cclf, output_database: demo, output_schema: claims_input_layer}'
+
+Note: The source data table names need to match the table names in [sources.yml](models/sources.yml).  These table names match the [Medicare CCLF data dictionary](https://www.cms.gov/files/document/cclf-file-data-elements-resource.pdf).  If you rename any tables make sure you:
     - Update table names in sources.yml
     - Update table name in medical_claim and eligibility jinja function
-5. Execute `dbt build` to load seed files, run models, and perform tests.
 
 ## Contributions
 Have an opinion on the mappings? Notice any bugs when installing and running the package? 
@@ -38,4 +31,6 @@ If so, we highly encourage and welcome contributions!
 Join the conversation on [Slack](https://tuvahealth.slack.com/ssb/redirect#/shared-invite/email)!  We'd love to hear from you on the #claims-preprocessing channel.
 
 ## Database Support
-This package has been built and tested for Snowflake and Redshift.
+This package has been built and tested on:
+    - Snowflake
+    - Redshift
