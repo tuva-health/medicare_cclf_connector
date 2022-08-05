@@ -2,36 +2,50 @@
     config( materialized='table' )
 }}
 
-with cte as (
-select a.bene_mbi_id,a.bene_member_month, a.bene_mdcr_stus_cd,a.bene_dual_stus_cd,strt.bene_mbi_id st,fin.bene_mbi_id fn
-from {{var('beneficiary_demographics')}}  a
-left join {{var('beneficiary_demographics')}} strt
-  on a.bene_mbi_id = strt.bene_mbi_id
-  and a.bene_member_month = dateadd(month,1,strt.bene_member_month)
-  and a.bene_mdcr_stus_cd = strt.bene_mdcr_stus_cd
-  and a.bene_dual_stus_cd = strt.bene_dual_stus_cd
-left join {{var('beneficiary_demographics')}} fin 
-  on a.bene_mbi_id = fin.bene_mbi_id 
-  and a.bene_member_month = dateadd(month,-1,fin.bene_member_month)
-  and a.bene_mdcr_stus_cd = fin.bene_mdcr_stus_cd
-  and a.bene_dual_stus_cd = fin.bene_dual_stus_cd
-)
-, rd as ( 
-select cte.bene_mbi_id,
-left(cast(cte.bene_member_month as varchar),10) as cov_start,
-  left(cast(dateadd(day,-1,dateadd(month,1,(select top 1 bene_member_month 
-  from cte cf
-  where cf.bene_mbi_id = cte.bene_mbi_id
-  and cf.bene_member_month >= cte.bene_member_month
-  --and cf.bene_mdcr_stus_cd = cte.bene_mdcr_stus_cd
-  --and cf.bene_dual_stus_cd = cte.bene_dual_stus_cd
-  and cf.fn is null
-  order by bene_member_month)))as varchar),10) as cov_end,
-  cte.bene_mdcr_stus_cd,
-  cte.bene_dual_stus_cd
+with recursive cte as (
+select a.bene_mbi_id,
+       a.bene_member_month as strt,
+       a.BENE_MEMBER_MONTH as fin,
+       a.bene_mdcr_stus_cd,
+       a.bene_dual_stus_cd,
+       dateadd(month,1,a.bene_member_month) as nxt,
+       1 as n
+from tuva.cclf.beneficiary_demographics  a
+left join tuva.cclf.beneficiary_demographics isstart
+  on a.bene_mbi_id = isstart.bene_mbi_id
+  and a.bene_member_month = dateadd(month,1,isstart.bene_member_month)
+  and ifnull(a.bene_mdcr_stus_cd,'') = ifnull(isstart.bene_mdcr_stus_cd,'')
+  and ifnull(a.bene_dual_stus_cd,'') = ifnull(isstart.bene_dual_stus_cd,'')
+where isstart.BENE_MBI_ID is null
 
-from cte where cte.st is null
+union all
+
+select cte.bene_mbi_id,
+       cte.strt,
+       cte.nxt as fin,
+       cte.bene_mdcr_stus_cd,
+       cte.bene_dual_stus_cd,
+       dateadd(month,1,nxt.BENE_MEMBER_MONTH) as nxt,
+        cte.n+1
+from cte
+left join tuva.cclf.beneficiary_demographics nxt
+  on cte.bene_mbi_id = nxt.bene_mbi_id
+  and cte.fin = dateadd(month,-1,nxt.bene_member_month)
+  and ifnull(cte.bene_mdcr_stus_cd,'') = ifnull(nxt.bene_mdcr_stus_cd,'')
+  and ifnull(cte.bene_dual_stus_cd,'') = ifnull(nxt.bene_dual_stus_cd,'')
+
+where cte.nxt is not null
+
+
 )
+,rd as (select cte.BENE_MBI_ID,
+               left(cast(cte.strt as varchar), 10)                  as cov_start,
+               left(cast(dateadd(day, -1, cte.fin) as varchar), 10) as cov_end,
+               cte.BENE_MDCR_STUS_CD,
+               cte.BENE_DUAL_STUS_CD
+        From cte
+        where cte.nxt is null)
+
 
 
 
@@ -57,7 +71,7 @@ replace(replace(
     {
       "extension" : [{
         "url" : "https://resdac.org/cms-data/variables/beneficiary-medicare-status-code",
-        "valueCode" : "'||rd.bene_mdcr_stus_cd||'"
+        "valueCode" : "'||ifnull(rd.bene_mdcr_stus_cd,'')||'"
       }],
       "text" : "'||
         case 
@@ -72,7 +86,7 @@ replace(replace(
     {
       "extension" : [{
         "url" : "https://resdac.org/cms-data/variables/medicare-medicaid-dual-eligibility-code-january",
-        "valueCode" : "'||right('00'||rd.bene_dual_stus_cd,2) ||'"
+        "valueCode" : "'||right('00'||ifnull(rd.bene_dual_stus_cd,''),2) ||'"
       }],
       "text" : "'||
         case 
