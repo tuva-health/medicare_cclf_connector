@@ -25,7 +25,7 @@ select
           "text" : "Other procedures performed during the inpatient institutional admission"
         }' end || '
 			],
-			"date" : "'|| cast(pc.clm_prcdr_prfrm_dt as varchar(10)) ||'",
+			"date" : "'||left(cast(pc.clm_prcdr_prfrm_dt as varchar),10) ||'",
 			"procedureCodeableConcept" : {
 				"coding" : [
 					{

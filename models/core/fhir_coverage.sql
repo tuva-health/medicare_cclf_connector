@@ -3,13 +3,13 @@
 }}
 
 with cte as (
-select a.bene_mbi_id,a.bene_member_month, a.bene_mdcr_stus_cd,a.bene_dual_stus_cd,start.bene_mbi_id st,fin.bene_mbi_id fn
+select a.bene_mbi_id,a.bene_member_month, a.bene_mdcr_stus_cd,a.bene_dual_stus_cd,strt.bene_mbi_id st,fin.bene_mbi_id fn
 from {{var('beneficiary_demographics')}}  a
-left join {{var('beneficiary_demographics')}} start 
-  on a.bene_mbi_id = start.bene_mbi_id 
-  and a.bene_member_month = dateadd(month,1,start.bene_member_month)
-  and a.bene_mdcr_stus_cd = start.bene_mdcr_stus_cd
-  and a.bene_dual_stus_cd = start.bene_dual_stus_cd
+left join {{var('beneficiary_demographics')}} strt
+  on a.bene_mbi_id = strt.bene_mbi_id
+  and a.bene_member_month = dateadd(month,1,strt.bene_member_month)
+  and a.bene_mdcr_stus_cd = strt.bene_mdcr_stus_cd
+  and a.bene_dual_stus_cd = strt.bene_dual_stus_cd
 left join {{var('beneficiary_demographics')}} fin 
   on a.bene_mbi_id = fin.bene_mbi_id 
   and a.bene_member_month = dateadd(month,-1,fin.bene_member_month)

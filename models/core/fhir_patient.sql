@@ -20,9 +20,9 @@ replace(replace(
 		"status" : "generated",
 		"div" : ""
 	},
-	'||isnull('"extension": [
+	'||ifnull('"extension": [
 		{
-			' || isnull('"extension": [
+			' || ifnull('"extension": [
 				{
 					"url": "ombCategory",
 					"valueCoding": {
@@ -77,9 +77,9 @@ replace(replace(
 	"active" : true,
 	"name" : [
 		{
-			"family" : "'||isnull(p.bene_last_name,'')||'",
+			"family" : "'||ifnull(p.bene_last_name,'')||'",
 			"given" : [
-				"'||isnull(p.bene_1st_name,'')||'"
+				"'||ifnull(p.bene_1st_name,'')||'"
 				,"Test"
 			]
 		}
@@ -92,7 +92,7 @@ replace(replace(
 		},
 		{
 			"system" : "email",
-			"value" : "'||isnull(p.bene_1st_name,'')||'.'||isnull(p.bene_last_name,'')||'@example.com",
+			"value" : "'||ifnull(p.bene_1st_name,'')||'.'||ifnull(p.bene_last_name,'')||'@example.com",
 			"rank" : 2
 		}
 	],
@@ -103,7 +103,7 @@ replace(replace(
 		  else '' 
      end  ||'",
 	"birthDate" : "'||left(cast(bene_dob as varchar),10)||'",' ||
-	isnull('"deceasedDateTime" : "'|| left(cast(bene_death_dt as varchar),10)||'",','')
+	ifnull('"deceasedDateTime" : "'|| left(cast(bene_death_dt as varchar),10)||'",','')
 	||'"address" : [
 		{
 			"type" : "physical",
@@ -111,7 +111,7 @@ replace(replace(
 				"123 Fake Street"
 			],
 			"city" : "",
-			"state" : "'||isnull(st.state,'')||'",
+			"state" : "'||ifnull(st.state,'')||'",
 			"postalCode" : ""
 		}
 	],
@@ -131,5 +131,5 @@ inner join (
 	group by bene_mbi_id
 ) x
 	on p.bene_mbi_id = x.pid and p.bene_member_month = x.mm
-left join {{ref('fips_state_codes')}} st
-	on st.fips_cd = p.bene_fips_state_cd
+left join {{ref('medicare_state_fips')}} st
+	on st.fips_code = p.bene_fips_state_cd

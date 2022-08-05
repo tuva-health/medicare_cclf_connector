@@ -10,23 +10,23 @@ replace(replace(
 					{
 						"system" : "http://www.ama-assn.org/go/cpt",
 						"code" : "'||nullif(pc.clm_line_hcpcs_cd,'') ||'"
-					}'|| isnull('
+					}'|| ifnull('
 					,{
 						"system" : "http://www.ama-assn.org/go/cpt",
 						"code" : "'||nullif(pc.hcpcs_1_mdfr_cd,'') ||'"
-					}','')|| isnull('
+					}','')|| ifnull('
 					,{
 						"system" : "http://www.ama-assn.org/go/cpt",
 						"code" : "'||nullif(pc.hcpcs_2_mdfr_cd,'') ||'"
-					}','')|| isnull('
+					}','')|| ifnull('
 					,{
 						"system" : "http://www.ama-assn.org/go/cpt",
 						"code" : "'||nullif(pc.hcpcs_3_mdfr_cd,'') ||'"
-					}','')|| isnull('
+					}','')|| ifnull('
 					,{
 						"system" : "http://www.ama-assn.org/go/cpt",
 						"code" : "'||nullif(pc.hcpcs_4_mdfr_cd,'') ||'"
-					}','')|| isnull('
+					}','')|| ifnull('
 					,{
 						"system" : "http://www.ama-assn.org/go/cpt",
 						"code" : "'||nullif(pc.hcpcs_5_mdfr_cd,'') ||'"
@@ -39,7 +39,7 @@ replace(replace(
 				"coding" : [
 					{
 						"system" : "https://www.cms.gov/Medicare/Coding/place-of-service-codes/Place_of_Service_Code_Set",
-						"code" : "'||isnull(pc.clm_pos_cd,'')||'"
+						"code" : "'||ifnull(pc.clm_pos_cd,'')||'"
 					}
 				]
 			},

@@ -11,11 +11,13 @@ ch.bene_mbi_id
   "resourceType" : "ExplanationOfBenefit",
   "id" : "'||ch.cur_clm_uniq_id||'",
   "meta" : {
-    "lastUpdated" : "'||cast(ch.clm_thru_dt as varchar(10))||'T23:59:50.000Z",
+    "lastUpdated" : "'||left(cast(ch.clm_thru_dt as varchar),10)||'T23:59:50.000Z",
     "source" : "Organization/Syntegra",
     "profile" : [
-      "http://hl7.org/fhir/us/carin-bb/StructureDefinition/C4BB-ExplanationOfBenefit-Inpatient-Institutional|1.2.0"
-    ]
+      ' || CASE when ch.clm_type_cd in ('60','50','20')  then
+        '"http://hl7.org/fhir/us/carin-bb/StructureDefinition/C4BB-ExplanationOfBenefit-Inpatient-Institutional"'
+    else '"http://hl7.org/fhir/us/carin-bb/StructureDefinition/C4BB-ExplanationOfBenefit-Outpatient-Institutional"' end
+||    ']
   },
   "text" : {
     "status" : "generated",
@@ -67,10 +69,10 @@ ch.bene_mbi_id
     "reference" : "Patient/'||ch.bene_mbi_id||'"
   },
   "billablePeriod" : {
-    "start" : "'||cast(ch.clm_from_dt as varchar(10))||'",
-    "end" : "'||cast(clm_thru_dt as varchar(10))||'"
+    "start" : "'||left(cast(ch.clm_from_dt as varchar),10)||'",
+    "end" : "'||left(cast(clm_thru_dt as varchar),10)||'"
   },
-  "created" : "'||cast(ch.clm_from_dt as varchar(10))||'T00:00:00Z",
+  "created" : "'||left(cast(ch.clm_from_dt as varchar),10)||'T00:00:00Z",
   "insurer" : {
     "reference" : "Organization/Medicare",
     "display" : "Medicare"
@@ -110,7 +112,7 @@ ch.bene_mbi_id
         ],
         "text" : "The attending physician"
       }
-    }'||isnull(',
+    }'||ifnull(',
     {
       "sequence" : 2,
       "provider" : {
@@ -179,7 +181,7 @@ ch.bene_mbi_id
         "coding" : [
           {
             "system" : "https://www.nubc.org/CodeSystem/TypeOfBill",
-            "code" : "'||isnull(cast(ch.clm_bill_fac_type_cd || ch.clm_bill_clsfctn_cd || ch.clm_bill_freq_cd as varchar),'')||' "
+            "code" : "'||ifnull(cast(ch.clm_bill_fac_type_cd || ch.clm_bill_clsfctn_cd || ch.clm_bill_freq_cd as varchar),'')||' "
           }
         ]
       }
@@ -200,7 +202,7 @@ ch.bene_mbi_id
         "coding" : [
           {
             "system" : "https://www.nubc.org/CodeSystem/PointOfOrigin",
-            "code" : "'||isnull(ch.clm_admsn_src_cd,'')||' "
+            "code" : "'||ifnull(ch.clm_admsn_src_cd,'')||' "
           }
         ]
       }
@@ -221,7 +223,7 @@ ch.bene_mbi_id
         "coding" : [
           {
             "system" : "https://www.nubc.org/CodeSystem/PriorityTypeOfAdmitOrVisit",
-            "code" : "'||isnull(ch.clm_admsn_type_cd,'')||' "
+            "code" : "'||ifnull(ch.clm_admsn_type_cd,'')||' "
           }
         ]
       }
@@ -242,7 +244,7 @@ ch.bene_mbi_id
         "coding" : [
           {
             "system" : "https://www.nubc.org/CodeSystem/DRG",
-            "code" : "'||isnull(ch.dgns_drg_cd,'')||' "
+            "code" : "'||ifnull(ch.dgns_drg_cd,'')||' "
           }
         ]
       }
@@ -263,16 +265,19 @@ ch.bene_mbi_id
         "coding" : [
           {
             "system" : "https://www.nubc.org/CodeSystem/PatDischargeStatus",
-            "code" : "'||isnull(ch.bene_ptnt_stus_cd,'')||' "
+            "code" : "'||ifnull(ch.bene_ptnt_stus_cd,'')||' "
           }
         ]
       }
     }
   ],' 
   ,chr(9),''),chr(10),'') 
-  as fhir1,
-  isnull(id.dgs,'') as fhir2,
-  isnull(ipr.prcs,'') as fhir3,
+  -- as fhir1,
+    ||
+  ifnull(id.dgs,'') -- as fhir2,
+    ||
+  ifnull(ipr.prcs,'') -- as fhir3,
+    ||
   replace(replace('
   "insurance" : [
     {
@@ -282,11 +287,15 @@ ch.bene_mbi_id
       }
     }
   ],'
-  ,chr(9),''),chr(10),'') 
-   as fhir4,
-  isnull(ii.itms,'') as fhir5,
-  
-  isnull(ii2.itms,'')::varchar(max) || case when ii.itms is null then '' else  '],' end as fhir6,
+  ,chr(9),''),chr(10),'')
+    -- as fhir4,
+    ||
+  ifnull(ii.itms,'')
+    --as fhir5,
+    ||
+  ifnull(ii2.itms,'')::varchar || case when ii.itms is null then '' else  '],' end
+  -- as fhir6,
+    ||
  replace(replace( {#'
   "adjudication" : [
     {
@@ -422,7 +431,7 @@ ch.bene_mbi_id
   ]
 }' 
   ,chr(9),''),chr(10),'') 
-as fhir7
+as fhir
 from {{ source(var('source_name'),'parta_claims_header') }} ch
 left join {{ref('institutional_diagnosis')}} id 
   on ch.bene_mbi_id = id.bene_mbi_id

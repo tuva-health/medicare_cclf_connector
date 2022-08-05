@@ -13,43 +13,43 @@ select
 					}
 				]
 			},
-			' || isnull('"productOrService" : {
+			' || ifnull('"productOrService" : {
 				"coding" : [
 					{
 						"system" : "http://www.ama-assn.org/go/cpt",
 						"code" : "'||nullif(cld.clm_line_hcpcs_cd,'') ||'"
-					}'|| isnull('
+					}'|| ifnull('
 					,{
 						"system" : "http://www.ama-assn.org/go/cpt",
 						"code" : "'||nullif(cld.hcpcs_1_mdfr_cd,'') ||'"
-					}','')|| isnull('
+					}','')|| ifnull('
 					,{
 						"system" : "http://www.ama-assn.org/go/cpt",
 						"code" : "'||nullif(cld.hcpcs_2_mdfr_cd,'') ||'"
-					}','')|| isnull('
+					}','')|| ifnull('
 					,{
 						"system" : "http://www.ama-assn.org/go/cpt",
 						"code" : "'||nullif(cld.hcpcs_3_mdfr_cd,'') ||'"
-					}','')|| isnull('
+					}','')|| ifnull('
 					,{
 						"system" : "http://www.ama-assn.org/go/cpt",
 						"code" : "'||nullif(cld.hcpcs_4_mdfr_cd,'') ||'"
-					}','')|| isnull('
+					}','')|| ifnull('
 					,{
 						"system" : "http://www.ama-assn.org/go/cpt",
 						"code" : "'||nullif(cld.hcpcs_5_mdfr_cd,'') ||'"
 					}','')
 					||'
 				]
-			},','') || {# isnull('
+			},','') || {# ifnull('
             "modifier":[
                 
             ],','') || #} '
 			"servicedPeriod" : {
-				"start" : "'||cast(cld.clm_line_from_dt as varchar(10))||'",
-				"end" : "'||cast(cld.clm_line_thru_dt as varchar(10))||'"
+				"start" : "'||left(cast(cld.clm_line_from_dt as varchar),10)||'",
+				"end" : "'||left(cast(cld.clm_line_thru_dt as varchar),10)||'"
 			},
-			"quantity" : "'|| isnull(cld.clm_line_srvc_unit_qty) ||'"' || {#',
+			"quantity" : "'|| ifnull(cld.clm_line_srvc_unit_qty,'') ||'"' || {#',
 			"locationCodeableConcept" : {
 				"coding" : [
 					{

@@ -60,7 +60,7 @@ replace(replace(
 		"display" : "Medicare"
 	},
 	"provider" : {
-		"reference" : "Organization/'||isnull(pc.payto_prvdr_npi_num,'')||'"
+		"reference" : "Organization/'||ifnull(pc.payto_prvdr_npi_num,'')||'"
 	},
 	"payee" : {
 		"type" : {
@@ -74,7 +74,7 @@ replace(replace(
 			"text" : "Any benefit payable will be paid to the provider (Assignment of Benefit)."
 		},
 		"party" : {
-			"reference" : "Organization/'||isnull(pc.payto_prvdr_npi_num,'')||'"
+			"reference" : "Organization/'||ifnull(pc.payto_prvdr_npi_num,'')||'"
 		}
 	},
 	"outcome" : "complete",
@@ -82,7 +82,7 @@ replace(replace(
 		{
 			"sequence" : 1,
 			"provider" : {
-				"reference" : "Organization/'||isnull(pc.payto_prvdr_npi_num,'')||'"
+				"reference" : "Organization/'||ifnull(pc.payto_prvdr_npi_num,'')||'"
 			},
 			"role" : {
 				"coding" : [
@@ -98,7 +98,7 @@ replace(replace(
 		{
 			"sequence" : 2,
 			"provider" : {
-				"reference" : "Practitioner/'||isnull(pc.ordrg_prvdr_npi_num,'')||'"
+				"reference" : "Practitioner/'||ifnull(pc.ordrg_prvdr_npi_num,'')||'"
 			},
 			"role" : {
 				"coding" : [
@@ -148,7 +148,7 @@ replace(replace(
 				],
 				"text" : "Date the claim was received by the payer."
 			},
-			"timingDate" : "'||isnull(pc.clm_thru_dt,'')||'"
+			"timingDate" : "'||ifnull(pc.clm_thru_dt,'')||'"
 		}
 	],
 	"insurance" : [

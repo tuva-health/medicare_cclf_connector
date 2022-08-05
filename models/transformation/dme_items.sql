@@ -19,7 +19,7 @@ select
 				"coding" : [
 					{
 						"system" : "https://www.cms.gov/Medicare/Coding/place-of-service-codes/Place_of_Service_Code_Set",
-						"code" : "'||isnull(pc.clm_pos_cd,'')||'"
+						"code" : "'||ifnull(pc.clm_pos_cd,'')||'"
 					}
 				]
 			},

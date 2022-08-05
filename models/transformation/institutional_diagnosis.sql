@@ -67,7 +67,7 @@ select
 				"coding" : [
 					{
 						"system" : "https://www.nubc.org/CodeSystem/PresentOnAdmissionIndicator",
-						"code" : "'||isnull(rediags.clm_poa_ind,'')||'"
+						"code" : "'||ifnull(rediags.clm_poa_ind,'')||'"
 					}
 				]
 			},

@@ -58,7 +58,7 @@ replace(replace(
 		"display" : "Medicare"
 	},
 	"provider" : {
-		"reference" : "Organization/'||isnull(pc.rndrg_prvdr_npi_num,'')||'"
+		"reference" : "Organization/'||ifnull(pc.rndrg_prvdr_npi_num,'')||'"
 	},
 	"payee" : {
 		"type" : {
@@ -72,7 +72,7 @@ replace(replace(
 			"text" : "Any benefit payable will be paid to the provider (Assignment of Benefit)."
 		},
 		"party" : {
-			"reference" : "Organization/'||isnull(pc.rndrg_prvdr_npi_num,'')||'"
+			"reference" : "Organization/'||ifnull(pc.rndrg_prvdr_npi_num,'')||'"
 		}
 	},
 	"outcome" : "complete",
@@ -80,7 +80,7 @@ replace(replace(
 		{
 			"sequence" : 1,
 			"provider" : {
-				"reference" : "Organization/'||isnull(pc.rndrg_prvdr_npi_num,'')||'"
+				"reference" : "Organization/'||ifnull(pc.rndrg_prvdr_npi_num,'')||'"
 			},
 			"role" : {
 				"coding" : [
@@ -146,7 +146,7 @@ replace(replace(
 				],
 				"text" : "Date the claim was received by the payer."
 			},
-			"timingDate" : "'||isnull(pc.clm_thru_dt,'')||'"
+			"timingDate" : "'||ifnull(pc.clm_thru_dt,'')||'"
 		}
 	],
 	"diagnosis" : [
@@ -173,7 +173,7 @@ replace(replace(
 				}
 			]
 		}'
-		||isnull(',
+		||ifnull(',
 		{
 			"sequence" : 2,
 			"diagnosisCodeableConcept" : {
@@ -197,7 +197,7 @@ replace(replace(
 				}
 			]
 		}','')
-		||isnull(',
+		||ifnull(',
 		{
 			"sequence" : 3,
 			"diagnosisCodeableConcept" : {
@@ -221,7 +221,7 @@ replace(replace(
 				}
 			]
 		}','')
-		||isnull(',
+		||ifnull(',
 		{
 			"sequence" : 4,
 			"diagnosisCodeableConcept" : {
@@ -245,7 +245,7 @@ replace(replace(
 				}
 			]
 		}','')
-		||isnull(',
+		||ifnull(',
 		{
 			"sequence" : 5,
 			"diagnosisCodeableConcept" : {
@@ -269,7 +269,7 @@ replace(replace(
 				}
 			]
 		}','')
-		||isnull(',
+		||ifnull(',
 		{
 			"sequence" : 6,
 			"diagnosisCodeableConcept" : {
@@ -293,7 +293,7 @@ replace(replace(
 				}
 			]
 		}','')
-		||isnull(',
+		||ifnull(',
 		{
 			"sequence" : 7,
 			"diagnosisCodeableConcept" : {
@@ -317,7 +317,7 @@ replace(replace(
 				}
 			]
 		}','')
-		||isnull(',
+		||ifnull(',
 		{
 			"sequence" : 8,
 			"diagnosisCodeableConcept" : {
@@ -341,7 +341,7 @@ replace(replace(
 				}
 			]
 		}','')
-		||isnull(',
+		||ifnull(',
 		{
 			"sequence" : 9,
 			"diagnosisCodeableConcept" : {
@@ -365,7 +365,7 @@ replace(replace(
 				}
 			]
 		}','')
-		||isnull(',
+		||ifnull(',
 		{
 			"sequence" : 10,
 			"diagnosisCodeableConcept" : {
@@ -389,7 +389,7 @@ replace(replace(
 				}
 			]
 		}','')
-		||isnull(',
+		||ifnull(',
 		{
 			"sequence" : 11,
 			"diagnosisCodeableConcept" : {
@@ -413,7 +413,7 @@ replace(replace(
 				}
 			]
 		}','')
-		||isnull(',
+		||ifnull(',
 		{
 			"sequence" : 12,
 			"diagnosisCodeableConcept" : {
@@ -447,10 +447,13 @@ replace(replace(
 			}
 		}
 	]',chr(9),''),chr(10),'')  
-	as fhir1
-  
-  ,',"item":['||pis.itemlist||']' as fhir2
-  ,',"total":['||pts.total||']}' as fhir3
+	--as fhir1  ,
+  ||
+
+    ',"item":['||pis.itemlist||']' --as fhir2 ,
+    ||
+ ',"total":['||pts.total||']}' --as fhir3
+as fhir
   from {{var('partb_physicians')}} pc 
   inner join {{ref('professional_items')}} pis
     on pc.cur_clm_uniq_id = pis.cur_clm_uniq_id and pc.bene_mbi_id = pis.bene_mbi_id

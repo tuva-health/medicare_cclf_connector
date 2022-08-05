@@ -8,12 +8,12 @@ version: '1.0.0'
 config-version: 2
 
 # This setting configures which "profile" dbt uses for this project.
-profile: 'default'
+profile: 'syntegra_snowflake'
 
 vars:
     source_database: tuva         # configuration required (name of the database where your data is stored)
-    source_schema: cclf_syn      # configuration required (name of the schema where you created staging tables)
-    source_name: cclf_syn        # configuration required (name of your source dataset e.g. cms_claims)
+    source_schema: cclf      # configuration required (name of the schema where you created staging tables)
+    source_name: cclf        # configuration required (name of your source dataset e.g. cms_claims)
 
     beneficiary_demographics: "{{ source(var('source_name'),'beneficiary_demographics') }}"
     parta_claims_header: "{{ source(var('source_name'),'parta_claims_header') }}"
