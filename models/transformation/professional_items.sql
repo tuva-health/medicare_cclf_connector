@@ -56,7 +56,7 @@ replace(replace(
 						"text" : "The total submitted amount for the claim or group or line item."
 					},
 					"amount" : {
-						"value" : "'||clm_line_alowd_chrg_amt||'",
+						"value" : "'||ifnull(cast(cast(clm_line_alowd_chrg_amt as double) as varchar),'')||'",
 						"currency" : "USD"
 					}
 				},
@@ -72,7 +72,7 @@ replace(replace(
 						"text" : "Amount payable under the coverage"
 					},
 					"amount" : {
-						"value" : '||case when clm_line_cvrd_pd_amt = '00000' then  '0' else clm_line_cvrd_pd_amt end||',
+						"value" : '|| ifnull(cast(cast(clm_line_cvrd_pd_amt as double) as varchar),'') ||',
 						"currency" : "USD"
 					}
 				}

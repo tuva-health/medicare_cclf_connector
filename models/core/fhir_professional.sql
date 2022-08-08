@@ -49,10 +49,10 @@ replace(replace(
 		"reference" : "Patient/'||pc.bene_mbi_id||'"
 	},
 	"billablePeriod" : {
-		"start" : "'||pc.clm_from_dt||'",
-		"end" : "'||pc.clm_thru_dt||'"
+		"start" : "'||ifnull(pc.clm_from_dt,'')||'",
+		"end" : "'||ifnull(pc.clm_thru_dt,'')||'"
 	},
-	"created" : "'||pc.clm_from_dt||'T00:00:00.000Z",
+	"created" : "'||ifnull(pc.clm_from_dt,'')||'T00:00:00.000Z",
 	"insurer" : {
 		"reference" : "Organization/Medicare",
 		"display" : "Medicare"

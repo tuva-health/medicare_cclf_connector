@@ -69,16 +69,16 @@ ch.bene_mbi_id
     "reference" : "Patient/'||ch.bene_mbi_id||'"
   },
   "billablePeriod" : {
-    "start" : "'||left(cast(ch.clm_from_dt as varchar),10)||'",
-    "end" : "'||left(cast(clm_thru_dt as varchar),10)||'"
+    "start" : "'||ifnull(left(cast(ch.clm_from_dt as varchar),10),'')||'",
+    "end" : "'||ifnull(left(cast(clm_thru_dt as varchar),10),'')||'"
   },
-  "created" : "'||left(cast(ch.clm_from_dt as varchar),10)||'T00:00:00Z",
+  "created" : "'||ifnull(left(cast(ch.clm_from_dt as varchar),10),'')||'T00:00:00Z",
   "insurer" : {
     "reference" : "Organization/Medicare",
     "display" : "Medicare"
   },
   "provider" : {
-    "reference" : "Organization/'||ch.fac_prvdr_npi_num||'"
+    "reference" : "Organization/'||ifnull(ch.fac_prvdr_npi_num,'')||'"
   },
   "payee" : {
     "type" : {
@@ -92,7 +92,7 @@ ch.bene_mbi_id
       "text" : "Any benefit payable will be paid to the provider (Assignment of Benefit)."
     },
     "party" : {
-      "reference" : "Organization/'||ch.fac_prvdr_npi_num||'"
+      "reference" : "Organization/'||ifnull(ch.fac_prvdr_npi_num,'')||'"
     }
   },
   "outcome" : "complete",
@@ -100,7 +100,7 @@ ch.bene_mbi_id
     {
       "sequence" : 1,
       "provider" : {
-        "reference" : "Practitioner/'||ch.atndg_prvdr_npi_num||'"
+        "reference" : "Practitioner/'||ifnull(ch.atndg_prvdr_npi_num,'')||'"
       },
       "role" : {
         "coding" : [
@@ -328,7 +328,7 @@ ch.bene_mbi_id
         "text" : "The total submitted amount for the claim or group or line item."
       },
       "amount" : {
-        "value" : "'||cast(ch.clm_mdcr_instnl_tot_chrg_amt as varchar)||'",
+        "value" : "'||ifnull(cast(ch.clm_mdcr_instnl_tot_chrg_amt as varchar),'')||'",
         "currency" : "USD"
       }
     }'||{#',
@@ -408,7 +408,7 @@ ch.bene_mbi_id
         "text" : "Amount payable under the coverage"
       },
       "amount" : {
-        "value" : "'||ch.clm_pmt_amt||'",
+        "value" : "'||ifnull(cast(ch.clm_pmt_amt as varchar),'')||'",
         "currency" : "USD"
       }
     }'||{#',
@@ -430,7 +430,8 @@ ch.bene_mbi_id
     }'#}'
   ]
 }' 
-  ,chr(9),''),chr(10),'') 
+  ,chr(9),''),chr(10),'')
+  --  select top 100 *
 as fhir
 from {{ source(var('source_name'),'parta_claims_header') }} ch
 left join {{ref('institutional_diagnosis')}} id 

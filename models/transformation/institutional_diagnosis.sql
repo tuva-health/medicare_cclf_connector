@@ -41,7 +41,7 @@ with diags as (
     from {{var('parta_claims_header')}} ach 
     left join {{var('parta_diagnosis_code')}} dc
         on dc.bene_mbi_id = ach.bene_mbi_id and dc.cur_clm_uniq_id = ach.cur_clm_uniq_id and dc.clm_dgns_cd = ach.admtg_dgns_cd
-    where dc.cur_clm_uniq_id is null and ach.admtg_dgns_cd <> ''
+    where dc.cur_clm_uniq_id is null and ach.admtg_dgns_cd is not null
 )
 
 , rediags as (

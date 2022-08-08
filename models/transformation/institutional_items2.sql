@@ -46,8 +46,8 @@ select
                 
             ],','') || #} '
 			"servicedPeriod" : {
-				"start" : "'||left(cast(cld.clm_line_from_dt as varchar),10)||'",
-				"end" : "'||left(cast(cld.clm_line_thru_dt as varchar),10)||'"
+				"start" : "'||ifnull(left(cast(cld.clm_line_from_dt as varchar),10),'')||'",
+				"end" : "'||ifnull(left(cast(cld.clm_line_thru_dt as varchar),10),'')||'"
 			}' || {#',
 			"locationCodeableConcept" : {
 				"coding" : [

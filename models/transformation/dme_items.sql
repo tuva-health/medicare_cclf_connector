@@ -10,11 +10,11 @@ select
 				"coding" : [
 					{
 						"system" : "http://www.cms.gov/Medicare/Coding/HCPCSReleaseCodeSets",
-						"code" : "'||pc.clm_line_hcpcs_cd||'"
+						"code" : "'||ifnull(pc.clm_line_hcpcs_cd,'')||'"
 					}
 				]
 			},
-			"servicedDate" : "'||pc.clm_line_from_dt||'",
+			"servicedDate" : "'||ifnull(pc.clm_line_from_dt,'')||'",
 			"locationCodeableConcept" : {
 				"coding" : [
 					{
@@ -36,7 +36,7 @@ select
 						"text" : "The total submitted amount for the claim or group or line item."
 					},
 					"amount" : {
-						"value" : '||clm_line_alowd_chrg_amt||',
+						"value" : '||ifnull(clm_line_alowd_chrg_amt,'')||',
 						"currency" : "USD"
 					}
 				},
@@ -52,7 +52,7 @@ select
 						"text" : "Amount payable under the coverage"
 					},
 					"amount" : {
-						"value" : '||clm_line_cvrd_pd_amt||',
+						"value" : '|| ifnull(cast(cast(clm_line_cvrd_pd_amt as double) as varchar),'') ||',
 						"currency" : "USD"
 					}
 				}

@@ -25,12 +25,12 @@ select
           "text" : "Other procedures performed during the inpatient institutional admission"
         }' end || '
 			],
-			"date" : "'||left(cast(pc.clm_prcdr_prfrm_dt as varchar),10) ||'",
+			"date" : "'||ifnull(left(cast(pc.clm_prcdr_prfrm_dt as varchar),10),'') ||'",
 			"procedureCodeableConcept" : {
 				"coding" : [
 					{
 						"system" : "http://www.cms.gov/Medicare/Coding/ICD10",
-						"code" : "'||pc.clm_prcdr_cd||'"
+						"code" : "'||ifnull(pc.clm_prcdr_cd,'')||'"
 					}
 				]
 			}
