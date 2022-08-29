@@ -10,8 +10,8 @@ select a.bene_mbi_id,
        a.bene_dual_stus_cd,
        dateadd(month,1,a.bene_member_month) as nxt,
        1 as n
-from tuva.cclf.beneficiary_demographics  a
-left join tuva.cclf.beneficiary_demographics isstart
+from {{var('beneficiary_demographics')}}  a
+left join {{var('beneficiary_demographics')}}  isstart
   on a.bene_mbi_id = isstart.bene_mbi_id
   and a.bene_member_month = dateadd(month,1,isstart.bene_member_month)
   and ifnull(a.bene_mdcr_stus_cd,'') = ifnull(isstart.bene_mdcr_stus_cd,'')
@@ -28,7 +28,7 @@ select cte.bene_mbi_id,
        dateadd(month,1,nxt.BENE_MEMBER_MONTH) as nxt,
         cte.n+1
 from cte
-left join tuva.cclf.beneficiary_demographics nxt
+left join {{var('beneficiary_demographics')}}  nxt
   on cte.bene_mbi_id = nxt.bene_mbi_id
   and cte.fin = dateadd(month,-1,nxt.bene_member_month)
   and ifnull(cte.bene_mdcr_stus_cd,'') = ifnull(nxt.bene_mdcr_stus_cd,'')

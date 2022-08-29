@@ -12,8 +12,8 @@ profile: 'syntegra_snowflake'
 
 vars:
     source_database: tuva         # configuration required (name of the database where your data is stored)
-    source_schema: cclf      # configuration required (name of the schema where you created staging tables)
-    source_name: cclf        # configuration required (name of your source dataset e.g. cms_claims)
+    source_schema: cclf_20220815      # configuration required (name of the schema where you created staging tables)
+    source_name: cclf_20220815       # configuration required (name of your source dataset e.g. cms_claims)
 
     beneficiary_demographics: "{{ source(var('source_name'),'beneficiary_demographics') }}"
     parta_claims_header: "{{ source(var('source_name'),'parta_claims_header') }}"
@@ -46,7 +46,7 @@ clean-targets:         # directories to be removed by `dbt clean`
 # using the `{{ config(...) }}` macro.
 models:
   syntegra_cclf_fhir_staging:
-    +schema: fhir_syn
+    +schema: cclf_20220815_fhir
 
 seeds:
   syntegra_cclf_fhir_staging:
