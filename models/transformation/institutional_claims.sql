@@ -1,19 +1,20 @@
 select
     cast(h.cur_clm_uniq_id as varchar) as claim_id
     ,cast(d.clm_line_num as int) as claim_line_number
+    ,cast('institutional' as varchar) as claim_type
     ,cast(h.bene_mbi_id as varchar) as patient_id
+    ,cast(NULL as varchar) as member_id
     ,cast(h.clm_from_dt as date) as claim_start_date
     ,cast(h.clm_thru_dt as date) as claim_end_date
-    ,cast(NULL as date) as admission_date
-    ,cast(NULL as date) as discharge_date
     ,cast(NULL as date) as claim_line_start_date
     ,cast(NULL as date) as claim_line_end_date
-    ,cast('I' as varchar) as claim_type
-    ,cast(h.clm_bill_fac_type_cd || h.clm_bill_clsfctn_cd || h.clm_bill_freq_cd as varchar) as bill_type_code
-    ,cast(NULL as varchar) as place_of_service_code
+    ,cast(NULL as date) as admission_date
+    ,cast(NULL as date) as discharge_date
     ,cast(h.clm_admsn_src_cd as varchar) as admit_source_code
     ,cast(h.clm_admsn_type_cd as varchar) as admit_type_code
     ,cast(h.bene_ptnt_stus_cd as varchar) as discharge_disposition_code
+    ,cast(NULL as varchar) as place_of_service_code
+    ,cast(h.clm_bill_fac_type_cd || h.clm_bill_clsfctn_cd || h.clm_bill_freq_cd as varchar) as bill_type_code
     ,cast(h.dgns_drg_cd as varchar) as ms_drg
     ,cast(d.clm_line_prod_rev_ctr_cd as varchar) as revenue_center_code
     ,cast(d.clm_line_srvc_unit_qty as int) as service_unit_quantity
@@ -24,12 +25,13 @@ select
     ,cast(d.hcpcs_4_mdfr_cd as varchar) as hcpcs_modifier_4
     ,cast(d.hcpcs_5_mdfr_cd as varchar) as hcpcs_modifier_5
     ,cast(h.atndg_prvdr_npi_num as varchar) as rendering_npi
-    ,cast(null as varchar) as billing_npi
+    ,cast(NULL as varchar) as billing_npi
     ,cast(h.fac_prvdr_npi_num as varchar) as facility_npi
     ,cast(NULL as date) as paid_date
     ,cast(h.clm_pmt_amt as float) as paid_amount
+    ,cast(NULL as float) as allowed_amount
     ,cast(h.clm_mdcr_instnl_tot_chrg_amt as float) as charge_amount
-    ,cast(h.clm_adjsmt_type_cd as varchar) as adjustment_type_code
+    ,cast(dx.dgns_prcdr_icd_ind as varchar) as diagnosis_code_type
     ,cast(dx.diagnosis_code_1 as varchar) as diagnosis_code_1
     ,cast(dx.diagnosis_code_2 as varchar) as diagnosis_code_2
     ,cast(dx.diagnosis_code_3 as varchar) as diagnosis_code_3
@@ -80,7 +82,6 @@ select
     ,cast(dx.diagnosis_poa_23 as varchar) as diagnosis_poa_23
     ,cast(dx.diagnosis_poa_24 as varchar) as diagnosis_poa_24
     ,cast(dx.diagnosis_poa_25 as varchar) as diagnosis_poa_25
-    ,cast(dx.dgns_prcdr_icd_ind as varchar) as diagnosis_code_type
     ,cast(px.dgns_prcdr_icd_ind as varchar) as procedure_code_type
     ,cast(px.procedure_code_1 as varchar) as procedure_code_1
     ,cast(px.procedure_code_2 as varchar) as procedure_code_2
@@ -132,6 +133,7 @@ select
     ,cast(px.procedure_date_23 as date) as procedure_date_23
     ,cast(px.procedure_date_24 as date) as procedure_date_24
     ,cast(px.procedure_date_25 as date) as procedure_date_25
+    ,cast('cclf' as varchar) as data_source
 from {{ var('parta_claims_header')}} h
 inner join {{ var('parta_claims_revenue_center_detail')}} d
 	on h.cur_clm_uniq_id = d.cur_clm_uniq_id
