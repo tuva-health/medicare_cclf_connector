@@ -8,4 +8,4 @@ models:
         schema: "{{ var('output_schema')}}"
       tests:
          - unique:
-             column_name: "(patient_id || '-' || payer || '-' || month || '-' || year)"
+             column_name: "(patient_id || '-' || payer || '-' || enrollment_start_date || '-' || enrollment_end_date)"
