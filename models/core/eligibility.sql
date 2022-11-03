@@ -1,3 +1,9 @@
+/*
+  This model takes in eligibility data on the member month grain and converts
+  it to enrollment date spans using row number and lag to account for
+  continuous enrollment and gaps in coverage.
+*/
+
 with demographics as (
 
     select * from {{ var('beneficiary_demographics') }}
