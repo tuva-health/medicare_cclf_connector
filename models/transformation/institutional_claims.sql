@@ -15,7 +15,7 @@ select
     ,cast(h.bene_ptnt_stus_cd as varchar) as discharge_disposition_code
     ,cast(NULL as varchar) as place_of_service_code
     ,cast(h.clm_bill_fac_type_cd || h.clm_bill_clsfctn_cd || h.clm_bill_freq_cd as varchar) as bill_type_code
-    ,cast(h.dgns_drg_cd as varchar) as ms_drg
+    ,cast(h.dgns_drg_cd as varchar) as ms_drg_code
     ,cast(d.clm_line_prod_rev_ctr_cd as varchar) as revenue_center_code
     ,cast(d.clm_line_srvc_unit_qty as int) as service_unit_quantity
     ,cast(d.clm_line_hcpcs_cd as varchar) as hcpcs_code
