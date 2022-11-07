@@ -1,19 +1,20 @@
 select
     cast(h.cur_clm_uniq_id as varchar) as claim_id
     ,cast(h.clm_line_num as int) as claim_line_number
+    ,cast('professional' as varchar) as claim_type
     ,cast(h.bene_mbi_id as varchar) as patient_id
+    ,cast(NULL as varchar) as member_id
     ,cast(h.clm_from_dt as date) as claim_start_date
     ,cast(h.clm_thru_dt as date) as claim_end_date
-    ,cast(NULL as date) as admission_date
-    ,cast(NULL as date) as discharge_date
     ,cast(h.clm_line_from_dt as date) as claim_line_start_date
     ,cast(h.clm_line_thru_dt as date) as claim_line_end_date
-    ,cast('P' as varchar) as claim_type
-    ,cast(NULL as varchar) as bill_type_code
-    ,cast(h.clm_pos_cd as varchar) as place_of_service_code
+    ,cast(NULL as date) as admission_date
+    ,cast(NULL as date) as discharge_date
     ,cast(NULL as varchar) as admit_source_code
     ,cast(NULL as varchar) as admit_type_code
     ,cast(NULL as varchar) as discharge_disposition_code
+    ,cast(h.clm_pos_cd as varchar) as place_of_service_code
+    ,cast(NULL as varchar) as bill_type_code
     ,cast(NULL as varchar) as ms_drg
     ,cast(NULL as varchar) as revenue_center_code
     ,cast(left(clm_line_srvc_unit_qty,charindex('.',clm_line_srvc_unit_qty)-1) as int) as service_unit_quantity
@@ -28,8 +29,9 @@ select
     ,cast(NULL as varchar) as facility_npi
     ,cast(NULL as date) as paid_date
     ,cast(clm_line_cvrd_pd_amt as float) as paid_amount
+    ,cast(clm_line_alowd_chrg_amt as float) as allowed_amount
     ,cast(clm_line_alowd_chrg_amt as float) as charge_amount
-    ,cast(clm_adjsmt_type_cd as varchar) as adjustment_type_code
+    ,cast(h.dgns_prcdr_icd_ind as varchar) as diagnosis_code_type
     ,cast(h.clm_dgns_1_cd as varchar) as diagnosis_code_1
     ,cast(h.clm_dgns_2_cd as varchar) as diagnosis_code_2
     ,cast(h.clm_dgns_3_cd as varchar) as diagnosis_code_3
@@ -80,7 +82,6 @@ select
     ,cast(NULL as varchar) as diagnosis_poa_23
     ,cast(NULL as varchar) as diagnosis_poa_24
     ,cast(NULL as varchar) as diagnosis_poa_25
-    ,cast(h.dgns_prcdr_icd_ind as varchar) as diagnosis_code_type
     ,cast(NULL as varchar) as procedure_code_type
     ,cast(NULL as varchar) as procedure_code_1
     ,cast(NULL as varchar) as procedure_code_2
@@ -132,5 +133,5 @@ select
     ,cast(NULL as date) as procedure_date_23
     ,cast(NULL as date) as procedure_date_24
     ,cast(NULL as date) as procedure_date_25
+    ,cast('cclf' as varchar) as data_source
 from {{ var('partb_physicians')}} h
-

@@ -3,7 +3,7 @@ version: '1.0.0'
 config-version: 2
 
 # This setting configures which "profile" dbt uses for this project.
-profile: 'tuva'                         # configuration required
+profile: 'default'                       # configuration required
 
 vars:
   source_name: cclf                     # configuration required

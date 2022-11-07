@@ -2,10 +2,12 @@ version: 2
 
 models:
     - name: eligibility
-      description: Member enrollment and demographic detail
+      description: >
+        Member enrollment and demographic detail, converts member months to
+        enrollment spans.
       config:
         database: "{{ var('output_database')}}"
         schema: "{{ var('output_schema')}}"
       tests:
          - unique:
-             column_name: "(patient_id || '-' || payer || '-' || month || '-' || year)"
+             column_name: "(patient_id || '-' || payer || '-' || enrollment_start_date || '-' || enrollment_end_date)"

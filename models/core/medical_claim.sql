@@ -1,19 +1,21 @@
+/* institutional claims */
 select
   claim_id
   ,claim_line_number
+  ,claim_type
   ,patient_id
+  ,member_id
   ,claim_start_date
   ,claim_end_date
-  ,admission_date
-  ,discharge_date
   ,claim_line_start_date
   ,claim_line_end_date
-  ,claim_type
-  ,bill_type_code
-  ,place_of_service_code
+  ,admission_date
+  ,discharge_date
   ,admit_source_code
   ,admit_type_code
   ,discharge_disposition_code
+  ,place_of_service_code
+  ,bill_type_code
   ,ms_drg
   ,revenue_center_code
   ,service_unit_quantity
@@ -28,8 +30,9 @@ select
   ,facility_npi
   ,paid_date
   ,paid_amount
+  ,allowed_amount
   ,charge_amount
-  ,adjustment_type_code
+  ,diagnosis_code_type
   ,diagnosis_code_1
   ,diagnosis_code_2
   ,diagnosis_code_3
@@ -80,7 +83,6 @@ select
   ,diagnosis_poa_23
   ,diagnosis_poa_24
   ,diagnosis_poa_25
-  ,diagnosis_code_type
   ,procedure_code_type
   ,procedure_code_1
   ,procedure_code_2
@@ -132,26 +134,29 @@ select
   ,procedure_date_23
   ,procedure_date_24
   ,procedure_date_25
+  ,data_source
 from {{ ref('institutional_claims')}}
 
 union all
 
+/* physician claims */
 select
   claim_id
   ,claim_line_number
+  ,claim_type
   ,patient_id
+  ,member_id
   ,claim_start_date
   ,claim_end_date
-  ,admission_date
-  ,discharge_date
   ,claim_line_start_date
   ,claim_line_end_date
-  ,claim_type
-  ,bill_type_code
-  ,place_of_service_code
+  ,admission_date
+  ,discharge_date
   ,admit_source_code
   ,admit_type_code
   ,discharge_disposition_code
+  ,place_of_service_code
+  ,bill_type_code
   ,ms_drg
   ,revenue_center_code
   ,service_unit_quantity
@@ -166,8 +171,9 @@ select
   ,facility_npi
   ,paid_date
   ,paid_amount
+  ,allowed_amount
   ,charge_amount
-  ,adjustment_type_code
+  ,diagnosis_code_type
   ,diagnosis_code_1
   ,diagnosis_code_2
   ,diagnosis_code_3
@@ -218,7 +224,6 @@ select
   ,diagnosis_poa_23
   ,diagnosis_poa_24
   ,diagnosis_poa_25
-  ,diagnosis_code_type
   ,procedure_code_type
   ,procedure_code_1
   ,procedure_code_2
@@ -270,26 +275,29 @@ select
   ,procedure_date_23
   ,procedure_date_24
   ,procedure_date_25
+  ,data_source
 from {{ ref('physician_claims')}}
 
 union all
 
+/* dme claims */
 select
   claim_id
   ,claim_line_number
+  ,claim_type
   ,patient_id
+  ,member_id
   ,claim_start_date
   ,claim_end_date
-  ,admission_date
-  ,discharge_date
   ,claim_line_start_date
   ,claim_line_end_date
-  ,claim_type
-  ,bill_type_code
-  ,place_of_service_code
+  ,admission_date
+  ,discharge_date
   ,admit_source_code
   ,admit_type_code
   ,discharge_disposition_code
+  ,place_of_service_code
+  ,bill_type_code
   ,ms_drg
   ,revenue_center_code
   ,service_unit_quantity
@@ -304,8 +312,9 @@ select
   ,facility_npi
   ,paid_date
   ,paid_amount
+  ,allowed_amount
   ,charge_amount
-  ,adjustment_type_code
+  ,diagnosis_code_type
   ,diagnosis_code_1
   ,diagnosis_code_2
   ,diagnosis_code_3
@@ -356,7 +365,6 @@ select
   ,diagnosis_poa_23
   ,diagnosis_poa_24
   ,diagnosis_poa_25
-  ,diagnosis_code_type
   ,procedure_code_type
   ,procedure_code_1
   ,procedure_code_2
@@ -408,4 +416,5 @@ select
   ,procedure_date_23
   ,procedure_date_24
   ,procedure_date_25
+  ,data_source
 from {{ ref('dme_claims')}}
