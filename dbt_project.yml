@@ -51,7 +51,7 @@ clean-targets:         # directories to be removed by `dbt clean`
 # as tables. These settings can be overridden in the individual model files
 # using the `{{ config(...) }}` macro.
 models:
-  medicare_cclf_connector:
+  medicare_claims_connector:
     +materialized: view
     core:
       +materialized: table
