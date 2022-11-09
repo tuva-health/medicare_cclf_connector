@@ -93,7 +93,7 @@ enrollment_span as (
           bene_mbi_id
         , row_group
         , min(bene_member_month) as enrollment_start_date
-        , max(bene_member_month) as enrollment_end_date
+        , last_day(max(bene_member_month)) as enrollment_end_date
     from calculate_groups
     group by bene_mbi_id, row_group
 
