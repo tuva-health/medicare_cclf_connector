@@ -1,0 +1,89 @@
+version: 2
+
+models:
+
+### staging
+  - name: base_parta_diagnosis_code
+    description: Base model used as ref for pivot transformation
+    config:
+      database: "{{ var('output_database')}}"
+      schema: "{{ var('output_schema')}}"
+
+  - name: base_parta_procedure_code
+    description: Base model used as ref for pivot transformation
+    config:
+      database: "{{ var('output_database')}}"
+      schema: "{{ var('output_schema')}}"
+
+### transformation
+  - name: diagnosis_pivot
+    description: Pivot of diagnosis from long (1 row/diagnosis) to wide (multiple diagnosis per row)
+    config:
+      database: "{{ var('output_database')}}"
+      schema: "{{ var('output_schema')}}"
+    tests:
+      - unique:
+          column_name: "(cur_clm_uniq_id)"
+
+  - name: dme_claims
+    description: >
+      Mapping of durable medical equipment claims to 
+      Tuva claims preprocessing input layer
+    config:
+      database: "{{ var('output_database')}}"
+      schema: "{{ var('output_schema')}}"
+    tests:
+      - unique:
+          column_name: "(claim_id || '-' || claim_line_number)"
+
+  - name: institutional_claims
+    description: >
+      Mapping of institution claims to 
+      Tuva claims preprocessing input layer
+    config:
+      database: "{{ var('output_database')}}"
+      schema: "{{ var('output_schema')}}"
+    tests:
+      - unique:
+          column_name: "(claim_id || '-' || claim_line_number)"
+
+  - name: physician_claims
+    description: >
+      Mapping of professional claims to 
+      Tuva claims preprocessing input layer
+    config:
+      database: "{{ var('output_database')}}"
+      schema: "{{ var('output_schema')}}"
+    tests:
+      - unique:
+          column_name: "(claim_id || '-' || claim_line_number)"
+
+  - name: procedure_pivot
+    description: Pivot of procedures from long (1 row/procedure) to wide (multiple procedure per row)
+    config:
+      database: "{{ var('output_database')}}"
+      schema: "{{ var('output_schema')}}"
+    tests:
+      - unique:
+          column_name: "(cur_clm_uniq_id)"
+
+### core
+  - name: eligibility
+    description: >
+      Member enrollment and demographic detail, converts member months to
+      enrollment spans.
+    config:
+      database: "{{ var('output_database')}}"
+      schema: "{{ var('output_schema')}}"
+    tests:
+       - unique:
+           column_name: "(patient_id || '-' || payer || '-' || enrollment_start_date || '-' || enrollment_end_date)"
+
+  - name: medical_claim
+    description: Claim line level medical data
+    config:
+      database: "{{ var('output_database')}}"
+      schema: "{{ var('output_schema')}}"
+    tests:
+      - unique:
+          column_name: "(claim_id || '-' || claim_line_number)"
