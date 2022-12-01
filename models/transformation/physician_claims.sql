@@ -17,7 +17,7 @@ select
     , {{ cast_string_or_varchar('NULL') }} as bill_type_code
     , {{ cast_string_or_varchar('NULL') }} as ms_drg_code
     , {{ cast_string_or_varchar('NULL') }} as revenue_center_code
-    , cast(left(clm_line_srvc_unit_qty,charindex('.',clm_line_srvc_unit_qty)-1) as integer) as service_unit_quantity
+    , cast(regexp_substr(clm_line_srvc_unit_qty,'.') as integer) as service_unit_quantity
     , {{ cast_string_or_varchar('clm_line_hcpcs_cd') }} as hcpcs_code
     , {{ cast_string_or_varchar('hcpcs_1_mdfr_cd') }} as hcpcs_modifier_1
     , {{ cast_string_or_varchar('hcpcs_2_mdfr_cd') }} as hcpcs_modifier_2
