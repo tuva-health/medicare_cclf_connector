@@ -7,4 +7,65 @@ seeds:
       schema:  "{{ var('output_schema')}}"
       tags: terminology
       column_types:
-        fips_code: varchar(4)
+        fips_code: |
+          {%- if target.type == "bigquery" -%} string {%- else -%} varchar {%- endif -%}
+
+  - name: parta_procedure_code_seed
+    config:
+      database: "{{ var('output_database') }}"
+      schema: "{{ var('output_schema')}}"
+      tags: terminology
+      column_types:
+        cur_clm_uniq_id: |
+          {%- if target.type == "bigquery" -%} string {%- else -%} varchar {%- endif -%}
+        bene_mbi_id: |
+          {%- if target.type == "bigquery" -%} string {%- else -%} varchar {%- endif -%}
+        bene_hic_num: |
+          {%- if target.type == "bigquery" -%} string {%- else -%} varchar {%- endif -%}
+        clm_type_cd: |
+          {%- if target.type == "bigquery" -%} string {%- else -%} varchar {%- endif -%}
+        clm_val_sqnc_num: integer
+        clm_prcdr_cd: |
+          {%- if target.type == "bigquery" -%} string {%- else -%} varchar {%- endif -%}
+        clm_prcdr_prfrm_dt: |
+          {%- if target.type == "bigquery" -%} string {%- else -%} varchar {%- endif -%}
+        bene_eqtbl_bic_hicn_num: |
+          {%- if target.type == "bigquery" -%} string {%- else -%} varchar {%- endif -%}
+        prvdr_oscar_num: |
+          {%- if target.type == "bigquery" -%} string {%- else -%} varchar {%- endif -%}
+        clm_from_dt: |
+          {%- if target.type == "bigquery" -%} string {%- else -%} varchar {%- endif -%}
+        clm_thru_dt: |
+          {%- if target.type == "bigquery" -%} string {%- else -%} varchar {%- endif -%}
+        dgns_prcdr_icd_ind: integer
+
+  - name: parta_diagnosis_code_seed
+    config:
+      database: "{{ var('output_database') }}"
+      schema: "{{ var('output_schema')}}"
+      tags: terminology
+      column_types:
+        cur_clm_uniq_id: |
+          {%- if target.type == "bigquery" -%} string {%- else -%} varchar {%- endif -%}
+        bene_mbi_id: |
+          {%- if target.type == "bigquery" -%} string {%- else -%} varchar {%- endif -%}
+        bene_hic_num: |
+          {%- if target.type == "bigquery" -%} string {%- else -%} varchar {%- endif -%}
+        clm_type_cd: |
+          {%- if target.type == "bigquery" -%} string {%- else -%} varchar {%- endif -%}
+        clm_prod_type_cd: |
+          {%- if target.type == "bigquery" -%} string {%- else -%} varchar {%- endif -%}
+        clm_val_sqnc_num: integer
+        clm_dgns_cd: |
+          {%- if target.type == "bigquery" -%} string {%- else -%} varchar {%- endif -%}
+        bene_eqtbl_bic_hicn_num: |
+          {%- if target.type == "bigquery" -%} string {%- else -%} varchar {%- endif -%}
+        prvdr_oscar_num: |
+          {%- if target.type == "bigquery" -%} string {%- else -%} varchar {%- endif -%}
+        clm_from_dt: |
+          {%- if target.type == "bigquery" -%} string {%- else -%} varchar {%- endif -%}
+        clm_thru_dt: |
+          {%- if target.type == "bigquery" -%} string {%- else -%} varchar {%- endif -%}
+        clm_poa_ind: |
+          {%- if target.type == "bigquery" -%} string {%- else -%} varchar {%- endif -%}
+        dgns_prcdr_icd_ind: integer
