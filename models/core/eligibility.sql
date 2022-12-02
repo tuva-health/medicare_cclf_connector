@@ -12,7 +12,7 @@ with demographics as (
         , bene_race_cd
         , bene_dob
         , bene_death_dt
-        , {{ try_to_cast_date('bene_member_month', 'YYYY-MM-DD HH:MI:SS') }} as bene_member_month
+        , {{ try_to_cast_date('bene_member_month', 'YYYY-MM-DD') }} as bene_member_month
         , bene_dual_stus_cd
         , bene_mdcr_stus_cd
         , bene_1st_name
@@ -134,8 +134,8 @@ joined as (
             when '5' then 'hispanic'
             when '6' then 'north american native'
           end as race
-        , {{ try_to_cast_date('demographics.bene_dob', 'YYYY-MM-DD HH:MI:SS') }} as birth_date
-        , {{ try_to_cast_date('demographics.bene_death_dt', 'YYYY-MM-DD HH:MI:SS') }} as death_date
+        , {{ try_to_cast_date('demographics.bene_dob', 'YYYY-MM-DD') }} as birth_date
+        , {{ try_to_cast_date('demographics.bene_death_dt', 'YYYY-MM-DD') }} as death_date
         , cast(case
                when demographics.bene_death_dt is null then 0
                else 1

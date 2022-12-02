@@ -111,31 +111,31 @@ select
     , {{ cast_string_or_varchar('px.procedure_code_23') }} as procedure_code_23
     , {{ cast_string_or_varchar('px.procedure_code_24') }} as procedure_code_24
     , {{ cast_string_or_varchar('px.procedure_code_25') }} as procedure_code_25
-    , {{ try_to_cast_date('px.procedure_date_1', 'YYYY-MM-DD HH:MI:SS') }} as procedure_date_1
-    , {{ try_to_cast_date('px.procedure_date_2', 'YYYY-MM-DD HH:MI:SS') }} as procedure_date_2
-    , {{ try_to_cast_date('px.procedure_date_3', 'YYYY-MM-DD HH:MI:SS') }} as procedure_date_3
-    , {{ try_to_cast_date('px.procedure_date_4', 'YYYY-MM-DD HH:MI:SS') }} as procedure_date_4
-    , {{ try_to_cast_date('px.procedure_date_5', 'YYYY-MM-DD HH:MI:SS') }} as procedure_date_5
-    , {{ try_to_cast_date('px.procedure_date_6', 'YYYY-MM-DD HH:MI:SS') }} as procedure_date_6
-    , {{ try_to_cast_date('px.procedure_date_7', 'YYYY-MM-DD HH:MI:SS') }} as procedure_date_7
-    , {{ try_to_cast_date('px.procedure_date_8', 'YYYY-MM-DD HH:MI:SS') }} as procedure_date_8
-    , {{ try_to_cast_date('px.procedure_date_9', 'YYYY-MM-DD HH:MI:SS') }} as procedure_date_9
-    , {{ try_to_cast_date('px.procedure_date_10', 'YYYY-MM-DD HH:MI:SS') }} as procedure_date_10
-    , {{ try_to_cast_date('px.procedure_date_11', 'YYYY-MM-DD HH:MI:SS') }} as procedure_date_11
-    , {{ try_to_cast_date('px.procedure_date_12', 'YYYY-MM-DD HH:MI:SS') }} as procedure_date_12
-    , {{ try_to_cast_date('px.procedure_date_13', 'YYYY-MM-DD HH:MI:SS') }} as procedure_date_13
-    , {{ try_to_cast_date('px.procedure_date_14', 'YYYY-MM-DD HH:MI:SS') }} as procedure_date_14
-    , {{ try_to_cast_date('px.procedure_date_15', 'YYYY-MM-DD HH:MI:SS') }} as procedure_date_15
-    , {{ try_to_cast_date('px.procedure_date_16', 'YYYY-MM-DD HH:MI:SS') }} as procedure_date_16
-    , {{ try_to_cast_date('px.procedure_date_17', 'YYYY-MM-DD HH:MI:SS') }} as procedure_date_17
-    , {{ try_to_cast_date('px.procedure_date_18', 'YYYY-MM-DD HH:MI:SS') }} as procedure_date_18
-    , {{ try_to_cast_date('px.procedure_date_19', 'YYYY-MM-DD HH:MI:SS') }} as procedure_date_19
-    , {{ try_to_cast_date('px.procedure_date_20', 'YYYY-MM-DD HH:MI:SS') }} as procedure_date_20
-    , {{ try_to_cast_date('px.procedure_date_21', 'YYYY-MM-DD HH:MI:SS') }} as procedure_date_21
-    , {{ try_to_cast_date('px.procedure_date_22', 'YYYY-MM-DD HH:MI:SS') }} as procedure_date_22
-    , {{ try_to_cast_date('px.procedure_date_23', 'YYYY-MM-DD HH:MI:SS') }} as procedure_date_23
-    , {{ try_to_cast_date('px.procedure_date_24', 'YYYY-MM-DD HH:MI:SS') }} as procedure_date_24
-    , {{ try_to_cast_date('px.procedure_date_25', 'YYYY-MM-DD HH:MI:SS') }} as procedure_date_25
+    , {{ try_to_cast_date('px.procedure_date_1', 'YYYY-MM-DD') }} as procedure_date_1
+    , {{ try_to_cast_date('px.procedure_date_2', 'YYYY-MM-DD') }} as procedure_date_2
+    , {{ try_to_cast_date('px.procedure_date_3', 'YYYY-MM-DD') }} as procedure_date_3
+    , {{ try_to_cast_date('px.procedure_date_4', 'YYYY-MM-DD') }} as procedure_date_4
+    , {{ try_to_cast_date('px.procedure_date_5', 'YYYY-MM-DD') }} as procedure_date_5
+    , {{ try_to_cast_date('px.procedure_date_6', 'YYYY-MM-DD') }} as procedure_date_6
+    , {{ try_to_cast_date('px.procedure_date_7', 'YYYY-MM-DD') }} as procedure_date_7
+    , {{ try_to_cast_date('px.procedure_date_8', 'YYYY-MM-DD') }} as procedure_date_8
+    , {{ try_to_cast_date('px.procedure_date_9', 'YYYY-MM-DD') }} as procedure_date_9
+    , {{ try_to_cast_date('px.procedure_date_10', 'YYYY-MM-DD') }} as procedure_date_10
+    , {{ try_to_cast_date('px.procedure_date_11', 'YYYY-MM-DD') }} as procedure_date_11
+    , {{ try_to_cast_date('px.procedure_date_12', 'YYYY-MM-DD') }} as procedure_date_12
+    , {{ try_to_cast_date('px.procedure_date_13', 'YYYY-MM-DD') }} as procedure_date_13
+    , {{ try_to_cast_date('px.procedure_date_14', 'YYYY-MM-DD') }} as procedure_date_14
+    , {{ try_to_cast_date('px.procedure_date_15', 'YYYY-MM-DD') }} as procedure_date_15
+    , {{ try_to_cast_date('px.procedure_date_16', 'YYYY-MM-DD') }} as procedure_date_16
+    , {{ try_to_cast_date('px.procedure_date_17', 'YYYY-MM-DD') }} as procedure_date_17
+    , {{ try_to_cast_date('px.procedure_date_18', 'YYYY-MM-DD') }} as procedure_date_18
+    , {{ try_to_cast_date('px.procedure_date_19', 'YYYY-MM-DD') }} as procedure_date_19
+    , {{ try_to_cast_date('px.procedure_date_20', 'YYYY-MM-DD') }} as procedure_date_20
+    , {{ try_to_cast_date('px.procedure_date_21', 'YYYY-MM-DD') }} as procedure_date_21
+    , {{ try_to_cast_date('px.procedure_date_22', 'YYYY-MM-DD') }} as procedure_date_22
+    , {{ try_to_cast_date('px.procedure_date_23', 'YYYY-MM-DD') }} as procedure_date_23
+    , {{ try_to_cast_date('px.procedure_date_24', 'YYYY-MM-DD') }} as procedure_date_24
+    , {{ try_to_cast_date('px.procedure_date_25', 'YYYY-MM-DD') }} as procedure_date_25
     , 'cclf' as data_source
 from {{ var('parta_claims_header')}} h
 inner join {{ var('parta_claims_revenue_center_detail')}} d
