@@ -63,7 +63,7 @@ calculate_lag_diff as (
         , bene_member_month
         , row_num
         , lag_enrollment
-        , {{ dbt_utils.datediff('lag_enrollment', 'bene_member_month', 'month') }} as lag_diff
+        , {{ datediff('lag_enrollment', 'bene_member_month', 'month') }} as lag_diff
     from add_lag_enrollment
 
 ),
