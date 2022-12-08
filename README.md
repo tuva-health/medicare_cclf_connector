@@ -1,28 +1,33 @@
 [![Apache License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0) ![dbt logo and version](https://img.shields.io/static/v1?logo=dbt&label=dbt-version&message=1.x&color=orange)
 
-# Medicare Claims Connector
+# Medicare CCLF Claims Connector
 
-Check out the Tuva Project [Docs](http://thetuvaproject.com/)
+## 🧰 What does this project do?
 
-Check out the Tuva Project [Data Models](https://docs.google.com/spreadsheets/d/1NuMEhcx6D6MSyZEQ6yk0LWU0HLvaeVma8S-5zhOnbcE/edit?usp=sharing)
-
-Check out the [DAG](https://tuva-health.github.io/medicare_cclf_connector/#!/overview?g_v=1) for this dbt project
-
-## Description
 This connector transforms raw Medicare CCLF claims data into the Tuva Claims Input Layer which enables you to run most of the other components of the Tuva Project with very little effort.
+For a detailed overview of what the project does and how it works, check out our [Knowledge Base](https://thetuvaproject.com/docs/getting-started). 
+For information on data models and to view the entire DAG check out our dbt [Docs](https://tuva-health.github.io/medicare_cclf_connector/#!/overview?g_v=1).
 
-## Pre-requisites
+## 🔌 Database Support
+
+- BigQuery
+- Redshift
+- Snowflake
+
+## ✅ How to get started
+
+### Pre-requisites
 1. You have Medicare CCLF claims data loaded into a data warehouse
 2. You have [dbt](https://www.getdbt.com/) installed and configured (i.e. connected to your data warehouse)
 
 [Here](https://docs.getdbt.com/dbt-cli/installation) are instructions for installing dbt.
 
-## Getting Started
-Complete the following steps to configure the package to run in your environment.
+### Getting Started
+Complete the following steps to configure the project to run in your environment.
 
 1. [Clone](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository) this repo to your local machine or environment
 2. Update the dbt_project.yml file to use the dbt profile connected to your data warehouse.
-3. Run dbt build command while specifying the specific database and schema locations you want to read/write data fromt/to: 
+3. Run dbt build command while specifying the specific database and schema locations you want to read/write data from/to: 
 
     > dbt build --vars '{key: value, input_database: syntegra_synthetic_sample, input_schema: cclf, output_database: demo, output_schema: claims_input_layer}'
 
@@ -30,13 +35,19 @@ Note: The source data table names need to match the table names in [sources.yml]
 - Update table names in sources.yml
 - Update table name in medical_claim and eligibility jinja function
 
-## Contributions
-Have an opinion on the mappings? Notice any bugs when installing and running the package? 
-If so, we highly encourage and welcome contributions! 
 
-Join the conversation on [Slack](https://tuvahealth.slack.com/ssb/redirect#/shared-invite/email)!  We'd love to hear from you on the #claims-preprocessing channel.
+## 🙋🏻‍♀️ **How is this project maintained and can I contribute?**
 
-## Database Support
-This package has been built and tested on:
-- Snowflake
-- Redshift
+### Project Maintenance
+
+The Tuva Project team maintaining this project **only** maintains the latest version of the project. 
+We highly recommend you stay consistent with the latest version.
+
+### Contributions
+
+Have an opinion on the mappings? Notice any bugs when installing and running the project?
+If so, we highly encourage and welcome feedback!  While we work on a formal process in Github, we can be easily reached on our Slack community.
+
+## 🤝 Community
+
+Join our growing community of healthcare data practitioners on [Slack](https://join.slack.com/t/thetuvaproject/shared_invite/zt-16iz61187-G522Mc2WGA2mHF57e0il0Q)!
