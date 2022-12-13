@@ -17,8 +17,14 @@ For information on data models and to view the entire DAG check out our dbt [Doc
 ## ✅ How to get started
 
 ### Pre-requisites
-1. You have Medicare CCLF claims data loaded into a data warehouse
-2. You have [dbt](https://www.getdbt.com/) installed and configured (i.e. connected to your data warehouse)
+1. You have Medicare CCLF claims data loaded into a data warehouse.
+2. You have [dbt](https://www.getdbt.com/) installed and configured (i.e. connected to your data warehouse).
+3. This project is dependent on the package `dbt_utils`, include the following in your packages.yml:
+   ```
+   packages:
+     - package: dbt-labs/dbt_utils
+       version: [">=0.9.2"]
+   ```
 
 [Here](https://docs.getdbt.com/dbt-cli/installation) are instructions for installing dbt.
 
@@ -27,7 +33,8 @@ Complete the following steps to configure the project to run in your environment
 
 1. [Clone](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository) this repo to your local machine or environment
 2. Update the dbt_project.yml file to use the dbt profile connected to your data warehouse.
-3. Run dbt build command while specifying the specific database and schema locations you want to read/write data from/to: 
+3. Run `dbt deps` command to install the package dependencies.
+4. Run `dbt build` command while specifying the specific database and schema locations you want to read/write data from/to: 
 
     > dbt build --vars '{key: value, input_database: syntegra_synthetic_sample, input_schema: cclf, output_database: demo, output_schema: claims_input_layer}'
 
