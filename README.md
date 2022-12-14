@@ -23,7 +23,7 @@ For information on data models and to view the entire DAG check out our dbt [Doc
    ```
    packages:
      - package: dbt-labs/dbt_utils
-       version: [">=0.9.2"]
+       version: [">=0.9.2","<1.0.0"]
    ```
 
 [Here](https://docs.getdbt.com/dbt-cli/installation) are instructions for installing dbt.
