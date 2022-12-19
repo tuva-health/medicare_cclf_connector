@@ -15,11 +15,11 @@ Please summarize the specific items you’d like the reviewer(s) to look into.
 - [ ]  I have recorded a Loom performing a self-review of my code
 - [ ]  My code follows style guidelines
 - [ ]  I have commented my code as necessary
-- [ ]  I have testing by code by running `dbt build` in the following warehouse(s):
+- [ ]  I have tested my code by running `dbt build` in the following warehouse(s):
     - [ ]  Snowflake
     - [ ]  Redshift
 - [ ]  I have implemented generic dbt tests to validate primary keys/uniqueness in my model
-- [ ]  I have updated dbt docs by running `dbt docs generate` and copying the appropriate files to the `docs/` path
+- [ ]  I have updated dbt docs by running `dbt docs generate` and copying the appropriate files to the `docs/` path
 - [ ]  I have added at least one Github label to this PR
 
 ## (Optional) Gif of how this PR makes you feel

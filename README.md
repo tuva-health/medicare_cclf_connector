@@ -29,8 +29,14 @@ The Tuva Project is a collection of dbt packages that builds healthcare concepts
 ## ✅ How to get started
 
 ### Pre-requisites
-1. You have Medicare CCLF claims data loaded into a data warehouse
-2. You have [dbt](https://www.getdbt.com/) installed and configured (i.e. connected to your data warehouse)
+1. You have Medicare CCLF claims data loaded into a data warehouse.
+2. You have [dbt](https://www.getdbt.com/) installed and configured (i.e. connected to your data warehouse).
+3. This project is dependent on the package `dbt_utils`, include the following in your packages.yml:
+   ```
+   packages:
+     - package: dbt-labs/dbt_utils
+       version: [">=0.9.2","<1.0.0"]
+   ```
 
 [Here](https://docs.getdbt.com/dbt-cli/installation) are instructions for installing dbt.
 
