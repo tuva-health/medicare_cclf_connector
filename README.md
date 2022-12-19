@@ -4,15 +4,27 @@
 
 ## 🧰 What does this project do?
 
-This connector transforms raw Medicare CCLF claims data into the Tuva Claims Input Layer which enables you to run most of the other components of the Tuva Project with very little effort.
+This connector transforms raw Medicare CCLF claims data into the Tuva Claims Input Layer which enables you to run the other components of the Tuva Project with very little effort.
 For a detailed overview of what the project does and how it works, check out our [Knowledge Base](https://thetuvaproject.com/docs/getting-started). 
 For information on data models and to view the entire DAG check out our dbt [Docs](https://tuva-health.github.io/medicare_cclf_connector/#!/overview?g_v=1).
 
+## 🧰 What does The Tuva Project do?
+
+The Tuva Project is a collection of dbt packages that builds healthcare concepts (measures, groupers, data quality tests) on top of your raw healthcare claims data. Currently, the Tuva Project consists of the following 5 dbt packages, each of which is a separate GitHub repo that does something specific:
+
+- `data_profiling`: Runs data quality tests to check for common problems specific to healthcare claims data.
+- `claims_preprocessing`: Groups overlapping claims into a single encounter, assigns every claim to 1 of 18 different encounter types and populates core concept tables.
+- `chronic_conditions`: Implements a chronic condition grouper based on ICD-10-CM codes. As a result, it is possible to know whether each patient in your population has any of ~70 different chronic conditions defined for the grouper.
+- `readmissions`: Calculates hospital readmission measures.
+- `terminology`: Makes the latest version of many useful healthcare terminology datasets available as tables in your data warehouse. This package is different from the others because it does not build healthcare concepts on top of your data.
+
+
 ## 🔌 Database Support
 
-- BigQuery
-- Redshift
 - Snowflake
+- Redshift
+- *BigQuery - 
+
 
 ## ✅ How to get started
 
@@ -27,7 +39,8 @@ Complete the following steps to configure the project to run in your environment
 
 1. [Clone](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository) this repo to your local machine or environment
 2. Update the dbt_project.yml file to use the dbt profile connected to your data warehouse.
-3. Run dbt build command while specifying the specific database and schema locations you want to read/write data from/to: 
+   1. See dbt_project.yml file for other possible configurations
+3. Run dbt deps to import The Tuva Project packages
 
     > dbt build --vars '{key: value, input_database: syntegra_synthetic_sample, input_schema: cclf, output_database: demo, output_schema: claims_input_layer}'
 

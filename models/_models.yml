@@ -6,21 +6,24 @@ models:
   - name: base_parta_diagnosis_code
     description: Base model used as ref for pivot transformation
     config:
-      database: "{{ var('output_database')}}"
-      schema: "{{ var('output_schema')}}"
+      database: "{{ var('medicare_cclf_connector_database',var('tuva_database','tuva')) }}"
+      schema: |
+        {%- if var('medicare_cclf_connector_schema',None) != None -%}{{ var('medicare_cclf_connector_schema') }}{%- elif var('tuva_schema_prefix',None) != None -%}{{var('tuva_schema_prefix')}}_claims_input{% else %}claims_input{%- endif -%}
 
   - name: base_parta_procedure_code
     description: Base model used as ref for pivot transformation
     config:
-      database: "{{ var('output_database')}}"
-      schema: "{{ var('output_schema')}}"
+      database: "{{ var('medicare_cclf_connector_database',var('tuva_database','tuva')) }}"
+      schema: |
+        {%- if var('medicare_cclf_connector_schema',None) != None -%}{{ var('medicare_cclf_connector_schema') }}{%- elif var('tuva_schema_prefix',None) != None -%}{{var('tuva_schema_prefix')}}_claims_input{% else %}claims_input{%- endif -%}
 
 ### transformation
   - name: diagnosis_pivot
     description: Pivot of diagnosis from long (1 row/diagnosis) to wide (multiple diagnosis per row)
     config:
-      database: "{{ var('output_database')}}"
-      schema: "{{ var('output_schema')}}"
+      database: "{{ var('medicare_cclf_connector_database',var('tuva_database','tuva')) }}"
+      schema: |
+        {%- if var('medicare_cclf_connector_schema',None) != None -%}{{ var('medicare_cclf_connector_schema') }}{%- elif var('tuva_schema_prefix',None) != None -%}{{var('tuva_schema_prefix')}}_claims_input{% else %}claims_input{%- endif -%}
     tests:
       - unique:
           column_name: "(cur_clm_uniq_id)"
@@ -30,8 +33,9 @@ models:
       Mapping of durable medical equipment claims to 
       Tuva claims preprocessing input layer
     config:
-      database: "{{ var('output_database')}}"
-      schema: "{{ var('output_schema')}}"
+      database: "{{ var('medicare_cclf_connector_database',var('tuva_database','tuva')) }}"
+      schema: |
+        {%- if var('medicare_cclf_connector_schema',None) != None -%}{{ var('medicare_cclf_connector_schema') }}{%- elif var('tuva_schema_prefix',None) != None -%}{{var('tuva_schema_prefix')}}_claims_input{% else %}claims_input{%- endif -%}
     tests:
       - unique:
           column_name: "(claim_id || '-' || claim_line_number)"
@@ -41,8 +45,9 @@ models:
       Mapping of institution claims to 
       Tuva claims preprocessing input layer
     config:
-      database: "{{ var('output_database')}}"
-      schema: "{{ var('output_schema')}}"
+      database: "{{ var('medicare_cclf_connector_database',var('tuva_database','tuva')) }}"
+      schema: |
+        {%- if var('medicare_cclf_connector_schema',None) != None -%}{{ var('medicare_cclf_connector_schema') }}{%- elif var('tuva_schema_prefix',None) != None -%}{{var('tuva_schema_prefix')}}_claims_input{% else %}claims_input{%- endif -%}
     tests:
       - unique:
           column_name: "(claim_id || '-' || claim_line_number)"
@@ -52,8 +57,9 @@ models:
       Mapping of professional claims to 
       Tuva claims preprocessing input layer
     config:
-      database: "{{ var('output_database')}}"
-      schema: "{{ var('output_schema')}}"
+      database: "{{ var('medicare_cclf_connector_database',var('tuva_database','tuva')) }}"
+      schema: |
+        {%- if var('medicare_cclf_connector_schema',None) != None -%}{{ var('medicare_cclf_connector_schema') }}{%- elif var('tuva_schema_prefix',None) != None -%}{{var('tuva_schema_prefix')}}_claims_input{% else %}claims_input{%- endif -%}
     tests:
       - unique:
           column_name: "(claim_id || '-' || claim_line_number)"
@@ -61,8 +67,9 @@ models:
   - name: procedure_pivot
     description: Pivot of procedures from long (1 row/procedure) to wide (multiple procedure per row)
     config:
-      database: "{{ var('output_database')}}"
-      schema: "{{ var('output_schema')}}"
+      database: "{{ var('medicare_cclf_connector_database',var('tuva_database','tuva')) }}"
+      schema: |
+        {%- if var('medicare_cclf_connector_schema',None) != None -%}{{ var('medicare_cclf_connector_schema') }}{%- elif var('tuva_schema_prefix',None) != None -%}{{var('tuva_schema_prefix')}}_claims_input{% else %}claims_input{%- endif -%}
     tests:
       - unique:
           column_name: "(cur_clm_uniq_id)"
@@ -73,8 +80,9 @@ models:
       Member enrollment and demographic detail, converts member months to
       enrollment spans.
     config:
-      database: "{{ var('output_database')}}"
-      schema: "{{ var('output_schema')}}"
+      database: "{{ var('medicare_cclf_connector_database',var('tuva_database','tuva')) }}"
+      schema: |
+        {%- if var('medicare_cclf_connector_schema',None) != None -%}{{ var('medicare_cclf_connector_schema') }}{%- elif var('tuva_schema_prefix',None) != None -%}{{var('tuva_schema_prefix')}}_claims_input{% else %}claims_input{%- endif -%}
     tests:
        - unique:
            column_name: "(patient_id || '-' || payer || '-' || enrollment_start_date || '-' || enrollment_end_date)"
@@ -82,8 +90,9 @@ models:
   - name: medical_claim
     description: Claim line level medical data
     config:
-      database: "{{ var('output_database')}}"
-      schema: "{{ var('output_schema')}}"
+      database: "{{ var('medicare_cclf_connector_database',var('tuva_database','tuva')) }}"
+      schema: |
+        {%- if var('medicare_cclf_connector_schema',None) != None -%}{{ var('medicare_cclf_connector_schema') }}{%- elif var('tuva_schema_prefix',None) != None -%}{{var('tuva_schema_prefix')}}_claims_input{% else %}claims_input{%- endif -%}
     tests:
       - unique:
           column_name: "(claim_id || '-' || claim_line_number)"

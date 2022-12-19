@@ -3,7 +3,7 @@ select
     , cast(clm_line_num as integer) as claim_line_number
     , 'professional' as claim_type
     , {{ cast_string_or_varchar('bene_mbi_id') }} as patient_id
-    , {{ cast_string_or_varchar('NULL') }} as member_id
+    , {{ cast_string_or_varchar('bene_mbi_id') }} as member_id
     , {{ try_to_cast_date('clm_from_dt', 'YYYY-MM-DD') }} as claim_start_date
     , {{ try_to_cast_date('clm_thru_dt', 'YYYY-MM-DD') }} as claim_end_date
     , {{ try_to_cast_date('clm_line_from_dt', 'YYYY-MM-DD') }} as claim_line_start_date
@@ -133,5 +133,5 @@ select
     , cast(NULL as date) as procedure_date_23
     , cast(NULL as date) as procedure_date_24
     , cast(NULL as date) as procedure_date_25
-    , 'cclf' as data_source
+    , '{{ var("source_name")}}' as data_source
 from {{ var('partb_dme')}}

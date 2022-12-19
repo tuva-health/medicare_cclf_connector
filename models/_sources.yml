@@ -2,8 +2,8 @@ version: 2
 
 sources:
   - name: cclf
-    database: "{{ var('input_database') }}"
-    schema:  "{{ var('input_schema') }}"
+    database: "{{ var('input_database','tuva') }}"
+    schema:  "{{ var('input_schema','cclf') }}"
     tables:
       - name: partb_dme
       - name: parta_claims_header

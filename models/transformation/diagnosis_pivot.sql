@@ -6,7 +6,7 @@ with diagnois_pivot as (
         , dgns_prcdr_icd_ind
         , {{ dbt_utils.pivot(
               column='clm_val_sqnc_num'
-            , values=dbt_utils.get_column_values(ref('base_parta_diagnosis_code'), 'clm_val_sqnc_num')
+            , values=['1','2','3','4','5','6','7','8','9','10','11','12','13','14','15','16','17','18','19','20','21','22','23','24','25']
             , agg='max'
             , then_value='clm_dgns_cd'
             , else_value='null'
@@ -29,7 +29,7 @@ poa_pivot as (
         , dgns_prcdr_icd_ind
         , {{ dbt_utils.pivot(
               column='clm_val_sqnc_num'
-            , values=dbt_utils.get_column_values(ref('base_parta_diagnosis_code'), 'clm_val_sqnc_num')
+            , values=['1','2','3','4','5','6','7','8','9','10','11','12','13','14','15','16','17','18','19','20','21','22','23','24','25']
             , agg='max'
             , then_value='clm_poa_ind'
             , else_value='null'

@@ -27,7 +27,7 @@ with demographics as (
 
 medicare_state_fips as (
 
-    select * from {{ ref('medicare_state_fips') }}
+    select * from {{ ref('terminology__medicare_state_fips') }}
 
 ),
 
@@ -119,7 +119,7 @@ joined as (
 
     select
           {{ cast_string_or_varchar('enrollment_span.bene_mbi_id') }} as patient_id
-        , {{ cast_string_or_varchar('NULL') }} as member_id
+        , {{ cast_string_or_varchar('enrollment_span.bene_mbi_id') }} as member_id
         , case demographics.bene_sex_cd
             when '0' then 'unknown'
             when '1' then 'male'
