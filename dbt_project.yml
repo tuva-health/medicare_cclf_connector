@@ -14,7 +14,7 @@ vars:
 #### Input Configurations
 ### Input database and schema
   input_database: source_data                 # Name of the database where sources feeding this project are stored.
-  input_schema: raw_cclf                      # Name of the schema where sources feeding this project is stored.
+  input_schema: cclf                          # Name of the schema where sources feeding this project is stored.
 
 ### Input sources
 ## If you have non-standard source names or if you have models building these input tables, change these variables to the
@@ -32,7 +32,7 @@ vars:
 
 #### Output configurations
 ### Database configuration
-  tuva_database:  tuva                 # Name of the database where cclf connector and ALL tuva packages will be written.
+  tuva_database:  tuva                        # Name of the database where cclf connector and ALL tuva packages will be written.
   # medicare_cclf_connector_database: tuva    # Optional config that will apply to this project only, and take precedence over tuva_database.
 
 ### Schema configuration
