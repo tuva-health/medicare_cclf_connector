@@ -43,7 +43,7 @@ vars:
 ### Individual output configurations for tuva packages
 ## Use these to change the database and schema tuva packages write to.
 ## If uncommented, these values will take precedence over the database and schema defined by tuva_database and tuva_schema_prefix
-## listed values are the default output locations for the packages.
+## Listed values are the default output locations for the packages.
   # data_profiling_database: tuva
   # data_profiling_schema: data_profiling
   # claims_preprocessing_database: tuva
