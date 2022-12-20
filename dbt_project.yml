@@ -40,7 +40,7 @@ vars:
   # tuva_schema_prefix: test                     # Optional config: prepends the supplied value to ALL schemas
   # medicare_cclf_connector_schema: claims_input # optional config: overrides the output schema for medicare_cclf_connector only
 
-### individual output configurations for tuva packages
+### Individual output configurations for tuva packages
 ## Use these to change the database and schema tuva packages write to.
 ## If uncommented, these values will take precedence over the database and schema defined by tuva_database and tuva_schema_prefix
 ## listed values are the default output locations for the packages.
