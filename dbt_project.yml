@@ -9,7 +9,7 @@ profile: 'default'
 ## Many config variables have default values and don't need to be set.  The recommended settings to configure are
 ##  uncommented below.  Other possible configurations are listed but commented.
 vars:
-  source_name: cclf                           # Name identifying the source of this cclf data.  Will be written to data_source columns in output tables.
+  data_source: cclf                           # Name identifying the source of this cclf data.  Will be written to data_source columns in output tables.
 
 #### Input Configurations
 ### Input database and schema

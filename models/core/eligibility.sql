@@ -153,7 +153,7 @@ joined as (
         , {{ cast_string_or_varchar('medicare_state_fips.state') }} as state
         , {{ cast_string_or_varchar('demographics.bene_zip_cd') }} as zip_code
         , {{ cast_string_or_varchar('NULL') }} as phone
-        , 'cclf' as data_source
+        , '{{ var("data_source")}}' as data_source
     from enrollment_span
          left join demographics
             on enrollment_span.bene_mbi_id = demographics.bene_mbi_id

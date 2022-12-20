@@ -142,7 +142,7 @@ select
     , {{ try_to_cast_date('px.procedure_date_23', 'YYYY-MM-DD') }} as procedure_date_23
     , {{ try_to_cast_date('px.procedure_date_24', 'YYYY-MM-DD') }} as procedure_date_24
     , {{ try_to_cast_date('px.procedure_date_25', 'YYYY-MM-DD') }} as procedure_date_25
-    , '{{ var("source_name")}}' as data_source
+    , '{{ var("data_source")}}' as data_source
 from {{ var('parta_claims_header')}} h
 inner join {{ var('parta_claims_revenue_center_detail')}} d
 	on h.cur_clm_uniq_id = d.cur_clm_uniq_id
