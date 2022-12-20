@@ -65,7 +65,7 @@ vars:
   tuva_packages_enabled: true
 
 # Settings for individual packages.  Set these to false to explicitly disable specific packages, or set them to true to enable
-# individual packages if tuva_packages_enabled is set to false.
+# Individual packages if tuva_packages_enabled is set to false.
   # data_profiling_enabled: true
   # claims_preprocessing_enabled: true
   # chronic_conditions_enabled: true
