@@ -40,10 +40,10 @@ vars:
   # tuva_schema_prefix: test                     # Optional config: prepends the supplied value to ALL schemas
   # medicare_cclf_connector_schema: claims_input # optional config: overrides the output schema for medicare_cclf_connector only
 
-### individual output configurations for tuva packages
+### Individual output configurations for tuva packages
 ## Use these to change the database and schema tuva packages write to.
 ## If uncommented, these values will take precedence over the database and schema defined by tuva_database and tuva_schema_prefix
-## listed values are the default output locations for the packages.
+## Listed values are the default output locations for the packages.
   # data_profiling_database: tuva
   # data_profiling_schema: data_profiling
   # claims_preprocessing_database: tuva
@@ -65,7 +65,7 @@ vars:
   tuva_packages_enabled: true
 
 # Settings for individual packages.  Set these to false to explicitly disable specific packages, or set them to true to enable
-# individual packages if tuva_packages_enabled is set to false.
+# Individual packages if tuva_packages_enabled is set to false.
   # data_profiling_enabled: true
   # claims_preprocessing_enabled: true
   # chronic_conditions_enabled: true
