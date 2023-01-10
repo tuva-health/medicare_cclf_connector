@@ -12,7 +12,7 @@ select
     , cast(NULL as date) as discharge_date
     , {{ cast_string_or_varchar('h.clm_admsn_src_cd') }} as admit_source_code
     , {{ cast_string_or_varchar('h.clm_admsn_type_cd') }} as admit_type_code
-    , {{ cast_string_or_varchar('h.bene_ptnt_stus_cd') }} as discharge_disposition_code
+    , lpad({{ cast_string_or_varchar('h.bene_ptnt_stus_cd') }},2, '0') as discharge_disposition_code
     , {{ cast_string_or_varchar('NULL') }} as place_of_service_code
     , {{ cast_string_or_varchar('h.clm_bill_fac_type_cd') }}
         || {{ cast_string_or_varchar('h.clm_bill_clsfctn_cd') }}
