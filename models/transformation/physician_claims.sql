@@ -3,7 +3,7 @@ select
     , cast(clm_line_num as integer) as claim_line_number
     , 'professional' as claim_type
     , {{ cast_string_or_varchar('bene_mbi_id') }} as patient_id
-    , {{ cast_string_or_varchar('NULL') }} as member_id
+    , {{ cast_string_or_varchar('bene_mbi_id') }} as member_id
     , {{ try_to_cast_date('clm_from_dt', 'YYYY-MM-DD') }} as claim_start_date
     , {{ try_to_cast_date('clm_thru_dt', 'YYYY-MM-DD') }} as claim_end_date
     , {{ try_to_cast_date('clm_line_from_dt', 'YYYY-MM-DD') }} as claim_line_start_date
@@ -31,7 +31,10 @@ select
     , {{ cast_numeric('clm_line_cvrd_pd_amt') }} as paid_amount
     , {{ cast_numeric('clm_line_alowd_chrg_amt') }} as allowed_amount
     , {{ cast_numeric('clm_line_alowd_chrg_amt') }} as charge_amount
-    , {{ cast_string_or_varchar('dgns_prcdr_icd_ind') }} as diagnosis_code_type
+    , case
+        when {{ cast_string_or_varchar('dgns_prcdr_icd_ind') }} = '0' then 'icd-10-pcs'
+        when {{ cast_string_or_varchar('dgns_prcdr_icd_ind') }} = '9' then 'icd-9-pcs'
+        else {{ cast_string_or_varchar('dgns_prcdr_icd_ind') }} end as diagnosis_code_type
     , {{ cast_string_or_varchar('clm_dgns_1_cd') }} as diagnosis_code_1
     , {{ cast_string_or_varchar('clm_dgns_2_cd') }} as diagnosis_code_2
     , {{ cast_string_or_varchar('clm_dgns_3_cd') }} as diagnosis_code_3
@@ -133,5 +136,5 @@ select
     , cast(NULL as date) as procedure_date_23
     , cast(NULL as date) as procedure_date_24
     , cast(NULL as date) as procedure_date_25
-    , 'cclf' as data_source
-from {{ var('partb_physicians')}}
+    , '{{ var("data_source")}}' as data_source
+from {{ source('cclf','partb_physicians')}}

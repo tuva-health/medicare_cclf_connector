@@ -2,33 +2,83 @@ name: 'medicare_cclf_connector'
 version: '1.0.0'
 config-version: 2
 
-# This setting configures which "profile" dbt uses for this project.
-profile: 'default'                       # configuration required
+profile: 'default'
 
+
+## Variables affecting the configuration of this project and the tuva packages are below.
+## Many config variables have default values and don't need to be set.  The recommended settings to configure are
+##  uncommented below.  Other possible configurations are listed but commented.
 vars:
-  input_database: medicare_claims       # configuration required
-                                        # name of the database where sources feeding this project are stored
+  data_source: cclf                           # Name identifying the source of this cclf data.  Will be written to data_source columns in output tables.
 
-  input_schema:  cclf                   # configuration required
-                                        # name of the schema where sources feeding this project is stored
+#### Input Configurations
+### Input database and schema
+  input_database: source_data                 # Name of the database where sources feeding this project are stored.
+  input_schema: cclf                          # Name of the schema where sources feeding this project is stored.
 
-  output_database: tuva                 # configuration required
-                                        # name of the database where output of this project should be written
+### Input tables
+## This project expects seven standard cclf input tables with the following names.  If your tables have different names,
+## adjust the values of the variables below accordingly.
+  beneficiary_demographics_table: beneficiary_demographics
+  parta_claims_header_table: parta_claims_header
+  parta_claims_revenue_center_detail_table: parta_claims_revenue_center_detail
+  parta_diagnosis_code_table: parta_diagnosis_code
+  parta_procedure_code_table: parta_procedure_code
+  partb_physicians_table: partb_physicians
+  partb_dme_table: partb_dme
 
-  output_schema: claims_input           # configuration required
-                                        # name of the schema where output of this project should be written
 
-  beneficiary_demographics: "{{ source('cclf','beneficiary_demographics') }}"
-  parta_claims_header: "{{ source('cclf','parta_claims_header') }}"
-  parta_claims_revenue_center_detail: "{{ source('cclf','parta_claims_revenue_center_detail') }}"
-  parta_diagnosis_code: "{{ source('cclf','parta_diagnosis_code') }}"
-  parta_procedure_code: "{{ source('cclf','parta_procedure_code') }}"
-  partb_physicians: "{{ source('cclf','partb_physicians') }}"
-  partb_dme: "{{ source('cclf','partb_dme') }}"
 
-# These configurations specify where dbt should look for different types of files.
-# The `source-paths` config, for example, states that models in this project can be
-# found in the "models/" directory. You probably won't need to change these!
+
+
+#### Output configurations
+### Database configuration
+  tuva_database:  tuva                        # Name of the database where cclf connector and ALL tuva packages will be written.
+  # medicare_cclf_connector_database: tuva    # Optional config that will apply to this project only, and take precedence over tuva_database.
+
+### Schema configuration
+## *Note*: without any schema configurations, this project will write to the defult schema, "claims_input"
+  # tuva_schema_prefix: test                      # Optional config: prepends the supplied value to ALL schemas
+  # medicare_cclf_connector_schema: claims_common # optional config: overrides the output schema for medicare_cclf_connector only
+
+### Individual output configurations for tuva packages
+## Use these to change the database and schema tuva packages write to.
+## If uncommented, these values will take precedence over the database and schema defined by tuva_database and tuva_schema_prefix
+## Listed values are the default output locations for the packages.
+  # data_profiling_database: tuva
+  # data_profiling_schema: data_profiling
+  # claims_preprocessing_database: tuva
+  # claims_preprocessing_schema: core
+  # chronic_conditions_database: tuva
+  # chronic_conditions_schema: chronic_conditions
+  # readmissions_database: tuva
+  # readmissions_schema: readmissions
+  # terminology_database: tuva
+  # terminology_schema: terminology
+
+
+#### Configurations for enabling/diabling tuva packages:
+## Note: all packages are enabled unless configured otherwise via the settings below.
+
+### Configuration to enable or disable All tuva packages.
+## Set to false to disable all packages and just run medicare_cclf_connector.
+## To enable only specific packages, set this to false and set the individual <package>_enabled variables to true.
+  tuva_packages_enabled: true
+
+# Settings for individual packages.  Set these to false to explicitly disable specific packages, or set them to true to enable
+# Individual packages if tuva_packages_enabled is set to false.
+  # data_profiling_enabled: true
+  # claims_preprocessing_enabled: true
+  # chronic_conditions_enabled: true
+  # readmissions_enabled: true
+  # terminology_enabled: true
+
+
+
+
+
+
+
 model-paths: ["models"]
 analysis-paths: ["analyses"]
 test-paths: ["tests"]
@@ -36,20 +86,17 @@ seed-paths: ["seeds"]
 macro-paths: ["macros"]
 snapshot-paths: ["snapshots"]
 
-target-path: "target"  # directory which will store compiled SQL files
-clean-targets:         # directories to be removed by `dbt clean`
+target-path: "target"
+clean-targets:
   - "target"
   - "dbt_packages"
 
 # Configuring models
 # Full documentation: https://docs.getdbt.com/docs/configuring-models
-
-# In this example config, we tell dbt to build all models in the example/ directory
-# as tables. These settings can be overridden in the individual model files
-# using the `{{ config(...) }}` macro.
 models:
   medicare_cclf_connector:
-    +materialized: table
+    +bind: false
+    +materialized: view
     core:
       +materialized: table
 

@@ -21,13 +21,13 @@ with demographics as (
         , geo_zip_plc_name
         , bene_fips_state_cd
         , bene_zip_cd
-    from {{ var('beneficiary_demographics') }}
+    from {{ source('cclf','beneficiary_demographics') }}
 
 ),
 
 medicare_state_fips as (
 
-    select * from {{ ref('medicare_state_fips') }}
+    select * from {{ ref('terminology__medicare_state_fips') }}
 
 ),
 
@@ -119,7 +119,7 @@ joined as (
 
     select
           {{ cast_string_or_varchar('enrollment_span.bene_mbi_id') }} as patient_id
-        , {{ cast_string_or_varchar('NULL') }} as member_id
+        , {{ cast_string_or_varchar('enrollment_span.bene_mbi_id') }} as member_id
         , case demographics.bene_sex_cd
             when '0' then 'unknown'
             when '1' then 'male'
@@ -153,7 +153,7 @@ joined as (
         , {{ cast_string_or_varchar('medicare_state_fips.state') }} as state
         , {{ cast_string_or_varchar('demographics.bene_zip_cd') }} as zip_code
         , {{ cast_string_or_varchar('NULL') }} as phone
-        , 'cclf' as data_source
+        , '{{ var("data_source")}}' as data_source
     from enrollment_span
          left join demographics
             on enrollment_span.bene_mbi_id = demographics.bene_mbi_id

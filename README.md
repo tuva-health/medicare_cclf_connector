@@ -4,8 +4,8 @@
 
 ## 🧰 What does this project do?
 
-This connector transforms raw Medicare CCLF claims data into the Tuva Claims Input Layer which enables you to run most of the other components of the Tuva Project with very little effort.
-
+This connector transforms raw Medicare CCLF claims data into the Tuva Claims Input Layer which enables you to run the other components of the Tuva Project.
+For a detailed overview of what the project does and how it works, check out our [Knowledge Base](https://thetuvaproject.com/docs/getting-started). 
 For information on data models and to view the entire DAG check out our dbt [Docs](https://tuva-health.github.io/medicare_cclf_connector/#!/overview?g_v=1).
 
 ## 🔌 Database Support
@@ -33,14 +33,14 @@ Complete the following steps to configure the project to run in your environment
 
 1. [Clone](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository) this repo to your local machine or environment
 2. Update the dbt_project.yml file to use the dbt profile connected to your data warehouse.
-3. Run `dbt deps` command to install the package dependencies.
-4. Run `dbt build` command while specifying the specific database and schema locations you want to read/write data from/to: 
+   1. See dbt_project.yml file for other possible configurations defining input and output database and schema, as well as which marts are enabled.
+3. Run dbt deps to import the dependent packages
+4. Run dbt build to execute and build all models.
+  
 
-    > dbt build --vars '{key: value, input_database: syntegra_synthetic_sample, input_schema: cclf, output_database: demo, output_schema: claims_input_layer}'
-
-Note: The source data table names need to match the table names in [sources.yml](models/sources.yml).  These table names match the [Medicare CCLF data dictionary](https://www.cms.gov/files/document/cclf-file-data-elements-resource.pdf).  If you rename any tables make sure you:
-- Update table names in sources.yml
-- Update table name in medical_claim and eligibility jinja function
+Note: The source data table names need to match the table names in [sources.yml](models/_sources.yml).  These table names match the [Medicare CCLF data dictionary](https://www.cms.gov/files/document/cclf-file-data-elements-resource.pdf).  
+If you rename any tables make sure any changes are reflected in sources.yml.  If you rename any sources or if you have models creating the input tables, make sure the 
+input variables in [dbt_project.yml](dbt_project.yml) are updated to reflect the new source or model names.
 
 
 ## 🙋🏻‍♀️ **How is this project maintained and can I contribute?**
