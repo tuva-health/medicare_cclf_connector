@@ -8,14 +8,14 @@ models:
     config:
       database: "{{ var('medicare_cclf_connector_database',var('tuva_database','tuva')) }}"
       schema: |
-        {%- if var('medicare_cclf_connector_schema',None) != None -%}{{ var('medicare_cclf_connector_schema') }}{%- elif var('tuva_schema_prefix',None) != None -%}{{var('tuva_schema_prefix')}}_claims_input{% else %}claims_input{%- endif -%}
+        {%- if var('medicare_cclf_connector_schema',None) != None -%}{{ var('medicare_cclf_connector_schema') }}{%- elif var('tuva_schema_prefix',None) != None -%}{{var('tuva_schema_prefix')}}_claims_common{% else %}claims_common{%- endif -%}
 
   - name: base_parta_procedure_code
     description: Base model used as ref for pivot transformation
     config:
       database: "{{ var('medicare_cclf_connector_database',var('tuva_database','tuva')) }}"
       schema: |
-        {%- if var('medicare_cclf_connector_schema',None) != None -%}{{ var('medicare_cclf_connector_schema') }}{%- elif var('tuva_schema_prefix',None) != None -%}{{var('tuva_schema_prefix')}}_claims_input{% else %}claims_input{%- endif -%}
+        {%- if var('medicare_cclf_connector_schema',None) != None -%}{{ var('medicare_cclf_connector_schema') }}{%- elif var('tuva_schema_prefix',None) != None -%}{{var('tuva_schema_prefix')}}_claims_common{% else %}claims_common{%- endif -%}
 
 ### transformation
   - name: diagnosis_pivot
@@ -23,7 +23,7 @@ models:
     config:
       database: "{{ var('medicare_cclf_connector_database',var('tuva_database','tuva')) }}"
       schema: |
-        {%- if var('medicare_cclf_connector_schema',None) != None -%}{{ var('medicare_cclf_connector_schema') }}{%- elif var('tuva_schema_prefix',None) != None -%}{{var('tuva_schema_prefix')}}_claims_input{% else %}claims_input{%- endif -%}
+        {%- if var('medicare_cclf_connector_schema',None) != None -%}{{ var('medicare_cclf_connector_schema') }}{%- elif var('tuva_schema_prefix',None) != None -%}{{var('tuva_schema_prefix')}}_claims_common{% else %}claims_common{%- endif -%}
     tests:
       - unique:
           column_name: "(cur_clm_uniq_id)"
@@ -35,7 +35,7 @@ models:
     config:
       database: "{{ var('medicare_cclf_connector_database',var('tuva_database','tuva')) }}"
       schema: |
-        {%- if var('medicare_cclf_connector_schema',None) != None -%}{{ var('medicare_cclf_connector_schema') }}{%- elif var('tuva_schema_prefix',None) != None -%}{{var('tuva_schema_prefix')}}_claims_input{% else %}claims_input{%- endif -%}
+        {%- if var('medicare_cclf_connector_schema',None) != None -%}{{ var('medicare_cclf_connector_schema') }}{%- elif var('tuva_schema_prefix',None) != None -%}{{var('tuva_schema_prefix')}}_claims_common{% else %}claims_common{%- endif -%}
     tests:
       - unique:
           column_name: "(claim_id || '-' || claim_line_number)"
@@ -47,7 +47,7 @@ models:
     config:
       database: "{{ var('medicare_cclf_connector_database',var('tuva_database','tuva')) }}"
       schema: |
-        {%- if var('medicare_cclf_connector_schema',None) != None -%}{{ var('medicare_cclf_connector_schema') }}{%- elif var('tuva_schema_prefix',None) != None -%}{{var('tuva_schema_prefix')}}_claims_input{% else %}claims_input{%- endif -%}
+        {%- if var('medicare_cclf_connector_schema',None) != None -%}{{ var('medicare_cclf_connector_schema') }}{%- elif var('tuva_schema_prefix',None) != None -%}{{var('tuva_schema_prefix')}}_claims_common{% else %}claims_common{%- endif -%}
     tests:
       - unique:
           column_name: "(claim_id || '-' || claim_line_number)"
@@ -59,7 +59,7 @@ models:
     config:
       database: "{{ var('medicare_cclf_connector_database',var('tuva_database','tuva')) }}"
       schema: |
-        {%- if var('medicare_cclf_connector_schema',None) != None -%}{{ var('medicare_cclf_connector_schema') }}{%- elif var('tuva_schema_prefix',None) != None -%}{{var('tuva_schema_prefix')}}_claims_input{% else %}claims_input{%- endif -%}
+        {%- if var('medicare_cclf_connector_schema',None) != None -%}{{ var('medicare_cclf_connector_schema') }}{%- elif var('tuva_schema_prefix',None) != None -%}{{var('tuva_schema_prefix')}}_claims_common{% else %}claims_common{%- endif -%}
     tests:
       - unique:
           column_name: "(claim_id || '-' || claim_line_number)"
@@ -69,7 +69,7 @@ models:
     config:
       database: "{{ var('medicare_cclf_connector_database',var('tuva_database','tuva')) }}"
       schema: |
-        {%- if var('medicare_cclf_connector_schema',None) != None -%}{{ var('medicare_cclf_connector_schema') }}{%- elif var('tuva_schema_prefix',None) != None -%}{{var('tuva_schema_prefix')}}_claims_input{% else %}claims_input{%- endif -%}
+        {%- if var('medicare_cclf_connector_schema',None) != None -%}{{ var('medicare_cclf_connector_schema') }}{%- elif var('tuva_schema_prefix',None) != None -%}{{var('tuva_schema_prefix')}}_claims_common{% else %}claims_common{%- endif -%}
     tests:
       - unique:
           column_name: "(cur_clm_uniq_id)"
@@ -82,7 +82,7 @@ models:
     config:
       database: "{{ var('medicare_cclf_connector_database',var('tuva_database','tuva')) }}"
       schema: |
-        {%- if var('medicare_cclf_connector_schema',None) != None -%}{{ var('medicare_cclf_connector_schema') }}{%- elif var('tuva_schema_prefix',None) != None -%}{{var('tuva_schema_prefix')}}_claims_input{% else %}claims_input{%- endif -%}
+        {%- if var('medicare_cclf_connector_schema',None) != None -%}{{ var('medicare_cclf_connector_schema') }}{%- elif var('tuva_schema_prefix',None) != None -%}{{var('tuva_schema_prefix')}}_claims_common{% else %}claims_common{%- endif -%}
     tests:
        - unique:
            column_name: "(patient_id || '-' || payer || '-' || enrollment_start_date || '-' || enrollment_end_date)"
@@ -92,7 +92,7 @@ models:
     config:
       database: "{{ var('medicare_cclf_connector_database',var('tuva_database','tuva')) }}"
       schema: |
-        {%- if var('medicare_cclf_connector_schema',None) != None -%}{{ var('medicare_cclf_connector_schema') }}{%- elif var('tuva_schema_prefix',None) != None -%}{{var('tuva_schema_prefix')}}_claims_input{% else %}claims_input{%- endif -%}
+        {%- if var('medicare_cclf_connector_schema',None) != None -%}{{ var('medicare_cclf_connector_schema') }}{%- elif var('tuva_schema_prefix',None) != None -%}{{var('tuva_schema_prefix')}}_claims_common{% else %}claims_common{%- endif -%}
     tests:
       - unique:
           column_name: "(claim_id || '-' || claim_line_number)"

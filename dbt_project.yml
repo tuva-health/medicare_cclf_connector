@@ -38,8 +38,8 @@ vars:
 
 ### Schema configuration
 ## *Note*: without any schema configurations, this project will write to the defult schema, "claims_input"
-  # tuva_schema_prefix: test                     # Optional config: prepends the supplied value to ALL schemas
-  # medicare_cclf_connector_schema: claims_input # optional config: overrides the output schema for medicare_cclf_connector only
+  # tuva_schema_prefix: test                      # Optional config: prepends the supplied value to ALL schemas
+  # medicare_cclf_connector_schema: claims_common # optional config: overrides the output schema for medicare_cclf_connector only
 
 ### Individual output configurations for tuva packages
 ## Use these to change the database and schema tuva packages write to.
