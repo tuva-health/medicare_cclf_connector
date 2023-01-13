@@ -2,36 +2,24 @@
 
 # Medicare CCLF Claims Connector
 
-## 🧰 What does the Medicare CCLF Claims Connector do?
+## 🧰 What does this project do?
 
 This connector transforms raw Medicare CCLF claims data into the Tuva Claims Input Layer which enables you to run the other components of the Tuva Project.
 For a detailed overview of what the project does and how it works, check out our [Knowledge Base](https://thetuvaproject.com/docs/getting-started). 
 For information on data models and to view the entire DAG check out our dbt [Docs](https://tuva-health.github.io/medicare_cclf_connector/#!/overview?g_v=1).
 
-## 🧰 What does The Tuva Project do?
-
-The Tuva Project is a collection of dbt packages that builds healthcare concepts (measures, groupers, data quality tests) on top of your raw healthcare claims data. Currently, the Tuva Project consists of the following 5 dbt packages, each of which is a separate GitHub repo that does something specific:
-
-- `data_profiling`: Runs data quality tests to check for common problems specific to healthcare claims data.
-- `claims_preprocessing`: Groups overlapping claims into a single encounter, assigns every claim to 1 of 18 different encounter types and populates core concept tables.
-- `chronic_conditions`: Implements a chronic condition grouper based on ICD-10-CM codes. As a result, it is possible to know whether each patient in your population has any of ~70 different chronic conditions defined for the grouper.
-- `readmissions`: Calculates hospital readmission measures.
-- `terminology`: Makes the latest version of many useful healthcare terminology datasets available as tables in your data warehouse. This package is different from the others because it does not build healthcare concepts on top of your data.
-
-
 ## 🔌 Database Support
 
-- Snowflake
+- BigQuery
 - Redshift
-- *BigQuery - connector only is supported; some marts in The Tuva Project may not run in BigQuery.
-
+- Snowflake
 
 ## ✅ How to get started
 
 ### Pre-requisites
 1. You have Medicare CCLF claims data loaded into a data warehouse.
 2. You have [dbt](https://www.getdbt.com/) installed and configured (i.e. connected to your data warehouse).
-3. This project is dependent on the packages `dbt_utils`, include the following in your packages.yml:
+3. This project is dependent on the package `dbt_utils`, include the following in your packages.yml:
    ```
    packages:
      - package: dbt-labs/dbt_utils
