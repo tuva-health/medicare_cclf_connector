@@ -13,4 +13,4 @@
         , {{ cast_string_or_varchar('clm_thru_dt') }} as clm_thru_dt
         , {{ cast_string_or_varchar('clm_poa_ind') }} as clm_poa_ind
         , {{ cast_string_or_varchar('dgns_prcdr_icd_ind') }} as dgns_prcdr_icd_ind
-    from {{ var('parta_diagnosis_code') }}
+    from {{ source('cclf','parta_diagnosis_code') }}

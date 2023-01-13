@@ -16,16 +16,17 @@ vars:
   input_database: source_data                 # Name of the database where sources feeding this project are stored.
   input_schema: cclf                          # Name of the schema where sources feeding this project is stored.
 
-### Input sources
-## If you have non-standard source names or if you have models building these input tables, change these variables to the
-## appropriate source or ref name.
-  beneficiary_demographics: "{{ source('cclf','beneficiary_demographics') }}"
-  parta_claims_header: "{{ source('cclf','parta_claims_header') }}"
-  parta_claims_revenue_center_detail: "{{ source('cclf','parta_claims_revenue_center_detail') }}"
-  parta_diagnosis_code: "{{ source('cclf','parta_diagnosis_code') }}"
-  parta_procedure_code: "{{ source('cclf','parta_procedure_code') }}"
-  partb_physicians: "{{ source('cclf','partb_physicians') }}"
-  partb_dme: "{{ source('cclf','partb_dme') }}"
+### Input tables
+## This project expects seven standard cclf input tables with the following names.  If your tables have different names,
+## adjust the values of the variables below accordingly.
+  beneficiary_demographics_table: beneficiary_demographics
+  parta_claims_header_table: parta_claims_header
+  parta_claims_revenue_center_detail_table: parta_claims_revenue_center_detail
+  parta_diagnosis_code_table: parta_diagnosis_code
+  parta_procedure_code_table: parta_procedure_code
+  partb_physicians_table: partb_physicians
+  partb_dme_table: partb_dme
+
 
 
 
