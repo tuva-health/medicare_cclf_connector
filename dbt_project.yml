@@ -49,7 +49,7 @@ clean-targets:         # directories to be removed by `dbt clean`
 # using the `{{ config(...) }}` macro.
 models:
   medicare_cclf_connector:
-    +materialized: view
+    +materialized: table
     core:
       +materialized: table
 
