@@ -25,9 +25,9 @@ with demographics as (
 
 ),
 
-medicare_state_fips as (
+fips_state as (
 
-    select * from {{ ref('terminology__medicare_state_fips') }}
+    select * from {{ ref('terminology__fips_state') }}
 
 ),
 
@@ -150,7 +150,7 @@ joined as (
         , {{ cast_string_or_varchar('demographics.bene_last_name') }} as last_name
         , {{ cast_string_or_varchar('demographics.bene_line_1_adr') }} as address
         , {{ cast_string_or_varchar('demographics.geo_zip_plc_name') }} as city
-        , {{ cast_string_or_varchar('medicare_state_fips.state') }} as state
+        , {{ cast_string_or_varchar('fips_state.description') }} as state
         , {{ cast_string_or_varchar('demographics.bene_zip_cd') }} as zip_code
         , {{ cast_string_or_varchar('NULL') }} as phone
         , '{{ var("data_source")}}' as data_source
@@ -158,8 +158,8 @@ joined as (
          left join demographics
             on enrollment_span.bene_mbi_id = demographics.bene_mbi_id
             and enrollment_span.enrollment_end_date_max = demographics.bene_member_month
-         left join medicare_state_fips
-            on demographics.bene_fips_state_cd = medicare_state_fips.fips_code
+         left join fips_state
+            on demographics.bene_fips_state_cd = fips_state.fips_code
 
 )
 
