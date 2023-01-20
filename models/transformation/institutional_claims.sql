@@ -1,6 +1,40 @@
+with claim_line as (
+select distinct
+    a.cur_clm_uniq_id as claim_id
+,   b.clm_line_num as claim_line_number
+,   row_number() over(partition by a.cur_clm_uniq_id order by b.clm_line_num) as claim_row_number
+from {{ source('cclf','parta_claims_header')}} a
+left join {{ source('cclf','parta_claims_revenue_center_detail')}} b
+    on a.cur_clm_uniq_id = b.cur_clm_uniq_id
+)
+
+, add_header_paid_amount as (
+select 
+    a.claim_id
+,   a.claim_line_number
+,   a.claim_row_number
+,   b.clm_pmt_amt as paid_amount
+from claim_line a
+inner join {{ source('cclf','parta_claims_header')}} b
+    on a.claim_id = b.cur_clm_uniq_id
+where a.claim_row_number = 1
+)
+
+, claim_line_a as (
 select
-      {{ cast_string_or_varchar('h.cur_clm_uniq_id') }} as claim_id
-    , cast(d.clm_line_num as integer) as claim_line_number
+    a.claim_id
+,   a.claim_line_number
+,   a.claim_row_number
+,   b.paid_amount
+from claim_line a
+left join add_header_paid_amount b
+    on a.claim_id = b.claim_id
+    and a.claim_row_number = b.claim_row_number
+)
+
+select
+      {{ cast_string_or_varchar('a.claim_id') }} as claim_id
+    , cast(a.claim_line_number as integer) as claim_line_number
     , 'institutional' as claim_type
     , {{ cast_string_or_varchar('h.bene_mbi_id') }} as patient_id
     , {{ cast_string_or_varchar('h.bene_mbi_id') }} as member_id
@@ -31,13 +65,14 @@ select
     , {{ cast_string_or_varchar('NULL') }} as billing_npi
     , {{ cast_string_or_varchar('h.fac_prvdr_npi_num') }} as facility_npi
     , cast(NULL as date) as paid_date
-    , {{ cast_numeric('h.clm_pmt_amt') }} as paid_amount
+    , {{ cast_numeric('a.paid_amount') }} as paid_amount
     , {{ cast_numeric('NULL') }} as allowed_amount
     , {{ cast_numeric('h.clm_mdcr_instnl_tot_chrg_amt') }} as charge_amount
     , case
         when {{ cast_string_or_varchar('dx.dgns_prcdr_icd_ind') }} = '0' then 'icd-10-cm'
         when {{ cast_string_or_varchar('dx.dgns_prcdr_icd_ind') }} = '9' then 'icd-9-cm'
-        else {{ cast_string_or_varchar('dx.dgns_prcdr_icd_ind') }} end as diagnosis_code_type
+        else {{ cast_string_or_varchar('dx.dgns_prcdr_icd_ind') }} 
+      end as diagnosis_code_type
     , {{ cast_string_or_varchar('dx.diagnosis_code_1') }} as diagnosis_code_1
     , {{ cast_string_or_varchar('dx.diagnosis_code_2') }} as diagnosis_code_2
     , {{ cast_string_or_varchar('dx.diagnosis_code_3') }} as diagnosis_code_3
@@ -143,10 +178,13 @@ select
     , {{ try_to_cast_date('px.procedure_date_24', 'YYYY-MM-DD') }} as procedure_date_24
     , {{ try_to_cast_date('px.procedure_date_25', 'YYYY-MM-DD') }} as procedure_date_25
     , '{{ var("data_source")}}' as data_source
-from {{ source('cclf','parta_claims_header')}} h
-inner join {{ source('cclf','parta_claims_revenue_center_detail')}} d
-	on h.cur_clm_uniq_id = d.cur_clm_uniq_id
+from claim_line_a a
+left join {{ source('cclf','parta_claims_header')}} h
+  on a.claim_id = h.cur_clm_uniq_id
+left join {{ source('cclf','parta_claims_revenue_center_detail')}} d
+	on a.claim_id = d.cur_clm_uniq_id
+  and a.claim_line_number = d.clm_line_num
 left join {{ ref('procedure_pivot')}} px
-	on h.cur_clm_uniq_id = px.cur_clm_uniq_id
+	on a.claim_id = px.cur_clm_uniq_id
 left join {{ ref('diagnosis_pivot')}} dx
-	on h.cur_clm_uniq_id = dx.cur_clm_uniq_id
+	on a.claim_id = dx.cur_clm_uniq_id
