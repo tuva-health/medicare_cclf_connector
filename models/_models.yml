@@ -96,3 +96,13 @@ models:
     tests:
       - unique:
           column_name: "(claim_id || '-' || claim_line_number)"
+
+  - name: pharmacy_claim
+    description: Claim line level medical data
+    config:
+      database: "{{ var('medicare_cclf_connector_database',var('tuva_database','tuva')) }}"
+      schema: |
+        {%- if var('medicare_cclf_connector_schema',None) != None -%}{{ var('medicare_cclf_connector_schema') }}{%- elif var('tuva_schema_prefix',None) != None -%}{{var('tuva_schema_prefix')}}_claims_common{% else %}claims_common{%- endif -%}
+    tests:
+      - unique:
+          column_name: "(claim_id || '-' || claim_line_number)"

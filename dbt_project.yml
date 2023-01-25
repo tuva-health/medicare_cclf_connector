@@ -13,6 +13,7 @@ vars:
 #### Medicare CCLF Project Variables ####
 #########################################
 
+## Name identifying this source of data in output tables:
   data_source: cclf             
 
 ## Input Data Configurations:
@@ -57,7 +58,7 @@ vars:
 ## This variable tells the Tuva Project where to write the 
 ## output data to.  You must create this database in your
 ## data warehouse before running the Tuva Project.
-  tuva_database: tuva  
+  tuva_database: tuva
 
 
 ## Optional Configuration Variables:
