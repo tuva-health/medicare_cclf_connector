@@ -53,6 +53,7 @@ select
         || {{ cast_string_or_varchar('h.clm_bill_freq_cd') }}
       as bill_type_code
     , {{ cast_string_or_varchar('h.dgns_drg_cd') }} as ms_drg_code
+    , {{ cast_string_or_varchar('null') }} as apr_drg_code
     ,  lpad({{ cast_string_or_varchar('d.clm_line_prod_rev_ctr_cd') }},4,'0') as revenue_center_code
     , cast(d.clm_line_srvc_unit_qty as integer) as service_unit_quantity
     , {{ cast_string_or_varchar('d.clm_line_hcpcs_cd') }} as hcpcs_code
