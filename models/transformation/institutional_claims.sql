@@ -67,6 +67,7 @@ select
     , {{ cast_string_or_varchar('h.fac_prvdr_npi_num') }} as facility_npi
     , cast(NULL as date) as paid_date
     , {{ cast_numeric('a.paid_amount') }} as paid_amount
+    , {{ cast_numeric('NULL') }} as total_cost_amount
     , {{ cast_numeric('NULL') }} as allowed_amount
     , {{ cast_numeric('h.clm_mdcr_instnl_tot_chrg_amt') }} as charge_amount
     , case

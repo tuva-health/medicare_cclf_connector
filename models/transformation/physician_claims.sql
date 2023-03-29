@@ -30,6 +30,7 @@ select
     , {{ cast_string_or_varchar('NULL') }} as facility_npi
     , cast(NULL as date) as paid_date
     , {{ cast_numeric('clm_line_cvrd_pd_amt') }} as paid_amount
+    , {{ cast_numeric('NULL') }} as total_cost_amount
     , {{ cast_numeric('clm_line_alowd_chrg_amt') }} as allowed_amount
     , {{ cast_numeric('clm_line_alowd_chrg_amt') }} as charge_amount
     , case
