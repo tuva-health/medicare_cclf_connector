@@ -1,5 +1,5 @@
 fixed:
-  account: wjb25259
+  account: wjb25259.us-east-1
   database: CLAIMS
   role: SYSADMIN
   schema: DATALOAD
@@ -9,7 +9,7 @@ fixed:
 prompts:
   user:
     type: string
-    hint: your username, i.e. mshafir@veson.com
+    hint: your snowflake username
   password:
     type: string
     hint: your snowflake password
