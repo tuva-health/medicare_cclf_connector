@@ -62,6 +62,6 @@
 
 {%- macro snowflake__try_to_cast_date(column_name, date_format) -%}
 
-    try_cast( {{ column_name }} as date )
+    try_cast( to_varchar({{ column_name }}) as date )
 
 {%- endmacro -%}

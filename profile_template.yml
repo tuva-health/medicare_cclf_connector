@@ -1,0 +1,15 @@
+fixed:
+  account: wjb25259
+  database: CLAIMS
+  role: SYSADMIN
+  schema: DATALOAD
+  threads: 1
+  type: snowflake
+  warehouse: COMPUTE_WH
+prompts:
+  user:
+    type: string
+    hint: your username, i.e. mshafir@veson.com
+  password:
+    type: string
+    hint: your snowflake password

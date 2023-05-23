@@ -1,8 +1,13 @@
-name: 'medicare_cclf_connector'
+name: 'dbt_claims_sandbox'
 version: '1.0.0'
 config-version: 2
 
-profile: 'default'
+profile: 'dbt_claims_sandbox'
+
+seeds:
+  dbt_claims_sandbox:
+    +database: claims
+    +schema: cclf
 
 
 ## Variables affecting the configuration of this project and the Tuva Project
@@ -19,7 +24,7 @@ vars:
 ## Input Data Configurations:
 ## Set the input_database variable and input_schema variable to the database
 ## and schema where the raw cclf data is stored.
-  input_database: source_data  
+  input_database: claims  
   input_schema: cclf                          
 
 ## This project expects 7 standard cclf input tables with the following names.
@@ -91,6 +96,7 @@ vars:
   # terminology_schema: terminology
   # tuva_chronic_conditions_database: tuva
   # tuva_chronic_conditions_schema: tuva_chronic_conditions
+  cms_hcc_payment_year: 2022
 
 model-paths: ["models"]
 analysis-paths: ["analyses"]
@@ -105,7 +111,7 @@ clean-targets:
   - "dbt_packages"
 
 models:
-  medicare_cclf_connector:
+  dbt_claims_sandbox:
     +bind: false
     +materialized: view
     core:
