@@ -21,7 +21,7 @@ with demographics as (
         , geo_zip_plc_name
         , bene_fips_state_cd
         , bene_zip_cd
-    from {{ source('cclf','beneficiary_demographics') }}
+    from claims.cclf.beneficiary_demographics
 
 ),
 
