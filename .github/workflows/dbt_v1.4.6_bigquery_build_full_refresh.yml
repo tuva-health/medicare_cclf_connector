@@ -20,17 +20,17 @@ jobs:
       - name: dbt-deps
         uses: mwhitaker/dbt-action@v1.4.6
         with:
-          dbt_command: "dbt deps --profiles-dir ./profiles/bigquery"
+          dbt_command: "dbt deps --profiles-dir ./integration_tests/profiles/bigquery"
           
       - name: dbt-debug
         uses: mwhitaker/dbt-action@v1.4.6
         with:
-          dbt_command: "dbt debug --profiles-dir ./profiles/bigquery"
+          dbt_command: "dbt debug --profiles-dir ./integration_tests/profiles/bigquery"
 
       - name: dbt-build
         uses: mwhitaker/dbt-action@v1.4.6
         with:
-          dbt_command: 'dbt build --full-refresh --profiles-dir ./profiles/bigquery  --vars {"tuva_database":"dev-ci-testing","input_database":"dev-ci-testing","input_schema":"connector"}'
+          dbt_command: 'dbt build --full-refresh --profiles-dir ./integration_tests/profiles/bigquery  --vars {"tuva_database":"dev-ci-testing","input_database":"dev-ci-testing","input_schema":"connector"}'
 
 
       - name: Get the result
