@@ -6,7 +6,7 @@ profile: 'dbt_claims_sandbox'
 
 seeds:
   dbt_claims_sandbox:
-    +database: claims
+    +database: sandbox_claims
     +schema: cclf
 
 
@@ -63,7 +63,7 @@ vars:
 ## This variable tells the Tuva Project where to write the 
 ## output data to.  You must create this database in your
 ## data warehouse before running the Tuva Project.
-  tuva_database: tuva
+  tuva_database: sandbox_tuva
 
 
 ## Optional Configuration Variables:

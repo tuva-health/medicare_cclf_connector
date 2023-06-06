@@ -1,7 +1,7 @@
 fixed:
   account: wjb25259.us-east-1
-  database: CLAIMS
-  role: SYSADMIN
+  database: SANDBOX_CLAIMS
+  role: claims_sandbox_role
   schema: CCLF
   threads: 1
   type: snowflake
