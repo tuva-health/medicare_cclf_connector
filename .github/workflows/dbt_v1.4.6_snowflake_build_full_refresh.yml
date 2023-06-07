@@ -35,7 +35,7 @@ jobs:
       - name: dbt-build
         uses: mwhitaker/dbt-action@v1.4.6
         with:
-          dbt_command: 'dbt build --full-refresh --profiles-dir ./integration_tests/profiles/snowflake'
+          dbt_command: 'dbt build --full-refresh --profiles-dir ./integration_tests/profiles/snowflake --vars {"tuva_database":"dev_ci_testing","input_database":"dev_ci_testing","input_schema":"cclf"}'
 
 
       - name: Get the result
