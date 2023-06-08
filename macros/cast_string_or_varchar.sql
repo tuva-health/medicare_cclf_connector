@@ -20,6 +20,12 @@
 
 {%- endmacro -%}
 
+{%- macro postgres__cast_string_or_varchar(column_name) -%}
+
+    cast( {{ column_name }} as varchar )
+
+{%- endmacro -%}
+
 {%- macro redshift__cast_string_or_varchar(column_name) -%}
 
     cast( {{ column_name }} as varchar )
