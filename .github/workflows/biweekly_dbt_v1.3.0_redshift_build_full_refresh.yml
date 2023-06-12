@@ -23,22 +23,17 @@ jobs:
       - name: dbt-deps
         uses: mwhitaker/dbt-action@v1.3.0
         with:
-          dbt_command: "dbt deps --profiles-dir ./profiles/redshift"
-          dbt_project_folder: "integration_tests"
-
+          dbt_command: "dbt deps --profiles-dir ./integration_tests/profiles/redshift"
           
       - name: dbt-debug
         uses: mwhitaker/dbt-action@v1.3.0
         with:
-          dbt_command: "dbt debug --profiles-dir ./profiles/redshift"
-          dbt_project_folder: "integration_tests"
+          dbt_command: "dbt debug --profiles-dir ./integration_tests/profiles/redshift"
 
       - name: dbt-build
         uses: mwhitaker/dbt-action@v1.3.0
         with:
-          dbt_command: 'dbt build --full-refresh --profiles-dir ./profiles/redshift --vars {"tuva_database":"dev_ci_testing","input_database":"dev_ci_testing","input_schema":"cclf"}'
-          dbt_project_folder: "integration_tests"
-
+          dbt_command: 'dbt build --full-refresh --profiles-dir ./integration_tests/profiles/redshift --vars {"tuva_database":"dev_ci_testing","input_database":"dev_ci_testing","input_schema":"cclf"}'
 
       - name: Get the result
         if: ${{ always() }}
