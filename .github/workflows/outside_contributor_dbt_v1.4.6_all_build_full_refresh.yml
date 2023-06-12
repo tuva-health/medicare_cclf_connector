@@ -37,20 +37,17 @@ jobs:
       - name: dbt-deps
         uses: mwhitaker/dbt-action@v1.4.6
         with:
-          dbt_command: "dbt deps --profiles-dir ./profiles/snowflake"
-          dbt_project_folder: "integration_tests"
+          dbt_command: "dbt deps --profiles-dir ./integration_tests/profiles/snowflake"
 
       - name: dbt-debug
         uses: mwhitaker/dbt-action@v1.4.6
         with:
-          dbt_command: "dbt debug --profiles-dir ./profiles/snowflake"
-          dbt_project_folder: "integration_tests"
+          dbt_command: "dbt debug --profiles-dir ./integration_tests/profiles/snowflake"
 
       - name: dbt-build
         uses: mwhitaker/dbt-action@v1.4.6
         with:
-          dbt_command: 'dbt build --full-refresh --profiles-dir ./profiles/snowflake --vars {"tuva_database":"dev_ci_testing","input_database":"dev_ci_testing","input_schema":"cclf"}'
-          dbt_project_folder: "integration_tests"
+          dbt_command: 'dbt build --full-refresh --profiles-dir ./integration_tests/profiles/snowflake --vars {"tuva_database":"dev_ci_testing","input_database":"dev_ci_testing","input_schema":"cclf"}'
 
       - name: Get the result
         if: ${{ always() }}
@@ -69,20 +66,18 @@ jobs:
       - name: dbt-deps
         uses: mwhitaker/dbt-action@v1.4.6
         with:
-          dbt_command: "dbt deps --profiles-dir ./profiles/redshift"
-          dbt_project_folder: "integration_tests"
+          dbt_command: "dbt deps --profiles-dir ./integration_tests/profiles/redshift"
 
       - name: dbt-debug
         uses: mwhitaker/dbt-action@v1.4.6
         with:
-          dbt_command: "dbt debug --profiles-dir ./profiles/redshift"
-          dbt_project_folder: "integration_tests"
+          dbt_command: "dbt debug --profiles-dir ./integration_tests/profiles/redshift"
 
       - name: dbt-build
         uses: mwhitaker/dbt-action@v1.4.6
         with:
-          dbt_command: 'dbt build --full-refresh --profiles-dir ./profiles/redshift --vars {"tuva_database":"dev_ci_testing","input_database":"dev_ci_testing","input_schema":"cclf"}'
-          dbt_project_folder: "integration_tests"
+          dbt_command: 'dbt build --full-refresh --profiles-dir ./integration_tests/profiles/redshift --vars {"tuva_database":"dev_ci_testing","input_database":"dev_ci_testing","input_schema":"cclf"}'
+
       - name: Get the result
         if: ${{ always() }}
         run: echo "${{ steps.dbt-build.outputs.result }}"
@@ -101,20 +96,17 @@ jobs:
       - name: dbt-deps
         uses: mwhitaker/dbt-action@v1.4.6
         with:
-          dbt_command: "dbt deps --profiles-dir ./profiles/bigquery"
-          dbt_project_folder: "integration_tests"
+          dbt_command: "dbt deps --profiles-dir ./integration_tests/profiles/bigquery"
  
       - name: dbt-debug
         uses: mwhitaker/dbt-action@v1.4.6
         with:
-          dbt_command: "dbt debug --profiles-dir ./profiles/bigquery"
-          dbt_project_folder: "integration_tests"
+          dbt_command: "dbt debug --profiles-dir ./integration_tests/profiles/bigquery"
 
       - name: dbt-build
         uses: mwhitaker/dbt-action@v1.4.6
         with:
-          dbt_command: 'dbt build --full-refresh --profiles-dir ./profiles/bigquery  --vars {"tuva_database":"dev-ci-testing","input_database":"dev-ci-testing","input_schema":"cclf"}'
-          dbt_project_folder: "integration_tests"
+          dbt_command: 'dbt build --full-refresh --profiles-dir ./integration_tests/profiles/bigquery  --vars {"tuva_database":"dev-ci-testing","input_database":"dev-ci-testing","input_schema":"cclf"}'
 
       - name: Get the result
         if: ${{ always() }}
