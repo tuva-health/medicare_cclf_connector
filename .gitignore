@@ -4,3 +4,4 @@ dbt_packages/
 logs/
 *.csv
 .DS_Store
+docs/
