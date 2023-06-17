@@ -2,13 +2,13 @@ name: 'medicare_cclf_connector'
 version: '0.1.1'
 config-version: 2
 
-profile: tuva-snowflake
+profile: default
 
 vars:
 
 ## Set the database and schema where raw CCLF data is stored
-  input_database: syntegra_synthetic_sample
-  input_schema: raw          
+  input_database: default
+  input_schema: default    
 
 model-paths: ["models"]
 analysis-paths: ["analyses"]
@@ -22,12 +22,12 @@ clean-targets:
   - "target"
   - "dbt_packages"
 
-models:
-  medicare_cclf_connector:
-    +database: dev_aaron
-  the_tuva_project:
-    +database: dev_aaron
+# models:
+#   medicare_cclf_connector:
+#     +database: default
+#   the_tuva_project:
+#     +database: default
 
-seeds:
-  +database: dev_aaron
+# seeds:
+#   +database: default
 
