@@ -12,4 +12,4 @@
         , {{ cast_string_or_varchar('clm_from_dt') }} as clm_from_dt
         , {{ cast_string_or_varchar('clm_thru_dt') }} as clm_thru_dt
         , {{ cast_string_or_varchar('dgns_prcdr_icd_ind') }} as dgns_prcdr_icd_ind
-    from {{ source('cclf','parta_procedure_code') }}
+    from {{ source('medicare_cclf','parta_procedure_code') }}

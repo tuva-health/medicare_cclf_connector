@@ -135,5 +135,5 @@ select
     , cast(NULL as date) as procedure_date_23
     , cast(NULL as date) as procedure_date_24
     , cast(NULL as date) as procedure_date_25
-    , '{{ var("data_source")}}' as data_source
-from {{ source('cclf','partb_dme')}}
+    , 'medicare cclf' as data_source
+from {{ source('medicare_cclf','partb_dme')}}

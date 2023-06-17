@@ -8,8 +8,8 @@ with demographics as (
 
     select
           bene_mbi_id
-        , bene_sex_cd
-        , bene_race_cd
+        , {{ cast_string_or_varchar('bene_sex_cd') }} as bene_sex_cd
+        , {{ cast_string_or_varchar('bene_race_cd') }} as bene_race_cd
         , bene_dob
         , bene_death_dt
         , {{ try_to_cast_date('bene_member_month', 'YYYY-MM-DD') }} as bene_member_month
@@ -19,9 +19,9 @@ with demographics as (
         , bene_last_name
         , bene_line_1_adr
         , geo_zip_plc_name
-        , bene_fips_state_cd
+        , {{ cast_string_or_varchar('bene_fips_state_cd') }} as bene_fips_state_cd
         , bene_zip_cd
-    from {{ source('cclf','beneficiary_demographics') }}
+    from {{ source('medicare_cclf','beneficiary_demographics') }}
 
 ),
 
@@ -153,7 +153,7 @@ joined as (
         , {{ cast_string_or_varchar('fips_state.ansi_fips_state_name') }} as state
         , {{ cast_string_or_varchar('demographics.bene_zip_cd') }} as zip_code
         , {{ cast_string_or_varchar('NULL') }} as phone
-        , '{{ var("data_source")}}' as data_source
+        , 'medicare cclf' as data_source
     from enrollment_span
          left join demographics
             on enrollment_span.bene_mbi_id = demographics.bene_mbi_id

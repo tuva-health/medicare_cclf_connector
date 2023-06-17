@@ -3,8 +3,8 @@ select distinct
     a.cur_clm_uniq_id as claim_id
 ,   b.clm_line_num as claim_line_number
 ,   row_number() over(partition by a.cur_clm_uniq_id order by b.clm_line_num) as claim_row_number
-from {{ source('cclf','parta_claims_header')}} a
-left join {{ source('cclf','parta_claims_revenue_center_detail')}} b
+from {{ source('medicare_cclf','parta_claims_header')}} a
+left join {{ source('medicare_cclf','parta_claims_revenue_center_detail')}} b
     on a.cur_clm_uniq_id = b.cur_clm_uniq_id
 )
 
@@ -15,7 +15,7 @@ select
 ,   a.claim_row_number
 ,   b.clm_pmt_amt as paid_amount
 from claim_line a
-inner join {{ source('cclf','parta_claims_header')}} b
+inner join {{ source('medicare_cclf','parta_claims_header')}} b
     on a.claim_id = b.cur_clm_uniq_id
 where a.claim_row_number = 1
 )
@@ -179,14 +179,14 @@ select
     , {{ try_to_cast_date('px.procedure_date_23', 'YYYY-MM-DD') }} as procedure_date_23
     , {{ try_to_cast_date('px.procedure_date_24', 'YYYY-MM-DD') }} as procedure_date_24
     , {{ try_to_cast_date('px.procedure_date_25', 'YYYY-MM-DD') }} as procedure_date_25
-    , '{{ var("data_source")}}' as data_source
+    , 'medicare cclf' as data_source
 from claim_line_a a
-left join {{ source('cclf','parta_claims_header')}} h
+left join {{ source('medicare_cclf','parta_claims_header')}} h
   on a.claim_id = h.cur_clm_uniq_id
-left join {{ source('cclf','parta_claims_revenue_center_detail')}} d
+left join {{ source('medicare_cclf','parta_claims_revenue_center_detail')}} d
 	on a.claim_id = d.cur_clm_uniq_id
   and a.claim_line_number = d.clm_line_num
 left join {{ ref('procedure_pivot')}} px
-	on a.claim_id = px.cur_clm_uniq_id
+	on {{ cast_string_or_varchar('a.claim_id') }} = {{ cast_string_or_varchar('px.cur_clm_uniq_id') }}
 left join {{ ref('diagnosis_pivot')}} dx
-	on a.claim_id = dx.cur_clm_uniq_id
+	on {{ cast_string_or_varchar('a.claim_id') }} = {{ cast_string_or_varchar('dx.cur_clm_uniq_id') }}
