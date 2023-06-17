@@ -108,6 +108,6 @@ models:
   medicare_cclf_connector:
     +bind: false
     +materialized: view
-    core:
+    final:
       +materialized: table
 

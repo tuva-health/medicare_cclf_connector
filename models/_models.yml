@@ -74,7 +74,7 @@ models:
       - unique:
           column_name: "(cur_clm_uniq_id)"
 
-### core
+### final
   - name: eligibility
     description: >
       Member enrollment and demographic detail, converts member months to
