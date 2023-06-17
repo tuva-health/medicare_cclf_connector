@@ -1,14 +1,14 @@
 version: 2
 
 sources:
-  - name: cclf
-    database: "{{ var('input_database','tuva') }}"
-    schema:  "{{ var('input_schema','cclf') }}"
+  - name: medicare_cclf
+    database: "{{ var('input_database') }}"
+    schema:  "{{ var('input_schema') }}"
     tables:
-      - name: "{{var('beneficiary_demographics_table','beneficiary_demographics') }}"
-      - name: "{{var('parta_claims_header_table','parta_claims_header') }}"
-      - name: "{{var('parta_claims_revenue_center_detail_table','parta_claims_revenue_center_detail') }}"
-      - name: "{{var('parta_diagnosis_code_table','parta_diagnosis_code') }}"
-      - name: "{{var('parta_procedure_code_table','parta_procedure_code') }}"
-      - name: "{{var('partb_physicians_table','partb_physicians') }}"
-      - name: "{{var('partb_dme_table','partb_dme') }}"
+      - name: beneficiary_demographics
+      - name: parta_claims_header
+      - name: parta_claims_revenue_center_detail
+      - name: parta_diagnosis_code
+      - name: parta_procedure_code
+      - name: partb_physicians
+      - name: partb_dme
