@@ -1,14 +1,16 @@
 name: 'medicare_cclf_connector'
-version: '0.1.1'
+version: '0.1.2'
 config-version: 2
 
 profile: default
 
 vars:
 
-## Set the database and schema where raw CCLF data is stored
+  ## Set the database and schema where raw CCLF data is stored
   input_database: default
-  input_schema: default    
+  input_schema: default
+
+  claims_enabled: true
 
 model-paths: ["models"]
 analysis-paths: ["analyses"]
