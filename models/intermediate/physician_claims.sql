@@ -18,7 +18,7 @@ select
     , cast(NULL as {{ dbt.type_string() }} ) as ms_drg_code
     , cast(NULL as {{ dbt.type_string() }} ) as apr_drg_code
     , cast(NULL as {{ dbt.type_string() }} ) as revenue_center_code
-    , {{ cast_numeric('clm_line_srvc_unit_qty') }} as service_unit_quantity
+    , cast(clm_line_srvc_unit_qty as integer) as service_unit_quantity
     , cast(clm_line_hcpcs_cd as {{ dbt.type_string() }} ) as hcpcs_code
     , cast(hcpcs_1_mdfr_cd as {{ dbt.type_string() }} ) as hcpcs_modifier_1
     , cast(hcpcs_2_mdfr_cd as {{ dbt.type_string() }} ) as hcpcs_modifier_2
@@ -29,8 +29,8 @@ select
     , cast(NULL as {{ dbt.type_string() }} ) as billing_npi
     , cast(NULL as {{ dbt.type_string() }} ) as facility_npi
     , cast(NULL as date) as paid_date
-    , cast(clm_line_cvrd_pd_amt as {{ dbt.type_string() }} ) as paid_amount
-    , cast(NULL as {{ dbt.type_string() }} ) as total_cost_amount
+    , {{ cast_numeric('clm_line_cvrd_pd_amt') }} as paid_amount
+    , {{ cast_numeric('NULL') }} as total_cost_amount
     , {{ cast_numeric('clm_line_alowd_chrg_amt') }} as allowed_amount
     , {{ cast_numeric('clm_line_alowd_chrg_amt') }} as charge_amount
     , case
