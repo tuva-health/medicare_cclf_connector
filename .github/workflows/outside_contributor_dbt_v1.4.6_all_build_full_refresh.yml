@@ -47,7 +47,7 @@ jobs:
       - name: dbt-build
         uses: mwhitaker/dbt-action@v1.4.6
         with:
-          dbt_command: 'dbt build --full-refresh --profiles-dir ./integration_tests/profiles/snowflake --vars {"tuva_database":"dev_ci_testing","input_database":"dev_ci_testing","input_schema":"cclf"}'
+          dbt_command: 'dbt build --full-refresh --profiles-dir ./integration_tests/profiles/snowflake --vars {"tuva_database":"dev_ci_testing","input_database":"dev_ci_testing","input_schema":"cclf","tuva_schema_prefix":"cclf"}'
 
       - name: Get the result
         if: ${{ always() }}
@@ -76,7 +76,7 @@ jobs:
       - name: dbt-build
         uses: mwhitaker/dbt-action@v1.4.6
         with:
-          dbt_command: 'dbt build --full-refresh --profiles-dir ./integration_tests/profiles/redshift --vars {"tuva_database":"dev_ci_testing","input_database":"dev_ci_testing","input_schema":"cclf"}'
+          dbt_command: 'dbt build --full-refresh --profiles-dir ./integration_tests/profiles/redshift --vars {"tuva_database":"dev_ci_testing","input_database":"dev_ci_testing","input_schema":"cclf","tuva_schema_prefix":"cclf"}'
 
       - name: Get the result
         if: ${{ always() }}
@@ -106,7 +106,7 @@ jobs:
       - name: dbt-build
         uses: mwhitaker/dbt-action@v1.4.6
         with:
-          dbt_command: 'dbt build --full-refresh --profiles-dir ./integration_tests/profiles/bigquery  --vars {"tuva_database":"dev-ci-testing","input_database":"dev-ci-testing","input_schema":"cclf"}'
+          dbt_command: 'dbt build --full-refresh --profiles-dir ./integration_tests/profiles/bigquery  --vars {"tuva_database":"dev-ci-testing","input_database":"dev-ci-testing","input_schema":"cclf","tuva_schema_prefix":"cclf"}'
 
       - name: Get the result
         if: ${{ always() }}
