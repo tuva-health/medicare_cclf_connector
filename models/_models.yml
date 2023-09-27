@@ -7,17 +7,23 @@ models:
       Member enrollment and demographic detail, converts member months to 
       enrollment spans.
     config:
-      schema: _tuva_claims
+      schema: |
+        {%- if var('tuva_schema_prefix',None) != None -%}_{{var('tuva_schema_prefix')}}_tuva_claims{% else %}_tuva_claims{%- endif -%}
+      materialized: table
 
   - name: medical_claim
     description: Claim line level medical data.
     config:
-      schema: _tuva_claims
+      schema: |
+        {%- if var('tuva_schema_prefix',None) != None -%}_{{var('tuva_schema_prefix')}}_tuva_claims{% else %}_tuva_claims{%- endif -%}
+      materialized: table
 
   - name: pharmacy_claim
     description: Claim line level pharmacy data.
     config:
-      schema: _tuva_claims
+      schema: |
+        {%- if var('tuva_schema_prefix',None) != None -%}_{{var('tuva_schema_prefix')}}_tuva_claims{% else %}_tuva_claims{%- endif -%}
+      materialized: table
 
 ### intermediate
   - name: diagnosis_pivot
@@ -25,40 +31,47 @@ models:
       Pivot of diagnosis from long (1 row/diagnosis) to wide (multiple diagnosis
       per row).
     config:
-      schema: _tuva_claims
+      schema: |
+        {%- if var('tuva_schema_prefix',None) != None -%}_{{var('tuva_schema_prefix')}}_tuva_claims{% else %}_tuva_claims{%- endif -%}
 
   - name: dme_claims
     description: >
       Mapping of durable medical equipment claims to Tuva claims data model.
     config:
-      schema: _tuva_claims
+      schema: |
+        {%- if var('tuva_schema_prefix',None) != None -%}_{{var('tuva_schema_prefix')}}_tuva_claims{% else %}_tuva_claims{%- endif -%}
 
   - name: institutional_claims
     description: >
       Mapping of institution claims to Tuva claims data model.
     config:
-      schema: _tuva_claims
+      schema: |
+        {%- if var('tuva_schema_prefix',None) != None -%}_{{var('tuva_schema_prefix')}}_tuva_claims{% else %}_tuva_claims{%- endif -%}
 
   - name: physician_claims
     description: >
       Mapping of professional claims to Tuva claims data model.
     config:
-      schema: _tuva_claims
+      schema: |
+        {%- if var('tuva_schema_prefix',None) != None -%}_{{var('tuva_schema_prefix')}}_tuva_claims{% else %}_tuva_claims{%- endif -%}
 
   - name: procedure_pivot
     description: >
       Pivot of procedures from long (1 row/procedure) to wide (multiple 
       procedure per row).
     config:
-      schema: _tuva_claims
+      schema: |
+        {%- if var('tuva_schema_prefix',None) != None -%}_{{var('tuva_schema_prefix')}}_tuva_claims{% else %}_tuva_claims{%- endif -%}
 
 ### staging
   - name: base_parta_diagnosis_code
     description: Base model used as ref for pivot transformation.
     config:
-      schema: _tuva_claims
+      schema: |
+        {%- if var('tuva_schema_prefix',None) != None -%}_{{var('tuva_schema_prefix')}}_tuva_claims{% else %}_tuva_claims{%- endif -%}
 
   - name: base_parta_procedure_code
     description: Base model used as ref for pivot transformation.
     config:
-      schema: _tuva_claims
+      schema: |
+        {%- if var('tuva_schema_prefix',None) != None -%}_{{var('tuva_schema_prefix')}}_tuva_claims{% else %}_tuva_claims{%- endif -%}
