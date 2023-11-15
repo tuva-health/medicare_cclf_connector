@@ -32,9 +32,12 @@ select
     , cast(NULL as {{ dbt.type_string() }} ) as facility_npi
     , cast(NULL as date) as paid_date
     , {{ cast_numeric('clm_line_cvrd_pd_amt') }} as paid_amount
-    , {{ cast_numeric('NULL') }} as total_cost_amount
     , {{ cast_numeric('clm_line_alowd_chrg_amt') }} as allowed_amount
     , {{ cast_numeric('clm_line_alowd_chrg_amt') }} as charge_amount
+    , {{ cast_numeric('NULL') }} as coinsurance_cost_amount
+    , {{ cast_numeric('NULL') }} as copayment_cost_amount
+    , {{ cast_numeric('NULL') }} as deductible_cost_amount
+    , {{ cast_numeric('NULL') }} as total_cost_amount
     , cast(NULL as {{ dbt.type_string() }} ) as diagnosis_code_type
     , cast(NULL as {{ dbt.type_string() }} ) as diagnosis_code_1
     , cast(NULL as {{ dbt.type_string() }} ) as diagnosis_code_2
