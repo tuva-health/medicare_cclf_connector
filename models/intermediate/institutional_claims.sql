@@ -71,9 +71,9 @@ select
     , {{ cast_numeric('a.paid_amount') }} as paid_amount
     , {{ cast_numeric('NULL') }} as allowed_amount
     , {{ cast_numeric('h.clm_mdcr_instnl_tot_chrg_amt') }} as charge_amount
-    , {{ cast_numeric('NULL') }} as coinsurance_cost_amount
-    , {{ cast_numeric('NULL') }} as copayment_cost_amount
-    , {{ cast_numeric('NULL') }} as deductible_cost_amount
+    , {{ cast_numeric('NULL') }} as coinsurance_amount
+    , {{ cast_numeric('NULL') }} as copayment_amount
+    , {{ cast_numeric('NULL') }} as deductible_amount
     , {{ cast_numeric('NULL') }} as total_cost_amount
     , case
         when cast(dx.dgns_prcdr_icd_ind as {{ dbt.type_string() }} ) = '0' then 'icd-10-cm'
