@@ -38,6 +38,8 @@ select
     , 'institutional' as claim_type
     , cast(h.bene_mbi_id as {{ dbt.type_string() }} ) as patient_id
     , cast(h.bene_mbi_id as {{ dbt.type_string() }} ) as member_id
+    , cast(NULL as {{ dbt.type_string() }} ) as payer
+    , cast(NULL as {{ dbt.type_string() }} ) as plan
     , {{ try_to_cast_date('h.clm_from_dt', 'YYYY-MM-DD') }} as claim_start_date
     , {{ try_to_cast_date('h.clm_thru_dt', 'YYYY-MM-DD') }} as claim_end_date
     , cast(NULL as date) as claim_line_start_date
@@ -67,9 +69,12 @@ select
     , cast(h.fac_prvdr_npi_num as {{ dbt.type_string() }} ) as facility_npi
     , cast(NULL as date) as paid_date
     , {{ cast_numeric('a.paid_amount') }} as paid_amount
-    , {{ cast_numeric('NULL') }} as total_cost_amount
     , {{ cast_numeric('NULL') }} as allowed_amount
     , {{ cast_numeric('h.clm_mdcr_instnl_tot_chrg_amt') }} as charge_amount
+    , {{ cast_numeric('NULL') }} as coinsurance_amount
+    , {{ cast_numeric('NULL') }} as copayment_amount
+    , {{ cast_numeric('NULL') }} as deductible_amount
+    , {{ cast_numeric('NULL') }} as total_cost_amount
     , case
         when cast(dx.dgns_prcdr_icd_ind as {{ dbt.type_string() }} ) = '0' then 'icd-10-cm'
         when cast(dx.dgns_prcdr_icd_ind as {{ dbt.type_string() }} ) = '9' then 'icd-9-cm'

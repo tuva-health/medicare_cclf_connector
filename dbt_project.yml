@@ -7,8 +7,8 @@ profile: default
 vars:
 
   ## Set the database and schema where raw CCLF data is stored
-  input_database: default
-  input_schema: default
+  input_database: dev_ci_testing
+  input_schema: cclf
 
   claims_enabled: true
 

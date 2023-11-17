@@ -3,6 +3,8 @@ select
     ,cast(null as {{ dbt.type_string() }}) as CLAIM_LINE_NUMBER
     ,cast(null as {{ dbt.type_string() }}) as PATIENT_ID
     ,cast(null as {{ dbt.type_string() }}) as MEMBER_ID
+    ,cast(null as {{ dbt.type_string() }}) as PAYER
+    ,cast(null as {{ dbt.type_string() }}) as PLAN
     ,cast(null as {{ dbt.type_string() }}) as PRESCRIBING_PROVIDER_NPI
     ,cast(null as {{ dbt.type_string() }}) as DISPENSING_PROVIDER_NPI
     ,cast(null as date ) as DISPENSING_DATE
@@ -13,5 +15,8 @@ select
     ,cast(null as date) as PAID_DATE
     ,cast(null as numeric) as PAID_AMOUNT
     ,cast(null as numeric) as ALLOWED_AMOUNT
+    ,cast(null as numeric) as COPAYMENT_AMOUNT
+    ,cast(null as numeric) as COINSURANCE_AMOUNT
+    ,cast(null as numeric) as DEDUCTIBLE_AMOUNT
     ,cast(null as {{ dbt.type_string() }}) as DATA_SOURCE
 limit 0
