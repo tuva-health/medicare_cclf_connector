@@ -8,7 +8,7 @@ Check out our [docs](https://thetuvaproject.com/) to learn about the project and
 
 ## 🧰  What does this repo do?
 
-The Medicare CCLF Connector is a dbt project that maps raw Medicare CCLF claims data to the Tuva claims data model and then builds all of the Tuva data marts.  This connector expects your CCLF data to be organized into the tables outlined in this [CMS data dictionary](https://www.cms.gov/files/document/cclf-information-packet.pdf), which is the most recent format CMS uses to distribute CCLF files.
+The Medicare CCLF Connector is a dbt project that maps raw Medicare CCLF claims data to the Tuva Input Layer, which is the first step in running the Tuva Project.  This connector expects your CCLF data to be organized into the tables outlined in this [CMS data dictionary](https://www.cms.gov/files/document/cclf-information-packet.pdf), which is the most recent format CMS uses to distribute CCLF files.
 <br/><br/>  
 
 ## 🔌 Database Support
@@ -33,7 +33,7 @@ Next you need to tell dbt where your Medicare CCLF source data is located.  Do t
 <br/><br/> 
 
 ### Step 4: Run
-Now you're ready to run the connector and the Tuva Project.  For example, using dbt CLI you would `cd` to the project root folder in the command line and execute `dbt build`.  Next you're now ready to do claims data analytics!  Check out the [data mart](https://thetuvaproject.com/data-marts/about) in our docs to learn what tables you should query.
+Now you're ready to run the connector and the Tuva Project.  For example, using dbt CLI you would `cd` to the project root folder in the command line and execute `dbt build`.  Next you're now ready to do claims data analytics!
 <br/><br/>
 
 ## 🙋🏻‍♀️ How do I contribute?
