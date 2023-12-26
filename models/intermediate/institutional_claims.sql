@@ -38,8 +38,8 @@ select
     , 'institutional' as claim_type
     , cast(h.bene_mbi_id as {{ dbt.type_string() }} ) as patient_id
     , cast(h.bene_mbi_id as {{ dbt.type_string() }} ) as member_id
-    , cast(NULL as {{ dbt.type_string() }} ) as payer
-    , cast(NULL as {{ dbt.type_string() }} ) as plan
+    , 'medicare' as payer
+    , 'medicare' as plan
     , {{ try_to_cast_date('h.clm_from_dt', 'YYYY-MM-DD') }} as claim_start_date
     , {{ try_to_cast_date('h.clm_thru_dt', 'YYYY-MM-DD') }} as claim_end_date
     , cast(NULL as date) as claim_line_start_date
