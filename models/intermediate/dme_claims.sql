@@ -31,7 +31,10 @@ select
     , cast(payto_prvdr_npi_num as {{ dbt.type_string() }} ) as billing_npi
     , cast(NULL as {{ dbt.type_string() }} ) as facility_npi
     , cast(NULL as date) as paid_date
-    , {{ cast_numeric('clm_line_cvrd_pd_amt') }} as paid_amount
+    , case
+        when cast(clm_adjsmt_type_cd as {{ dbt.type_string() }} ) = '1' then {{ cast_numeric('clm_line_cvrd_pd_amt') }} * -1
+        else {{ cast_numeric('clm_line_cvrd_pd_amt') }}
+      end as paid_amount
     , {{ cast_numeric('clm_line_alowd_chrg_amt') }} as allowed_amount
     , {{ cast_numeric('clm_line_alowd_chrg_amt') }} as charge_amount
     , {{ cast_numeric('NULL') }} as coinsurance_amount
