@@ -28,11 +28,15 @@ Unlike [the Tuva Project](https://github.com/tuva-health/the_tuva_project), this
 Next you need to import the Tuva Project dbt package into the Medicare CCLF Connector dbt project.  For example, using dbt CLI you would `cd` into the directly where you cloned this project to and run `dbt deps` to import the latest version of the Tuva Project.
 <br/><br/> 
 
-### Step 3: Configure Input Database and Schema
+### Step 3: Data Preparation
+The CCLF file specification does not have a field that can be mapped directly to `enrollment_start_date`; therefore, we have added a field called `bene_member_month`. We recommend parsing the monthly enrollment file date from the Beneficiary Demographics filename (e.g., P.A****.ACO.ZC8Y**.Dyymmdd.Thhmmsst) and mapping this date to `bene_member_month`. The connector will handle the rest of the mapping.
+<br/><br/> 
+
+### Step 4: Configure Input Database and Schema
 Next you need to tell dbt where your Medicare CCLF source data is located.  Do this using the variables `input_database` and `input_schema` in the `dbt_project.yml` file.  You also need to configure your `profile` in the `dbt_project.yml`.
 <br/><br/> 
 
-### Step 4: Run
+### Step 5: Run
 Now you're ready to run the connector and the Tuva Project.  For example, using dbt CLI you would `cd` to the project root folder in the command line and execute `dbt build`.  Next you're now ready to do claims data analytics!
 <br/><br/>
 
