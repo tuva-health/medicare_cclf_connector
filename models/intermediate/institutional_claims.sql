@@ -1,35 +1,41 @@
 with claim_line as (
-select distinct
-    a.cur_clm_uniq_id as claim_id
-,   b.clm_line_num as claim_line_number
-,   row_number() over(partition by a.cur_clm_uniq_id order by b.clm_line_num) as claim_row_number
-from {{ source('medicare_cclf','parta_claims_header')}} a
-left join {{ source('medicare_cclf','parta_claims_revenue_center_detail')}} b
-    on a.cur_clm_uniq_id = b.cur_clm_uniq_id
+
+    select distinct
+        a.cur_clm_uniq_id as claim_id
+    ,   b.clm_line_num as claim_line_number
+    ,   row_number() over(partition by a.cur_clm_uniq_id order by b.clm_line_num) as claim_row_number
+    from {{ ref('stg_parta_claims_header') }} a
+    left join {{ ref('stg_parta_claims_revenue_center_detail') }} b
+        on a.cur_clm_uniq_id = b.cur_clm_uniq_id
+
 )
 
 , add_header_paid_amount as (
-select 
-    a.claim_id
-,   a.claim_line_number
-,   a.claim_row_number
-,   b.clm_pmt_amt as paid_amount
-from claim_line a
-inner join {{ source('medicare_cclf','parta_claims_header')}} b
-    on a.claim_id = b.cur_clm_uniq_id
-where a.claim_row_number = 1
+
+    select
+        a.claim_id
+    ,   a.claim_line_number
+    ,   a.claim_row_number
+    ,   b.clm_pmt_amt as paid_amount
+    from claim_line a
+    inner join {{ ref('stg_parta_claims_header') }} b
+        on a.claim_id = b.cur_clm_uniq_id
+    where a.claim_row_number = 1
+
 )
 
 , claim_line_a as (
-select
-    a.claim_id
-,   a.claim_line_number
-,   a.claim_row_number
-,   b.paid_amount
-from claim_line a
-left join add_header_paid_amount b
-    on a.claim_id = b.claim_id
-    and a.claim_row_number = b.claim_row_number
+
+    select
+        a.claim_id
+    ,   a.claim_line_number
+    ,   a.claim_row_number
+    ,   b.paid_amount
+    from claim_line a
+    left join add_header_paid_amount b
+        on a.claim_id = b.claim_id
+        and a.claim_row_number = b.claim_row_number
+
 )
 
 select
@@ -65,7 +71,9 @@ select
     , cast(d.hcpcs_4_mdfr_cd as {{ dbt.type_string() }} ) as hcpcs_modifier_4
     , cast(d.hcpcs_5_mdfr_cd as {{ dbt.type_string() }} ) as hcpcs_modifier_5
     , cast(h.atndg_prvdr_npi_num as {{ dbt.type_string() }} ) as rendering_npi
+    , cast(NULL as {{ dbt.type_string() }} ) as rendering_tin
     , cast(NULL as {{ dbt.type_string() }} ) as billing_npi
+    , cast(NULL as {{ dbt.type_string() }} ) as billing_tin
     , cast(h.fac_prvdr_npi_num as {{ dbt.type_string() }} ) as facility_npi
     , cast(NULL as date) as paid_date
     , case
@@ -187,14 +195,17 @@ select
     , {{ try_to_cast_date('px.procedure_date_23', 'YYYY-MM-DD') }} as procedure_date_23
     , {{ try_to_cast_date('px.procedure_date_24', 'YYYY-MM-DD') }} as procedure_date_24
     , {{ try_to_cast_date('px.procedure_date_25', 'YYYY-MM-DD') }} as procedure_date_25
+    , cast(1 as int) as in_network_flag
     , 'medicare cclf' as data_source
+    , cast(a.file_name as {{ dbt.type_string() }} ) as file_name
+    , cast(a.ingest_datetime as {{ dbt.type_string() }} ) as ingest_datetime
 from claim_line_a a
-left join {{ source('medicare_cclf','parta_claims_header')}} h
+left join {{ ref('stg_parta_claims_header') }} h
   on a.claim_id = h.cur_clm_uniq_id
-left join {{ source('medicare_cclf','parta_claims_revenue_center_detail')}} d
+left join {{ ref('stg_parta_claims_revenue_center_detail') }} d
 	on a.claim_id = d.cur_clm_uniq_id
   and a.claim_line_number = d.clm_line_num
-left join {{ ref('procedure_pivot')}} px
+left join {{ ref('procedure_pivot') }} px
 	on cast(a.claim_id as {{ dbt.type_string() }} ) = cast(px.cur_clm_uniq_id as {{ dbt.type_string() }} )
-left join {{ ref('diagnosis_pivot')}} dx
+left join {{ ref('diagnosis_pivot') }} dx
 	on cast(a.claim_id as {{ dbt.type_string() }} ) = cast(dx.cur_clm_uniq_id as {{ dbt.type_string() }} )
