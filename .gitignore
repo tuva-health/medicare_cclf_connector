@@ -2,3 +2,10 @@
 target/
 dbt_packages/
 logs/
+package-lock.yml
+.idea/
+.DS_Store
+.mise.toml
+.venv/
+package-lock.yml
+.vscode
