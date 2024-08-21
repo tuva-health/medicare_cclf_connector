@@ -13,7 +13,7 @@ with procedure_pivot as (
             , prefix='procedure_code_'
             , quote_identifiers=false
           ) }}
-    from {{ ref('base_parta_procedure_code') }}
+    from {{ ref('stg_parta_procedure_code') }}
     group by
           cur_clm_uniq_id
         , bene_mbi_id
@@ -36,7 +36,7 @@ date_pivot as(
             , prefix='procedure_date_'
             , quote_identifiers=false
           ) }}
-    from {{ ref('base_parta_procedure_code') }}
+    from {{ ref('stg_parta_procedure_code') }}
     group by
           cur_clm_uniq_id
         , bene_mbi_id

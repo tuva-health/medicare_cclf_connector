@@ -13,7 +13,7 @@ with diagnois_pivot as (
             , prefix='diagnosis_code_'
             , quote_identifiers=false
           ) }}
-    from {{ ref('base_parta_diagnosis_code') }}
+    from {{ ref('stg_parta_diagnosis_code') }}
     group by
           cur_clm_uniq_id
         , bene_mbi_id
@@ -36,7 +36,7 @@ poa_pivot as (
             , prefix='diagnosis_poa_'
             , quote_identifiers=false
           ) }}
-    from {{ ref('base_parta_diagnosis_code') }}
+    from {{ ref('stg_parta_diagnosis_code') }}
     group by
           cur_clm_uniq_id
         , bene_mbi_id
