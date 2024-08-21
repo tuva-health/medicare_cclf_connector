@@ -1,0 +1,41 @@
+select
+      cast(cur_clm_uniq_id as {{ dbt.type_string() }}) as cur_clm_uniq_id
+    , cast(prvdr_oscar_num as {{ dbt.type_string() }}) as prvdr_oscar_num
+    , cast(bene_mbi_id as {{ dbt.type_string() }}) as bene_mbi_id
+    , cast(bene_hic_num as {{ dbt.type_string() }}) as bene_hic_num
+    , cast(clm_type_cd as {{ dbt.type_string() }}) as clm_type_cd
+    , cast(clm_from_dt as {{ dbt.type_string() }}) as clm_from_dt
+    , cast(clm_thru_dt as {{ dbt.type_string() }}) as clm_thru_dt
+    , cast(clm_bill_fac_type_cd as {{ dbt.type_string() }}) as clm_bill_fac_type_cd
+    , cast(clm_bill_clsfctn_cd as {{ dbt.type_string() }}) as clm_bill_clsfctn_cd
+    , cast(prncpl_dgns_cd as {{ dbt.type_string() }}) as prncpl_dgns_cd
+    , cast(admtg_dgns_cd as {{ dbt.type_string() }}) as admtg_dgns_cd
+    , cast(clm_mdcr_npmt_rsn_cd as {{ dbt.type_string() }}) as clm_mdcr_npmt_rsn_cd
+    , cast(clm_pmt_amt as {{ dbt.type_string() }}) as clm_pmt_amt
+    , cast(clm_nch_prmry_pyr_cd as {{ dbt.type_string() }}) as clm_nch_prmry_pyr_cd
+    , cast(prvdr_fac_fips_st_cd as {{ dbt.type_string() }}) as prvdr_fac_fips_st_cd
+    , cast(bene_ptnt_stus_cd as {{ dbt.type_string() }}) as bene_ptnt_stus_cd
+    , cast(dgns_drg_cd as {{ dbt.type_string() }}) as dgns_drg_cd
+    , cast(clm_op_srvc_type_cd as {{ dbt.type_string() }}) as clm_op_srvc_type_cd
+    , cast(fac_prvdr_npi_num as {{ dbt.type_string() }}) as fac_prvdr_npi_num
+    , cast(oprtg_prvdr_npi_num as {{ dbt.type_string() }}) as oprtg_prvdr_npi_num
+    , cast(atndg_prvdr_npi_num as {{ dbt.type_string() }}) as atndg_prvdr_npi_num
+    , cast(othr_prvdr_npi_num as {{ dbt.type_string() }}) as othr_prvdr_npi_num
+    , cast(clm_adjsmt_type_cd as {{ dbt.type_string() }}) as clm_adjsmt_type_cd
+    , cast(clm_efctv_dt as {{ dbt.type_string() }}) as clm_efctv_dt
+    , cast(clm_idr_ld_dt as {{ dbt.type_string() }}) as clm_idr_ld_dt
+    , cast(bene_eqtbl_bic_hicn_num as {{ dbt.type_string() }}) as bene_eqtbl_bic_hicn_num
+    , cast(clm_admsn_type_cd as {{ dbt.type_string() }}) as clm_admsn_type_cd
+    , cast(clm_admsn_src_cd as {{ dbt.type_string() }}) as clm_admsn_src_cd
+    , cast(clm_bill_freq_cd as {{ dbt.type_string() }}) as clm_bill_freq_cd
+    , cast(clm_query_cd as {{ dbt.type_string() }}) as clm_query_cd
+    , cast(dgns_prcdr_icd_ind as {{ dbt.type_string() }}) as dgns_prcdr_icd_ind
+    , cast(clm_mdcr_instnl_tot_chrg_amt as {{ dbt.type_string() }}) as clm_mdcr_instnl_tot_chrg_amt
+    , cast(clm_mdcr_ip_pps_cptl_ime_amt as {{ dbt.type_string() }}) as clm_mdcr_ip_pps_cptl_ime_amt
+    , cast(clm_oprtnl_ime_amt as {{ dbt.type_string() }}) as clm_oprtnl_ime_amt
+    , cast(clm_mdcr_ip_pps_dsprprtnt_amt as {{ dbt.type_string() }}) as clm_mdcr_ip_pps_dsprprtnt_amt
+    , cast(clm_hipps_uncompd_care_amt as {{ dbt.type_string() }}) as clm_hipps_uncompd_care_amt
+    , cast(clm_oprtnl_dsprtnt_amt as {{ dbt.type_string() }}) as clm_oprtnl_dsprtnt_amt
+    , cast(file_name as {{ dbt.type_string() }}) as file_name
+    , cast(ingest_datetime as {{ dbt.type_timestamp() }}) as ingest_datetime
+from {{ source('medicare_cclf','parta_claims_header') }}
