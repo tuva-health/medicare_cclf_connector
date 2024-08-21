@@ -19,7 +19,7 @@ select
     , cast(null as numeric) as coinsurance_amount
     , cast(null as numeric) as copayment_amount
     , cast(null as numeric) as deductible_amount
-    , cast(1 as int) as in_network_flag
+    , cast(null as int) as in_network_flag
     , cast(null as {{ dbt.type_string() }}) as data_source
     , cast(null as {{ dbt.type_string() }}) as file_name
     , cast(null as {{ dbt.type_string() }}) as ingest_datetime
