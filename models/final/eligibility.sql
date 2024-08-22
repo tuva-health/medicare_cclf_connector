@@ -22,17 +22,19 @@ with demographics as (
         , geo_zip_plc_name
         , cast(bene_fips_state_cd as {{ dbt.type_string() }} ) as bene_fips_state_cd
         , bene_zip_cd
-    from {{ source('medicare_cclf','beneficiary_demographics') }}
+        , file_name
+        , ingest_datetime
+    from {{ ref('stg_beneficiary_demographics') }}
 
-),
+)
 
-fips_state as (
+, fips_state as (
 
     select * from {{ ref('terminology__ansi_fips_state') }}
 
-),
+)
 
-add_row_num as (
+, add_row_num as (
 
     select *
          , row_number() over (
@@ -41,9 +43,9 @@ add_row_num as (
            ) as row_num
     from demographics
 
-),
+)
 
-add_lag_enrollment as (
+, add_lag_enrollment as (
 
     select
           bene_mbi_id
@@ -55,9 +57,9 @@ add_lag_enrollment as (
           ) as lag_enrollment
     from add_row_num
 
-),
+)
 
-calculate_lag_diff as (
+, calculate_lag_diff as (
 
     select
           bene_mbi_id
@@ -67,9 +69,9 @@ calculate_lag_diff as (
         , {{ datediff('lag_enrollment', 'bene_member_month', 'month') }} as lag_diff
     from add_lag_enrollment
 
-),
+)
 
-calculate_gaps as (
+, calculate_gaps as (
 
      select
           bene_mbi_id
@@ -83,9 +85,9 @@ calculate_gaps as (
           end as gap_flag
     from calculate_lag_diff
 
-),
+)
 
-calculate_groups as (
+, calculate_groups as (
 
      select
           bene_mbi_id
@@ -101,9 +103,9 @@ calculate_groups as (
           ) as row_group
     from calculate_gaps
 
-),
+)
 
-enrollment_span as (
+, enrollment_span as (
 
     select
           bene_mbi_id
@@ -114,13 +116,14 @@ enrollment_span as (
     from calculate_groups
     group by bene_mbi_id, row_group
 
-),
+)
 
-joined as (
+, joined as (
 
     select
           cast(enrollment_span.bene_mbi_id as {{ dbt.type_string() }} ) as patient_id
         , cast(enrollment_span.bene_mbi_id as {{ dbt.type_string() }} ) as member_id
+        , cast(null as {{ dbt.type_string() }} ) as subscriber_id
         , case demographics.bene_sex_cd
             when '0' then 'unknown'
             when '1' then 'male'
@@ -151,12 +154,16 @@ joined as (
         , cast(demographics.bene_mdcr_stus_cd as {{ dbt.type_string() }} ) as medicare_status_code
         , cast(demographics.bene_1st_name as {{ dbt.type_string() }} ) as first_name
         , cast(demographics.bene_last_name as {{ dbt.type_string() }} ) as last_name
+        , cast(null as {{ dbt.type_string() }} ) as social_security_number
+        , cast(null as {{ dbt.type_string() }} ) as subscriber_relation
         , cast(demographics.bene_line_1_adr as {{ dbt.type_string() }} ) as address
         , cast(demographics.geo_zip_plc_name as {{ dbt.type_string() }} ) as city
         , cast(fips_state.ansi_fips_state_name as {{ dbt.type_string() }} ) as state
         , cast(demographics.bene_zip_cd as {{ dbt.type_string() }} ) as zip_code
         , cast(NULL as {{ dbt.type_string() }} ) as phone
         , 'medicare cclf' as data_source
+        , cast(demographics.file_name as {{ dbt.type_string() }} ) as file_name
+        , cast(demographics.ingest_datetime as {{ dbt.type_timestamp() }} ) as ingest_datetime
     from enrollment_span
          left join demographics
             on enrollment_span.bene_mbi_id = demographics.bene_mbi_id
@@ -166,4 +173,33 @@ joined as (
 
 )
 
-select * from joined
+select
+      patient_id
+    , member_id
+    , subscriber_id
+    , gender
+    , race
+    , birth_date
+    , death_date
+    , death_flag
+    , enrollment_start_date
+    , enrollment_end_date
+    , payer
+    , payer_type
+    , plan
+    , original_reason_entitlement_code
+    , dual_status_code
+    , medicare_status_code
+    , first_name
+    , last_name
+    , social_security_number
+    , subscriber_relation
+    , address
+    , city
+    , state
+    , zip_code
+    , phone
+    , data_source
+    , file_name
+    , ingest_datetime
+from joined
