@@ -30,7 +30,7 @@ with demographics as (
 
 , fips_state as (
 
-    select * from {{ ref('terminology__ansi_fips_state') }}
+    select * from {{ ref('reference_data__ansi_fips_state') }}
 
 )
 
@@ -165,10 +165,10 @@ with demographics as (
         , cast(demographics.file_name as {{ dbt.type_string() }} ) as file_name
         , cast(demographics.ingest_datetime as {{ dbt.type_timestamp() }} ) as ingest_datetime
     from enrollment_span
-         left join demographics
+        left join demographics
             on enrollment_span.bene_mbi_id = demographics.bene_mbi_id
             and enrollment_span.enrollment_end_date_max = demographics.bene_member_month
-         left join fips_state
+        left join fips_state
             on demographics.bene_fips_state_cd = fips_state.ansi_fips_state_code
 
 )
