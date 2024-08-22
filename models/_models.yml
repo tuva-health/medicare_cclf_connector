@@ -82,14 +82,14 @@ models:
       schema: |
         {%- if var('tuva_schema_prefix',None) != None -%}_{{var('tuva_schema_prefix')}}_stg_input_layer{% else %}_stg_input_layer{%- endif -%}
 
-  - name: base_parta_diagnosis_code
-    description: Base model used as ref for pivot transformation.
+  - name: stg_parta_diagnosis_code
+    description: Staging model for parta diagnosis codes used as ref for pivot transformation.
     config:
       schema: |
         {%- if var('tuva_schema_prefix',None) != None -%}_{{var('tuva_schema_prefix')}}_stg_input_layer{% else %}_stg_input_layer{%- endif -%}
 
-  - name: base_parta_procedure_code
-    description: Base model used as ref for pivot transformation.
+  - name: stg_parta_procedure_code
+    description: Staging model for parta procedure codes used as ref for pivot transformation.
     config:
       schema: |
         {%- if var('tuva_schema_prefix',None) != None -%}_{{var('tuva_schema_prefix')}}_stg_input_layer{% else %}_stg_input_layer{%- endif -%}
