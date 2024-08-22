@@ -99,7 +99,7 @@ select
     , poa.diagnosis_poa_24
     , poa.diagnosis_poa_25
 from diagnois_pivot as dx
-inner join poa_pivot as poa
-	on dx.cur_clm_uniq_id = poa.cur_clm_uniq_id
+    inner join poa_pivot as poa
+	    on dx.cur_clm_uniq_id = poa.cur_clm_uniq_id
 /* filtering out null values from seed file */
 where dx.cur_clm_uniq_id is not null

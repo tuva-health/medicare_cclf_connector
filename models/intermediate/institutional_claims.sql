@@ -4,9 +4,9 @@ with claim_line as (
         a.cur_clm_uniq_id as claim_id
     ,   b.clm_line_num as claim_line_number
     ,   row_number() over(partition by a.cur_clm_uniq_id order by b.clm_line_num) as claim_row_number
-    from {{ ref('stg_parta_claims_header') }} a
-    left join {{ ref('stg_parta_claims_revenue_center_detail') }} b
-        on a.cur_clm_uniq_id = b.cur_clm_uniq_id
+    from {{ ref('stg_parta_claims_header') }} as a
+        left join {{ ref('stg_parta_claims_revenue_center_detail') }} as b
+            on a.cur_clm_uniq_id = b.cur_clm_uniq_id
 
 )
 
@@ -17,9 +17,9 @@ with claim_line as (
     ,   a.claim_line_number
     ,   a.claim_row_number
     ,   b.clm_pmt_amt as paid_amount
-    from claim_line a
-    inner join {{ ref('stg_parta_claims_header') }} b
-        on a.claim_id = b.cur_clm_uniq_id
+    from claim_line as a
+        inner join {{ ref('stg_parta_claims_header') }} as b
+            on a.claim_id = b.cur_clm_uniq_id
     where a.claim_row_number = 1
 
 )
@@ -31,10 +31,10 @@ with claim_line as (
     ,   a.claim_line_number
     ,   a.claim_row_number
     ,   b.paid_amount
-    from claim_line a
-    left join add_header_paid_amount b
-        on a.claim_id = b.claim_id
-        and a.claim_row_number = b.claim_row_number
+    from claim_line as a
+        left join add_header_paid_amount as b
+            on a.claim_id = b.claim_id
+            and a.claim_row_number = b.claim_row_number
 
 )
 
@@ -197,15 +197,15 @@ select
     , {{ try_to_cast_date('px.procedure_date_25', 'YYYY-MM-DD') }} as procedure_date_25
     , cast(1 as int) as in_network_flag
     , 'medicare cclf' as data_source
-    , cast(a.file_name as {{ dbt.type_string() }} ) as file_name
-    , cast(a.ingest_datetime as {{ dbt.type_timestamp() }} ) as ingest_datetime
-from claim_line_a a
-left join {{ ref('stg_parta_claims_header') }} h
-  on a.claim_id = h.cur_clm_uniq_id
-left join {{ ref('stg_parta_claims_revenue_center_detail') }} d
-	on a.claim_id = d.cur_clm_uniq_id
-  and a.claim_line_number = d.clm_line_num
-left join {{ ref('procedure_pivot') }} px
-	on cast(a.claim_id as {{ dbt.type_string() }} ) = cast(px.cur_clm_uniq_id as {{ dbt.type_string() }} )
-left join {{ ref('diagnosis_pivot') }} dx
-	on cast(a.claim_id as {{ dbt.type_string() }} ) = cast(dx.cur_clm_uniq_id as {{ dbt.type_string() }} )
+    , cast(h.file_name as {{ dbt.type_string() }} ) as file_name
+    , cast(h.ingest_datetime as {{ dbt.type_timestamp() }} ) as ingest_datetime
+from claim_line_a as a
+    left join {{ ref('stg_parta_claims_header') }} as h
+        on a.claim_id = h.cur_clm_uniq_id
+    left join {{ ref('stg_parta_claims_revenue_center_detail') }} as d
+	    on a.claim_id = d.cur_clm_uniq_id
+        and a.claim_line_number = d.clm_line_num
+    left join {{ ref('procedure_pivot') }} as px
+	    on cast(a.claim_id as {{ dbt.type_string() }} ) = cast(px.cur_clm_uniq_id as {{ dbt.type_string() }} )
+    left join {{ ref('diagnosis_pivot') }} as dx
+	    on cast(a.claim_id as {{ dbt.type_string() }} ) = cast(dx.cur_clm_uniq_id as {{ dbt.type_string() }} )
