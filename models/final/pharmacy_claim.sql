@@ -22,5 +22,5 @@ select
     , cast(null as int) as in_network_flag
     , cast(null as {{ dbt.type_string() }}) as data_source
     , cast(null as {{ dbt.type_string() }}) as file_name
-    , cast(null as {{ dbt.type_string() }}) as ingest_datetime
+    , cast(null as {{ dbt.type_timestamp() }}) as ingest_datetime
 limit 0
