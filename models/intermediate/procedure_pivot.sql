@@ -13,7 +13,7 @@ with procedure_pivot as (
             , prefix='procedure_code_'
             , quote_identifiers=false
           ) }}
-    from {{ ref('base_parta_procedure_code') }}
+    from {{ ref('stg_parta_procedure_code') }}
     group by
           cur_clm_uniq_id
         , bene_mbi_id
@@ -36,7 +36,7 @@ date_pivot as(
             , prefix='procedure_date_'
             , quote_identifiers=false
           ) }}
-    from {{ ref('base_parta_procedure_code') }}
+    from {{ ref('stg_parta_procedure_code') }}
     group by
           cur_clm_uniq_id
         , bene_mbi_id
@@ -98,8 +98,8 @@ select
     , d.procedure_date_23
     , d.procedure_date_24
     , d.procedure_date_25
-from procedure_pivot px
-inner join date_pivot d
-	on px.cur_clm_uniq_id = d.cur_clm_uniq_id
+from procedure_pivot as px
+    inner join date_pivot as d
+	    on px.cur_clm_uniq_id = d.cur_clm_uniq_id
 /* filtering out null values from seed file */
 where px.cur_clm_uniq_id is not null

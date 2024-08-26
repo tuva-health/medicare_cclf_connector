@@ -1,22 +1,26 @@
 select
-    cast(null as {{ dbt.type_string() }}) as CLAIM_ID
-    ,cast(null as {{ dbt.type_string() }}) as CLAIM_LINE_NUMBER
-    ,cast(null as {{ dbt.type_string() }}) as PATIENT_ID
-    ,cast(null as {{ dbt.type_string() }}) as MEMBER_ID
-    ,cast(null as {{ dbt.type_string() }}) as PAYER
-    ,cast(null as {{ dbt.type_string() }}) as PLAN
-    ,cast(null as {{ dbt.type_string() }}) as PRESCRIBING_PROVIDER_NPI
-    ,cast(null as {{ dbt.type_string() }}) as DISPENSING_PROVIDER_NPI
-    ,cast(null as date ) as DISPENSING_DATE
-    ,cast(null as {{ dbt.type_string() }}) as NDC_CODE
-    ,cast(null as int) as QUANTITY
-    ,cast(null as int) as DAYS_SUPPLY
-    ,cast(null as int) as REFILLS
-    ,cast(null as date) as PAID_DATE
-    ,cast(null as numeric) as PAID_AMOUNT
-    ,cast(null as numeric) as ALLOWED_AMOUNT
-    ,cast(null as numeric) as COPAYMENT_AMOUNT
-    ,cast(null as numeric) as COINSURANCE_AMOUNT
-    ,cast(null as numeric) as DEDUCTIBLE_AMOUNT
-    ,cast(null as {{ dbt.type_string() }}) as DATA_SOURCE
+      cast(null as {{ dbt.type_string() }}) as claim_id
+    , cast(null as {{ dbt.type_string() }}) as claim_line_number
+    , cast(null as {{ dbt.type_string() }}) as patient_id
+    , cast(null as {{ dbt.type_string() }}) as member_id
+    , cast(null as {{ dbt.type_string() }}) as payer
+    , cast(null as {{ dbt.type_string() }}) as plan
+    , cast(null as {{ dbt.type_string() }}) as prescribing_provider_npi
+    , cast(null as {{ dbt.type_string() }}) as dispensing_provider_npi
+    , cast(null as date ) as dispensing_date
+    , cast(null as {{ dbt.type_string() }}) as ndc_code
+    , cast(null as int) as quantity
+    , cast(null as int) as days_supply
+    , cast(null as int) as refills
+    , cast(null as date) as paid_date
+    , cast(null as numeric) as paid_amount
+    , cast(null as numeric) as allowed_amount
+    , cast(null as numeric) as charge_amount
+    , cast(null as numeric) as coinsurance_amount
+    , cast(null as numeric) as copayment_amount
+    , cast(null as numeric) as deductible_amount
+    , cast(null as int) as in_network_flag
+    , cast(null as {{ dbt.type_string() }}) as data_source
+    , cast(null as {{ dbt.type_string() }}) as file_name
+    , cast(null as {{ dbt.type_timestamp() }}) as ingest_datetime
 limit 0

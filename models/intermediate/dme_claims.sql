@@ -28,7 +28,9 @@ select
     , cast(NULL as {{ dbt.type_string() }} ) as hcpcs_modifier_4
     , cast(NULL as {{ dbt.type_string() }} ) as hcpcs_modifier_5
     , cast(ordrg_prvdr_npi_num as {{ dbt.type_string() }} ) as rendering_npi
+    , cast(NULL as {{ dbt.type_string() }} ) as rendering_tin
     , cast(payto_prvdr_npi_num as {{ dbt.type_string() }} ) as billing_npi
+    , cast(NULL as {{ dbt.type_string() }} ) as billing_tin
     , cast(NULL as {{ dbt.type_string() }} ) as facility_npi
     , cast(NULL as date) as paid_date
     , case
@@ -143,5 +145,8 @@ select
     , cast(NULL as date) as procedure_date_23
     , cast(NULL as date) as procedure_date_24
     , cast(NULL as date) as procedure_date_25
+    , cast(1 as int) as in_network_flag
     , 'medicare cclf' as data_source
-from {{ source('medicare_cclf','partb_dme')}}
+    , cast(file_name as {{ dbt.type_string() }} ) as file_name
+    , cast(ingest_datetime as {{ dbt.type_timestamp() }} ) as ingest_datetime
+from {{ ref('stg_partb_dme') }}

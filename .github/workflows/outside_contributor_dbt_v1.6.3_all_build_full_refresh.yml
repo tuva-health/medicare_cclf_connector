@@ -1,4 +1,4 @@
-name: outside_contributor_dbt_v1.4.6_all_build_full_refresh
+name: outside_contributor_dbt_v1.6.3_all_build_full_refresh
 
 on:
   workflow_dispatch:
@@ -35,17 +35,17 @@ jobs:
           ref: refs/pull/${{ github.event.inputs.prNumber }}/merge
   
       - name: dbt-deps
-        uses: mwhitaker/dbt-action@v1.4.6
+        uses: mwhitaker/dbt-action@v1.6.3
         with:
           dbt_command: "dbt deps --profiles-dir ./integration_tests/profiles/snowflake"
 
       - name: dbt-debug
-        uses: mwhitaker/dbt-action@v1.4.6
+        uses: mwhitaker/dbt-action@v1.6.3
         with:
           dbt_command: "dbt debug --profiles-dir ./integration_tests/profiles/snowflake"
 
       - name: dbt-build
-        uses: mwhitaker/dbt-action@v1.4.6
+        uses: mwhitaker/dbt-action@v1.6.3
         with:
           dbt_command: 'dbt build --full-refresh --profiles-dir ./integration_tests/profiles/snowflake --vars {"tuva_database":"dev_ci_testing","input_database":"dev_ci_testing","input_schema":"cclf","tuva_schema_prefix":"cclf"}'
 
@@ -64,17 +64,17 @@ jobs:
           ref: refs/pull/${{ github.event.inputs.prNumber }}/merge
 
       - name: dbt-deps
-        uses: mwhitaker/dbt-action@v1.4.6
+        uses: mwhitaker/dbt-action@v1.6.3
         with:
           dbt_command: "dbt deps --profiles-dir ./integration_tests/profiles/redshift"
 
       - name: dbt-debug
-        uses: mwhitaker/dbt-action@v1.4.6
+        uses: mwhitaker/dbt-action@v1.6.3
         with:
           dbt_command: "dbt debug --profiles-dir ./integration_tests/profiles/redshift"
 
       - name: dbt-build
-        uses: mwhitaker/dbt-action@v1.4.6
+        uses: mwhitaker/dbt-action@v1.6.3
         with:
           dbt_command: 'dbt build --full-refresh --profiles-dir ./integration_tests/profiles/redshift --vars {"tuva_database":"dev_ci_testing","input_database":"dev_ci_testing","input_schema":"cclf","tuva_schema_prefix":"cclf"}'
 
@@ -94,17 +94,17 @@ jobs:
           ref: refs/pull/${{ github.event.inputs.prNumber }}/merge
 
       - name: dbt-deps
-        uses: mwhitaker/dbt-action@v1.4.6
+        uses: mwhitaker/dbt-action@v1.6.3
         with:
           dbt_command: "dbt deps --profiles-dir ./integration_tests/profiles/bigquery"
  
       - name: dbt-debug
-        uses: mwhitaker/dbt-action@v1.4.6
+        uses: mwhitaker/dbt-action@v1.6.3
         with:
           dbt_command: "dbt debug --profiles-dir ./integration_tests/profiles/bigquery"
 
       - name: dbt-build
-        uses: mwhitaker/dbt-action@v1.4.6
+        uses: mwhitaker/dbt-action@v1.6.3
         with:
           dbt_command: 'dbt build --full-refresh --profiles-dir ./integration_tests/profiles/bigquery  --vars {"tuva_database":"dev-ci-testing","input_database":"dev-ci-testing","input_schema":"cclf","tuva_schema_prefix":"cclf"}'
 

@@ -13,7 +13,7 @@ with diagnois_pivot as (
             , prefix='diagnosis_code_'
             , quote_identifiers=false
           ) }}
-    from {{ ref('base_parta_diagnosis_code') }}
+    from {{ ref('stg_parta_diagnosis_code') }}
     group by
           cur_clm_uniq_id
         , bene_mbi_id
@@ -36,7 +36,7 @@ poa_pivot as (
             , prefix='diagnosis_poa_'
             , quote_identifiers=false
           ) }}
-    from {{ ref('base_parta_diagnosis_code') }}
+    from {{ ref('stg_parta_diagnosis_code') }}
     group by
           cur_clm_uniq_id
         , bene_mbi_id
@@ -99,7 +99,7 @@ select
     , poa.diagnosis_poa_24
     , poa.diagnosis_poa_25
 from diagnois_pivot as dx
-inner join poa_pivot as poa
-	on dx.cur_clm_uniq_id = poa.cur_clm_uniq_id
+    inner join poa_pivot as poa
+	    on dx.cur_clm_uniq_id = poa.cur_clm_uniq_id
 /* filtering out null values from seed file */
 where dx.cur_clm_uniq_id is not null
