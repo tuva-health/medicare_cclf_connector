@@ -44,8 +44,8 @@ select
     , {{ cast_numeric('NULL') }} as deductible_amount
     , {{ cast_numeric('NULL') }} as total_cost_amount
     , case
-        when cast(dgns_prcdr_icd_ind as {{ dbt.type_string() }} ) = '0' then 'icd-10-pcs'
-        when cast(dgns_prcdr_icd_ind as {{ dbt.type_string() }} ) = '9' then 'icd-9-pcs'
+        when cast(dgns_prcdr_icd_ind as {{ dbt.type_string() }} ) = '0' then 'icd-10-cm'
+        when cast(dgns_prcdr_icd_ind as {{ dbt.type_string() }} ) = '9' then 'icd-9-cm'
         else cast(dgns_prcdr_icd_ind as {{ dbt.type_string() }} ) end as diagnosis_code_type
     , cast(clm_dgns_1_cd as {{ dbt.type_string() }} ) as diagnosis_code_1
     , cast(clm_dgns_2_cd as {{ dbt.type_string() }} ) as diagnosis_code_2
