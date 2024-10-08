@@ -35,7 +35,7 @@ select
     , clm_oprtnl_ime_amt
     , clm_mdcr_ip_pps_dsprprtnt_amt
     , clm_hipps_uncompd_care_amt
-    , clm_oprtnl_dsprtnt_amt
+    , clm_oprtnl_dsprprtnt_amt
     , file_name
     , ingest_datetime
 from {{ source('medicare_cclf','parta_claims_header') }}
