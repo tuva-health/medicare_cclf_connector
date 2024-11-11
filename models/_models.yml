@@ -9,6 +9,26 @@ models:
     config:
       schema: |
         {%- if var('tuva_schema_prefix',None) != None -%}{{var('tuva_schema_prefix')}}_input_layer{% else %}input_layer{%- endif -%}
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - member_id
+            - enrollment_start_date
+            - enrollment_end_date
+    columns:
+      - name: member_id
+        tests:
+          - not_null
+      - name: enrollment_start_date
+        tests:
+          - not_null:
+              config:
+                severity: warn
+      - name: enrollment_end_date
+        tests:
+          - not_null:
+              config:
+                severity: warn
 
   - name: medical_claim
     description: Claim line level medical data.
@@ -59,6 +79,28 @@ models:
     config:
       schema: |
         {%- if var('tuva_schema_prefix',None) != None -%}_{{var('tuva_schema_prefix')}}_int_input_layer{% else %}_int_input_layer{%- endif -%}
+
+  - name: int_beneficiary_demographics_deduped
+    description: Dedupe attribution.
+    config:
+      schema: |
+        {%- if var('tuva_schema_prefix',None) != None -%}_{{var('tuva_schema_prefix')}}_int_input_layer{% else %}_int_input_layer{%- endif -%}
+      alias: beneficiary_demographics_deduped
+
+  - name: int_beneficiary_xref_deduped
+    description: Dedupe beneficiary xref.
+    config:
+      schema: |
+        {%- if var('tuva_schema_prefix',None) != None -%}_{{var('tuva_schema_prefix')}}_int_input_layer{% else %}_int_input_layer{%- endif -%}
+      alias: beneficiary_xref_deduped
+
+  - name: int_enrollment
+    description: >
+      Prepare enrollment data, convert member months to spans if needed.
+    config:
+      schema: |
+        {%- if var('tuva_schema_prefix',None) != None -%}_{{var('tuva_schema_prefix')}}_int_input_layer{% else %}_int_input_layer{%- endif -%}
+      alias: enrollment
 
 ### staging
   - name: stg_beneficiary_demographics
