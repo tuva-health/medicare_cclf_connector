@@ -7,10 +7,13 @@ profile: default
 vars:
 
   ## Set the database and schema where raw CCLF data is stored
-  input_database: dev_ci_testing
-  input_schema: cclf
+  input_database: tuva
+  input_schema: raw_data
 
   claims_enabled: true
+
+  ## Uncomment this variable if enrollment source is member months
+#  member_months_enrollment: true
 
 model-paths: ["models"]
 analysis-paths: ["analyses"]
@@ -24,12 +27,11 @@ clean-targets:
   - "target"
   - "dbt_packages"
 
-# models:
-#   medicare_cclf_connector:
-#     +database: default
-#   the_tuva_project:
-#     +database: default
-
-# seeds:
-#   +database: default
-
+models:
+   medicare_cclf_connector:
+     final:
+       +materialized: table
+     intermediate:
+       +materialized: table
+     staging:
+       +materialized: view
