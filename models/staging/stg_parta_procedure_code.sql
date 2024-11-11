@@ -11,4 +11,6 @@ select
     , cast(clm_from_dt as {{ dbt.type_string() }} ) as clm_from_dt
     , cast(clm_thru_dt as {{ dbt.type_string() }} ) as clm_thru_dt
     , cast(dgns_prcdr_icd_ind as {{ dbt.type_string() }} ) as dgns_prcdr_icd_ind
+    , cast(file_name as {{ dbt.type_string() }} ) as file_name
+    , cast(file_date as date) as file_date
 from {{ source('medicare_cclf','parta_procedure_code') }}

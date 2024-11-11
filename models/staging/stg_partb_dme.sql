@@ -25,5 +25,5 @@ select
     , clm_line_alowd_chrg_amt
     , clm_disp_cd
     , file_name
-    , ingest_datetime
+    , file_date
 from {{ source('medicare_cclf','partb_dme') }}

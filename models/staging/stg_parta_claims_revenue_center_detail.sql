@@ -22,5 +22,5 @@ select
     , hcpcs_5_mdfr_cd
     , clm_rev_apc_hipps_cd
     , file_name
-    , ingest_datetime
+    , file_date
 from {{ source('medicare_cclf','parta_claims_revenue_center_detail') }}

@@ -9,21 +9,18 @@ models:
     config:
       schema: |
         {%- if var('tuva_schema_prefix',None) != None -%}{{var('tuva_schema_prefix')}}_input_layer{% else %}input_layer{%- endif -%}
-      materialized: table
 
   - name: medical_claim
     description: Claim line level medical data.
     config:
       schema: |
         {%- if var('tuva_schema_prefix',None) != None -%}{{var('tuva_schema_prefix')}}_input_layer{% else %}input_layer{%- endif -%}
-      materialized: table
 
   - name: pharmacy_claim
     description: Claim line level pharmacy data.
     config:
       schema: |
         {%- if var('tuva_schema_prefix',None) != None -%}{{var('tuva_schema_prefix')}}_input_layer{% else %}input_layer{%- endif -%}
-      materialized: table
 
 ### intermediate
   - name: diagnosis_pivot
@@ -65,43 +62,77 @@ models:
 
 ### staging
   - name: stg_beneficiary_demographics
-    description: Staging model for beneficiary demographics.
+    description: Staging model for beneficiary demographics (CCLF8).
     config:
       schema: |
         {%- if var('tuva_schema_prefix',None) != None -%}_{{var('tuva_schema_prefix')}}_stg_input_layer{% else %}_stg_input_layer{%- endif -%}
+      alias: beneficiary_demographics
+
+  - name: stg_beneficiary_xref
+    description: Staging model for beneficiary cross-reference (CCLF9).
+    config:
+      schema: |
+        {%- if var('tuva_schema_prefix',None) != None -%}_{{var('tuva_schema_prefix')}}_stg_input_layer{% else %}_stg_input_layer{%- endif -%}
+      alias: beneficiary_xref
+
+  - name: stg_enrollment
+    description: >
+      Staging model for custom enrollment data (e.g. attribution, beneficiary 
+      alignment, etc.).
+    config:
+      schema: |
+        {%- if var('tuva_schema_prefix',None) != None -%}_{{var('tuva_schema_prefix')}}_stg_input_layer{% else %}_stg_input_layer{%- endif -%}
+      alias: enrollment
 
   - name: stg_parta_claims_header
-    description: Staging model for parta claims header.
+    description: Staging model for parta claims header (CCLF1).
     config:
       schema: |
         {%- if var('tuva_schema_prefix',None) != None -%}_{{var('tuva_schema_prefix')}}_stg_input_layer{% else %}_stg_input_layer{%- endif -%}
+      alias: parta_claims_header
 
   - name: stg_parta_claims_revenue_center_detail
-    description: Staging model for parta claims revenue center detail.
+    description: Staging model for parta claims revenue center detail (CCLF2).
     config:
       schema: |
         {%- if var('tuva_schema_prefix',None) != None -%}_{{var('tuva_schema_prefix')}}_stg_input_layer{% else %}_stg_input_layer{%- endif -%}
+      alias: parta_claims_revenue_center_detail
 
   - name: stg_parta_diagnosis_code
-    description: Staging model for parta diagnosis codes used as ref for pivot transformation.
+    description: >
+      Staging model for parta diagnosis codes used as ref for pivot 
+      transformation (CCLF4).
     config:
       schema: |
         {%- if var('tuva_schema_prefix',None) != None -%}_{{var('tuva_schema_prefix')}}_stg_input_layer{% else %}_stg_input_layer{%- endif -%}
+      alias: parta_diagnosis_code
 
   - name: stg_parta_procedure_code
-    description: Staging model for parta procedure codes used as ref for pivot transformation.
+    description: >
+      Staging model for parta procedure codes used as ref for pivot 
+      transformation (CCLF3).
     config:
       schema: |
         {%- if var('tuva_schema_prefix',None) != None -%}_{{var('tuva_schema_prefix')}}_stg_input_layer{% else %}_stg_input_layer{%- endif -%}
+      alias: parta_procedure_code
 
   - name: stg_partb_dme
-    description: Staging model for partb dme.
+    description: Staging model for partb dme (CCLF6).
     config:
       schema: |
         {%- if var('tuva_schema_prefix',None) != None -%}_{{var('tuva_schema_prefix')}}_stg_input_layer{% else %}_stg_input_layer{%- endif -%}
+      alias: partb_dme
 
   - name: stg_partb_physicians
-    description: Staging model for partb physicians.
+    description: Staging model for partb physicians (CCLF5).
     config:
       schema: |
         {%- if var('tuva_schema_prefix',None) != None -%}_{{var('tuva_schema_prefix')}}_stg_input_layer{% else %}_stg_input_layer{%- endif -%}
+      alias: partb_physicians
+
+  - name: stg_partd_claims
+    description: Staging model for partd prescription drug information (CCLF7).
+    config:
+      schema: |
+        {%- if var('tuva_schema_prefix',None) != None -%}_{{var('tuva_schema_prefix')}}_stg_input_layer{% else %}_stg_input_layer{%- endif -%}
+      alias: partd_claims
