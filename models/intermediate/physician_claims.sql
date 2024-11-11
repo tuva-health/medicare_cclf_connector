@@ -151,5 +151,5 @@ select
     , cast(1 as int) as in_network_flag
     , 'medicare cclf' as data_source
     , cast(file_name as {{ dbt.type_string() }} ) as file_name
-    , cast(ingest_datetime as {{ dbt.type_timestamp() }} ) as ingest_datetime
+    , cast(file_date as {{ dbt.type_timestamp() }} ) as ingest_datetime
 from {{ ref('stg_partb_physicians') }}

@@ -198,7 +198,7 @@ select
     , cast(1 as int) as in_network_flag
     , 'medicare cclf' as data_source
     , cast(h.file_name as {{ dbt.type_string() }} ) as file_name
-    , cast(h.ingest_datetime as {{ dbt.type_timestamp() }} ) as ingest_datetime
+    , cast(h.file_date as {{ dbt.type_timestamp() }} ) as ingest_datetime
 from claim_line_a as a
     left join {{ ref('stg_parta_claims_header') }} as h
         on a.claim_id = h.cur_clm_uniq_id
