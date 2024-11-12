@@ -1,10 +1,14 @@
 with unioned as (
 
-    select * from {{ ref('institutional_claims')}}
-    union all
-    select * from {{ ref('physician_claims')}}
-    union all
-    select * from {{ ref('dme_claims')}}
+    {{ dbt_utils.union_relations(
+
+        relations=[
+              ref('dme_claims')
+            , ref('int_institutional_claim_deduped')
+            , ref('physician_claims')
+        ]
+
+    ) }}
 
 )
 
