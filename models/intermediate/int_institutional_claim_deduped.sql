@@ -263,7 +263,7 @@ with sort_adjusted_claims as (
 )
 
 /*
-    removing claim lines where claim ID+line number not unique
+    remove claim lines where claim ID+line number not unique
     even after adjustments have been applied
 */
 , claim_dupes as (

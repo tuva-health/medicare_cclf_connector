@@ -214,7 +214,7 @@ with staged_data as (
      - Most Recent MBI
 
     2) sort grouped claims by the latest CLM_EFCTV_DT and CUR_CLM_UNIQ_ID since CLM_ADJSMT_TYPE_CD
-    is not used consistently to indciate the latest final version of an adjusted claim.
+    is not used consistently to indicate the latest final version of an adjusted claim.
 
     3) change paid amounts to negative for canceled claims
 

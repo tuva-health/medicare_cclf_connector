@@ -43,7 +43,7 @@ with staged_data as (
 
 )
 
-/* casting data types before pivot operation */
+/* cast data types before pivot operation */
 select
       cast(cur_clm_uniq_id as {{ dbt.type_string() }} ) as cur_clm_uniq_id
     , cast(bene_mbi_id as {{ dbt.type_string() }} ) as bene_mbi_id

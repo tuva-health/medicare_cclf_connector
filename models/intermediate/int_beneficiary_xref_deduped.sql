@@ -26,7 +26,7 @@ with staged_data as (
 
 /*
     check if the current MBI is listed as a previous MBI and
-    get it's latest current MBI
+    get its latest current MBI
 */
 , check_crnt_num as (
     select
