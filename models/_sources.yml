@@ -12,3 +12,4 @@ sources:
       - name: parta_procedure_code
       - name: partb_physicians
       - name: partb_dme
+      - name: beneficiary_xref

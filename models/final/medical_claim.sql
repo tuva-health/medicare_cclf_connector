@@ -1,10 +1,14 @@
 with unioned as (
 
-    select * from {{ ref('institutional_claims')}}
-    union all
-    select * from {{ ref('physician_claims')}}
-    union all
-    select * from {{ ref('dme_claims')}}
+    {{ dbt_utils.union_relations(
+
+        relations=[
+              ref('int_dme_claim_deduped')
+            , ref('int_institutional_claim_deduped')
+            , ref('int_physician_claim_deduped')
+        ]
+
+    ) }}
 
 )
 
@@ -15,7 +19,7 @@ select
     , patient_id
     , member_id
     , payer
-    , plan
+    , "plan"
     , claim_start_date
     , claim_end_date
     , claim_line_start_date

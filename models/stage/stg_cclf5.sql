@@ -49,5 +49,6 @@ select
     , clm_dgns_12_cd
     , hcpcs_betos_cd
     , file_name
+    , null as file_row_number
     , ingest_datetime
 from {{ source('medicare_cclf','partb_physicians') }}

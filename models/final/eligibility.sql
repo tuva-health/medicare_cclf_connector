@@ -148,7 +148,7 @@ with demographics as (
         , enrollment_span.enrollment_end_date_last as enrollment_end_date
         , 'medicare' as payer
         , 'medicare' as payer_type
-        , 'medicare' as plan
+        , 'medicare' as "plan"
         , cast(bene_orgnl_entlmt_rsn_cd as {{ dbt.type_string() }} ) as original_reason_entitlement_code
         , cast(demographics.bene_dual_stus_cd as {{ dbt.type_string() }} ) as dual_status_code
         , cast(demographics.bene_mdcr_stus_cd as {{ dbt.type_string() }} ) as medicare_status_code
@@ -186,7 +186,7 @@ select
     , enrollment_end_date
     , payer
     , payer_type
-    , plan
+    , "plan"
     , original_reason_entitlement_code
     , dual_status_code
     , medicare_status_code

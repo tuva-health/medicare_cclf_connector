@@ -22,5 +22,6 @@ select
     , hcpcs_5_mdfr_cd
     , clm_rev_apc_hipps_cd
     , file_name
+    , null as file_row_number
     , ingest_datetime
 from {{ source('medicare_cclf','parta_claims_revenue_center_detail') }}

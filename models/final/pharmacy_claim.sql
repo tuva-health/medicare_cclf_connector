@@ -4,7 +4,7 @@ select
     , cast(null as {{ dbt.type_string() }}) as patient_id
     , cast(null as {{ dbt.type_string() }}) as member_id
     , cast(null as {{ dbt.type_string() }}) as payer
-    , cast(null as {{ dbt.type_string() }}) as plan
+    , cast(null as {{ dbt.type_string() }}) as "plan"
     , cast(null as {{ dbt.type_string() }}) as prescribing_provider_npi
     , cast(null as {{ dbt.type_string() }}) as dispensing_provider_npi
     , cast(null as date ) as dispensing_date
@@ -23,4 +23,3 @@ select
     , cast(null as {{ dbt.type_string() }}) as data_source
     , cast(null as {{ dbt.type_string() }}) as file_name
     , cast(null as {{ dbt.type_timestamp() }}) as ingest_datetime
-limit 0

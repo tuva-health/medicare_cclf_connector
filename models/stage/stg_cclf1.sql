@@ -36,6 +36,15 @@ select
     , clm_mdcr_ip_pps_dsprprtnt_amt
     , clm_hipps_uncompd_care_amt
     , clm_oprtnl_dsprprtnt_amt
+    , clm_blg_prvdr_oscar_num
+    , clm_blg_prvdr_npi_num
+    , clm_oprtg_prvdr_npi_num
+    , clm_atndg_prvdr_npi_num
+    , clm_othr_prvdr_npi_num
+    , clm_cntl_num
+    , clm_org_cntl_num
+    , clm_cntrctr_num
     , file_name
+    , null as file_row_number
     , ingest_datetime
 from {{ source('medicare_cclf','parta_claims_header') }}
