@@ -1,3 +1,4 @@
+/* prep address details for concat */
 with demographics as (
 
     select
@@ -22,15 +23,33 @@ with demographics as (
         , bene_part_a_enrlmt_bgn_dt
         , bene_part_b_enrlmt_bgn_dt
         , bene_line_1_adr
-        , bene_line_2_adr
-        , bene_line_3_adr
-        , bene_line_4_adr
-        , bene_line_5_adr
-        , bene_line_6_adr
+        , case
+            when bene_line_2_adr is null then ''
+            else cast({{ dbt.concat(["', '","bene_line_2_adr"]) }} as {{ dbt.type_string() }} )
+          end as bene_line_2_adr
+        , case
+            when bene_line_3_adr is null then ''
+            else cast({{ dbt.concat(["', '","bene_line_3_adr"]) }} as {{ dbt.type_string() }} )
+          end as bene_line_3_adr
+        , case
+            when bene_line_4_adr is null then ''
+            else cast({{ dbt.concat(["', '","bene_line_4_adr"]) }} as {{ dbt.type_string() }} )
+          end as bene_line_4_adr
+        , case
+            when bene_line_5_adr is null then ''
+            else cast({{ dbt.concat(["', '","bene_line_5_adr"]) }} as {{ dbt.type_string() }} )
+          end as bene_line_5_adr
+        , case
+            when bene_line_6_adr is null then ''
+            else cast({{ dbt.concat(["', '","bene_line_6_adr"]) }} as {{ dbt.type_string() }} )
+          end as bene_line_6_adr
         , geo_zip_plc_name
         , geo_usps_state_cd
         , geo_zip5_cd
-        , geo_zip4_cd
+        , case
+            when geo_zip4_cd is null then ''
+            else cast({{ dbt.concat(["'-'","geo_zip4_cd"]) }} as {{ dbt.type_string() }} )
+            end as geo_zip4_cd
         , file_name
         , file_date
     from {{ ref('int_beneficiary_demographics_deduped') }}
@@ -89,18 +108,24 @@ with demographics as (
         , cast(demographics.bene_last_name as {{ dbt.type_string() }} ) as last_name
         , cast(null as {{ dbt.type_string() }} ) as social_security_number
         , cast('self' as {{ dbt.type_string() }} ) as subscriber_relation
-        , cast(demographics.bene_line_1_adr as {{ dbt.type_string() }} )
-            || case when demographics.bene_line_2_adr is not null then ', '|| cast(demographics.bene_line_2_adr as {{ dbt.type_string() }} ) else '' end
-            || case when demographics.bene_line_3_adr is not null then ', '|| cast(demographics.bene_line_3_adr as {{ dbt.type_string() }} ) else '' end
-            || case when demographics.bene_line_4_adr is not null then ', '|| cast(demographics.bene_line_4_adr as {{ dbt.type_string() }} ) else '' end
-            || case when demographics.bene_line_5_adr is not null then ', '|| cast(demographics.bene_line_5_adr as {{ dbt.type_string() }} ) else '' end
-            || case when demographics.bene_line_6_adr is not null then ', '|| cast(demographics.bene_line_6_adr as {{ dbt.type_string() }} ) else '' end
-          as address
+        , {{ dbt.concat(
+            [
+                "demographics.bene_line_1_adr",
+                "demographics.bene_line_2_adr",
+                "demographics.bene_line_3_adr",
+                "demographics.bene_line_4_adr",
+                "demographics.bene_line_5_adr",
+                "demographics.bene_line_6_adr"
+            ]
+          ) }} as address
         , cast(demographics.geo_zip_plc_name as {{ dbt.type_string() }} ) as city
         , cast(demographics.geo_usps_state_cd as {{ dbt.type_string() }} ) as state
-        , cast(demographics.geo_zip5_cd as {{ dbt.type_string() }} )
-            || case when demographics.geo_zip4_cd is not null then '-'||cast(demographics.geo_zip4_cd as {{ dbt.type_string() }} ) else '' end
-          as zip_code
+        , {{ dbt.concat(
+            [
+                "demographics.geo_zip5_cd",
+                "demographics.geo_zip4_cd"
+            ]
+          ) }} as zip_code
         , cast(NULL as {{ dbt.type_string() }} ) as phone
         , 'medicare cclf' as data_source
         , cast(demographics.file_name as {{ dbt.type_string() }} ) as file_name

@@ -365,15 +365,15 @@ with sort_adjusted_claims as (
             else clm_line_thru_dt
           end as claim_line_end_date
         , case
-            when nullif(clm_admsn_type_cd,'~') is not null then clm_from_dt
+            when clm_admsn_type_cd is not null then clm_from_dt
             else null
           end as admission_date
         , case
-            when nullif(clm_admsn_type_cd,'~') is not null then clm_thru_dt
+            when clm_admsn_type_cd is not null then clm_thru_dt
             else null
           end as discharge_date
-        , nullif(clm_admsn_src_cd,'~') as admit_source_code
-        , nullif(clm_admsn_type_cd,'~') as admit_type_code
+        , clm_admsn_src_cd as admit_source_code
+        , clm_admsn_type_cd as admit_type_code
         , lpad(bene_ptnt_stus_cd, 2, '0') as discharge_disposition_code
         , null as place_of_service_code
         , {{ dbt.concat(
