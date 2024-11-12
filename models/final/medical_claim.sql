@@ -3,7 +3,7 @@ with unioned as (
     {{ dbt_utils.union_relations(
 
         relations=[
-              ref('dme_claims')
+              ref('int_dme_claim_deduped')
             , ref('int_institutional_claim_deduped')
             , ref('physician_claims')
         ]
