@@ -11,16 +11,35 @@ with sort_adjusted_claims as (
         , clm_line_thru_dt
         , clm_line_hcpcs_cd
         , clm_line_cvrd_pd_amt
-        , payto_prvdr_npi_num
-        , ordrg_prvdr_npi_num
+        , clm_rndrg_prvdr_tax_num
+        , rndrg_prvdr_npi_num
         , clm_adjsmt_type_cd
         , clm_efctv_dt
         , clm_cntl_num
         , clm_line_alowd_chrg_amt
+        , clm_line_srvc_unit_qty
+        , hcpcs_1_mdfr_cd
+        , hcpcs_2_mdfr_cd
+        , hcpcs_3_mdfr_cd
+        , hcpcs_4_mdfr_cd
+        , hcpcs_5_mdfr_cd
+        , clm_dgns_1_cd
+        , clm_dgns_2_cd
+        , clm_dgns_3_cd
+        , clm_dgns_4_cd
+        , clm_dgns_5_cd
+        , clm_dgns_6_cd
+        , clm_dgns_7_cd
+        , clm_dgns_8_cd
+        , dgns_prcdr_icd_ind
+        , clm_dgns_9_cd
+        , clm_dgns_10_cd
+        , clm_dgns_11_cd
+        , clm_dgns_12_cd
         , file_name
         , file_date
         , row_num
-    from {{ ref('int_dme_claim_adr') }}
+    from {{ ref('int_physician_claim_adr') }}
 
 )
 
@@ -62,12 +81,31 @@ with sort_adjusted_claims as (
         , sort_adjusted_claims.clm_line_thru_dt
         , sort_adjusted_claims.clm_line_hcpcs_cd
         , line_totals.sum_clm_line_cvrd_pd_amt as clm_line_cvrd_pd_amt
-        , sort_adjusted_claims.payto_prvdr_npi_num
-        , sort_adjusted_claims.ordrg_prvdr_npi_num
+        , sort_adjusted_claims.clm_rndrg_prvdr_tax_num
+        , sort_adjusted_claims.rndrg_prvdr_npi_num
         , sort_adjusted_claims.clm_adjsmt_type_cd
         , sort_adjusted_claims.clm_efctv_dt
         , sort_adjusted_claims.clm_cntl_num
         , line_totals.sum_clm_line_alowd_chrg_amt as clm_line_alowd_chrg_amt
+        , sort_adjusted_claims.clm_line_srvc_unit_qty
+        , sort_adjusted_claims.hcpcs_1_mdfr_cd
+        , sort_adjusted_claims.hcpcs_2_mdfr_cd
+        , sort_adjusted_claims.hcpcs_3_mdfr_cd
+        , sort_adjusted_claims.hcpcs_4_mdfr_cd
+        , sort_adjusted_claims.hcpcs_5_mdfr_cd
+        , sort_adjusted_claims.clm_dgns_1_cd
+        , sort_adjusted_claims.clm_dgns_2_cd
+        , sort_adjusted_claims.clm_dgns_3_cd
+        , sort_adjusted_claims.clm_dgns_4_cd
+        , sort_adjusted_claims.clm_dgns_5_cd
+        , sort_adjusted_claims.clm_dgns_6_cd
+        , sort_adjusted_claims.clm_dgns_7_cd
+        , sort_adjusted_claims.clm_dgns_8_cd
+        , sort_adjusted_claims.dgns_prcdr_icd_ind
+        , sort_adjusted_claims.clm_dgns_9_cd
+        , sort_adjusted_claims.clm_dgns_10_cd
+        , sort_adjusted_claims.clm_dgns_11_cd
+        , sort_adjusted_claims.clm_dgns_12_cd
         , sort_adjusted_claims.file_name
         , sort_adjusted_claims.file_date
     from sort_adjusted_claims
@@ -95,7 +133,7 @@ with sort_adjusted_claims as (
 
 , remove_dupes as (
 
-    select filter_claims.*
+  select filter_claims.*
     from filter_claims
         left join claim_dupes
             on filter_claims.cur_clm_uniq_id = claim_dupes.cur_clm_uniq_id
@@ -140,16 +178,16 @@ with sort_adjusted_claims as (
         , null as ms_drg_code
         , null as apr_drg_code
         , null as revenue_center_code
-        , null as service_unit_quantity
+        , clm_line_srvc_unit_qty as service_unit_quantity
         , clm_line_hcpcs_cd as hcpcs_code
-        , null as hcpcs_modifier_1
-        , null as hcpcs_modifier_2
-        , null as hcpcs_modifier_3
-        , null as hcpcs_modifier_4
-        , null as hcpcs_modifier_5
-        , ordrg_prvdr_npi_num as rendering_npi
-        , null as rendering_tin
-        , payto_prvdr_npi_num as billing_npi
+        , hcpcs_1_mdfr_cd as hcpcs_modifier_1
+        , hcpcs_2_mdfr_cd as hcpcs_modifier_2
+        , hcpcs_3_mdfr_cd as hcpcs_modifier_3
+        , hcpcs_4_mdfr_cd as hcpcs_modifier_4
+        , hcpcs_5_mdfr_cd as hcpcs_modifier_5
+        , rndrg_prvdr_npi_num as rendering_npi
+        , clm_rndrg_prvdr_tax_num as rendering_tin
+        , null as billing_npi
         , null as billing_tin
         , null as facility_npi
         , case
@@ -163,19 +201,23 @@ with sort_adjusted_claims as (
         , null as copayment_amount
         , null as deductible_amount
         , null as total_cost_amount
-        , null as diagnosis_code_type
-        , null as diagnosis_code_1
-        , null as diagnosis_code_2
-        , null as diagnosis_code_3
-        , null as diagnosis_code_4
-        , null as diagnosis_code_5
-        , null as diagnosis_code_6
-        , null as diagnosis_code_7
-        , null as diagnosis_code_8
-        , null as diagnosis_code_9
-        , null as diagnosis_code_10
-        , null as diagnosis_code_11
-        , null as diagnosis_code_12
+        , case
+            when cast(dgns_prcdr_icd_ind as {{ dbt.type_string() }} ) = '0' then 'icd-10-cm'
+            when cast(dgns_prcdr_icd_ind as {{ dbt.type_string() }} ) = '9' then 'icd-9-cm'
+            else cast(dgns_prcdr_icd_ind as {{ dbt.type_string() }} )
+          end as diagnosis_code_type
+        , clm_dgns_1_cd as diagnosis_code_1
+        , clm_dgns_2_cd as diagnosis_code_2
+        , clm_dgns_3_cd as diagnosis_code_3
+        , clm_dgns_4_cd as diagnosis_code_4
+        , clm_dgns_5_cd as diagnosis_code_5
+        , clm_dgns_6_cd as diagnosis_code_6
+        , clm_dgns_7_cd as diagnosis_code_7
+        , clm_dgns_8_cd as diagnosis_code_8
+        , clm_dgns_9_cd as diagnosis_code_9
+        , clm_dgns_10_cd as diagnosis_code_10
+        , clm_dgns_11_cd as diagnosis_code_11
+        , clm_dgns_12_cd as diagnosis_code_12
         , null as diagnosis_code_13
         , null as diagnosis_code_14
         , null as diagnosis_code_15

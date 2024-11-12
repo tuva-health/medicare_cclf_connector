@@ -165,13 +165,6 @@ models:
                 severity: warn
 
 ### intermediate
-  - name: physician_claims
-    description: >
-      Mapping of professional claims to Tuva claims data model.
-    config:
-      schema: |
-        {%- if var('tuva_schema_prefix',None) != None -%}_{{var('tuva_schema_prefix')}}_int_input_layer{% else %}_int_input_layer{%- endif -%}
-
   - name: int_beneficiary_demographics_deduped
     description: Dedupe attribution.
     config:
@@ -254,6 +247,21 @@ models:
       schema: |
         {%- if var('tuva_schema_prefix',None) != None -%}_{{var('tuva_schema_prefix')}}_int_input_layer{% else %}_int_input_layer{%- endif -%}
       alias: pharmacy_claim_deduped
+
+  - name: int_physician_claim_adr
+    description: Applying adjustment logic for part B physician claims.
+    config:
+      schema: |
+        {%- if var('tuva_schema_prefix',None) != None -%}_{{var('tuva_schema_prefix')}}_int_input_layer{% else %}_int_input_layer{%- endif -%}
+      alias: physician_claim_adr
+
+  - name: int_physician_claim_deduped
+    description: >
+      Final de-duplication, transformation logic, and mapping missing fields.
+    config:
+      schema: |
+        {%- if var('tuva_schema_prefix',None) != None -%}_{{var('tuva_schema_prefix')}}_int_input_layer{% else %}_int_input_layer{%- endif -%}
+      alias: physician_claim_deduped
 
   - name: int_procedure_deduped
     description: Dedupe procedures before pivot.

@@ -5,7 +5,7 @@ with unioned as (
         relations=[
               ref('int_dme_claim_deduped')
             , ref('int_institutional_claim_deduped')
-            , ref('physician_claims')
+            , ref('int_physician_claim_deduped')
         ]
 
     ) }}
