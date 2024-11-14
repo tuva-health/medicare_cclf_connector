@@ -94,13 +94,13 @@ with demographics as (
           end as integer) as death_flag
         , cast(enrollment.enrollment_start_date as date) as enrollment_start_date
         , case
-            when enrollment.enrollment_end_date >= current_date then {{ last_day('current_date', 'month') }}
-            when enrollment.enrollment_end_date is null then {{ last_day('current_date', 'month') }}
+            when enrollment.enrollment_end_date >= {{ dbt.current_timestamp() }} then {{ last_day(dbt.current_timestamp(), 'month') }}
+            when enrollment.enrollment_end_date is null then {{ last_day(dbt.current_timestamp(), 'month') }}
             else cast(enrollment.enrollment_end_date as date)
           end as enrollment_end_date
         , 'medicare' as payer
         , 'medicare' as payer_type
-        , 'medicare' as plan
+        , 'medicare' as {{ the_tuva_project.quote_column('plan') }}
         , cast(demographics.bene_orgnl_entlmt_rsn_cd as {{ dbt.type_string() }} ) as original_reason_entitlement_code
         , cast(demographics.bene_dual_stus_cd as {{ dbt.type_string() }} ) as dual_status_code
         , cast(demographics.bene_mdcr_stus_cd as {{ dbt.type_string() }} ) as medicare_status_code
@@ -149,7 +149,7 @@ select
     , enrollment_end_date
     , payer
     , payer_type
-    , plan
+    , {{ the_tuva_project.quote_column('plan') }}
     , original_reason_entitlement_code
     , dual_status_code
     , medicare_status_code

@@ -12,7 +12,7 @@ with deduped_claims as (
         , cast(patient_id as {{ dbt.type_string() }}) as patient_id
         , cast(member_id as {{ dbt.type_string() }}) as member_id
         , cast(payer as {{ dbt.type_string() }}) as payer
-        , cast(plan as {{ dbt.type_string() }}) as plan
+        , cast({{ the_tuva_project.quote_column('plan') }} as {{ dbt.type_string() }}) as {{ the_tuva_project.quote_column('plan') }}
         , cast(prescribing_provider_npi as {{ dbt.type_string() }}) as prescribing_provider_npi
         , cast(dispensing_provider_npi as {{ dbt.type_string() }}) as dispensing_provider_npi
         , cast(dispensing_date as date) as dispensing_date
@@ -30,7 +30,7 @@ with deduped_claims as (
         , cast(in_network_flag as integer) as in_network_flag
         , cast(data_source as {{ dbt.type_string() }}) as data_source
         , cast(file_name as {{ dbt.type_string() }}) as file_name
-        , cast(ingest_datetime as datetime) as ingest_datetime
+        , cast(ingest_datetime as {{ dbt.type_timestamp() }}) as ingest_datetime
     from deduped_claims
 
 )
@@ -41,7 +41,7 @@ select
     , patient_id
     , member_id
     , payer
-    , plan
+    , {{ the_tuva_project.quote_column('plan') }}
     , prescribing_provider_npi
     , dispensing_provider_npi
     , dispensing_date

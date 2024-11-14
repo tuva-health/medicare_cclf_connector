@@ -151,7 +151,7 @@ with sort_adjusted_claims as (
         , current_bene_mbi_id as patient_id
         , current_bene_mbi_id as member_id
         , cast('medicare' as {{ dbt.type_string() }} ) as payer
-        , cast('medicare' as {{ dbt.type_string() }} ) as plan
+        , cast('medicare' as {{ dbt.type_string() }} ) as {{ the_tuva_project.quote_column('plan') }}
         , case
             when clm_from_dt in ('1000-01-01', '9999-12-31') then null
             else clm_from_dt
@@ -324,7 +324,7 @@ with sort_adjusted_claims as (
         , cast(patient_id as {{ dbt.type_string() }} ) as patient_id
         , cast(member_id as {{ dbt.type_string() }} ) as member_id
         , cast(payer as {{ dbt.type_string() }} ) as payer
-        , cast(plan as {{ dbt.type_string() }} ) as plan
+        , cast({{ the_tuva_project.quote_column('plan') }} as {{ dbt.type_string() }} ) as {{ the_tuva_project.quote_column('plan') }}
         , {{ try_to_cast_date('claim_start_date', 'YYYY-MM-DD') }} as claim_start_date
         , {{ try_to_cast_date('claim_end_date', 'YYYY-MM-DD') }} as claim_end_date
         , {{ try_to_cast_date('claim_line_start_date', 'YYYY-MM-DD') }} as claim_line_start_date
@@ -464,7 +464,7 @@ with sort_adjusted_claims as (
         , cast(in_network_flag as integer) as in_network_flag
         , cast(data_source as {{ dbt.type_string() }} ) as data_source
         , cast(file_name as {{ dbt.type_string() }} ) as file_name
-        , cast(ingest_datetime as {{ dbt.type_timestamp() }} ) as ingest_datetime
+        , cast(ingest_datetime as {{ dbt.type_string() }} ) as ingest_datetime
     from mapping
 
 )
@@ -476,7 +476,7 @@ select
     , patient_id
     , member_id
     , payer
-    , plan
+    , {{ the_tuva_project.quote_column('plan') }}
     , claim_start_date
     , claim_end_date
     , claim_line_start_date

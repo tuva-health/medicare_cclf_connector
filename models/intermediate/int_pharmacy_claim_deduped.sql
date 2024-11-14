@@ -92,7 +92,7 @@ with sort_adjusted_claims as (
         , current_bene_mbi_id as patient_id
         , current_bene_mbi_id as member_id
         , cast('medicare' as {{ dbt.type_string() }} ) as payer
-        , cast('medicare'as {{ dbt.type_string() }} ) as plan
+        , cast('medicare'as {{ dbt.type_string() }} ) as {{ the_tuva_project.quote_column('plan') }}
         , case
             when prvdr_prsbng_id_qlfyr_cd in ('1', '01')
             then clm_prsbng_prvdr_gnrc_id_num
@@ -129,7 +129,7 @@ select
     , patient_id
     , member_id
     , payer
-    , plan
+    , {{ the_tuva_project.quote_column('plan') }}
     , prescribing_provider_npi
     , dispensing_provider_npi
     , dispensing_date
