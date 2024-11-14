@@ -60,8 +60,8 @@ with demographics as (
 
     select
           current_bene_mbi_id
-        , enrollment_start_date
-        , enrollment_end_date
+        , cast(enrollment_start_date as date) as enrollment_start_date
+        , cast(enrollment_end_date as date) as enrollment_end_date
     from {{ ref('int_enrollment') }}
 
 )
@@ -94,8 +94,8 @@ with demographics as (
           end as integer) as death_flag
         , cast(enrollment.enrollment_start_date as date) as enrollment_start_date
         , case
-            when enrollment.enrollment_end_date >= current_date then last_day(current_date, 'month')
-            when enrollment.enrollment_end_date is null then last_day(current_date, 'month')
+            when enrollment.enrollment_end_date >= current_date then {{ last_day('current_date', 'month') }}
+            when enrollment.enrollment_end_date is null then {{ last_day('current_date', 'month') }}
             else cast(enrollment.enrollment_end_date as date)
           end as enrollment_end_date
         , 'medicare' as payer

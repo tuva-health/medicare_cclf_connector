@@ -342,12 +342,12 @@ with sort_adjusted_claims as (
     select
           remove_dupes.cur_clm_uniq_id as claim_id
           /* fill in line number for claims with no revenue center details */
-        , coalesce(clm_line_num, 1) as claim_line_number
-        , 'institutional' as claim_type
+        , coalesce(cast(clm_line_num as integer), 1) as claim_line_number
+        , cast('institutional' as {{ dbt.type_string() }} ) as claim_type
         , current_bene_mbi_id as patient_id
         , current_bene_mbi_id as member_id
-        , 'medicare' as payer
-        , 'medicare' as plan
+        , cast('medicare' as {{ dbt.type_string() }} ) as payer
+        , cast('medicare'as {{ dbt.type_string() }} ) as plan
         , case
             when clm_from_dt in ('1000-01-01', '9999-12-31') then null
             else clm_from_dt
@@ -365,17 +365,17 @@ with sort_adjusted_claims as (
             else clm_line_thru_dt
           end as claim_line_end_date
         , case
-            when clm_admsn_type_cd is not null then clm_from_dt
-            else null
+            when clm_admsn_type_cd is not null then cast(clm_from_dt as date)
+            else cast(null as date)
           end as admission_date
         , case
-            when clm_admsn_type_cd is not null then clm_thru_dt
-            else null
+            when clm_admsn_type_cd is not null then cast(clm_thru_dt as date)
+            else cast(null as date)
           end as discharge_date
         , clm_admsn_src_cd as admit_source_code
         , clm_admsn_type_cd as admit_type_code
         , lpad(bene_ptnt_stus_cd, 2, '0') as discharge_disposition_code
-        , null as place_of_service_code
+        , cast(null as {{ dbt.type_string() }} ) as place_of_service_code
         , {{ dbt.concat(
             [
                 "clm_bill_fac_type_cd",
@@ -383,11 +383,8 @@ with sort_adjusted_claims as (
                 "clm_bill_freq_cd"
             ]
           ) }} as bill_type_code
-        , case
-            when len(dgns_drg_cd) > 3 then right(dgns_drg_cd,3)
-            else dgns_drg_cd
-          end as ms_drg_code
-        , null as apr_drg_code
+        , dgns_drg_cd as ms_drg_code
+        , cast(null as {{ dbt.type_string() }} ) as apr_drg_code
         , clm_line_prod_rev_ctr_cd as revenue_center_code
         , clm_line_srvc_unit_qty as service_unit_quantity
         , clm_line_hcpcs_cd as hcpcs_code
@@ -397,9 +394,9 @@ with sort_adjusted_claims as (
         , hcpcs_4_mdfr_cd as hcpcs_modifier_4
         , hcpcs_5_mdfr_cd as hcpcs_modifier_5
         , atndg_prvdr_npi_num as rendering_npi
-        , null as rendering_tin
-        , null as billing_npi
-        , null as billing_tin
+        , cast(null as {{ dbt.type_string() }} ) as rendering_tin
+        , cast(null as {{ dbt.type_string() }} ) as billing_npi
+        , cast(null as {{ dbt.type_string() }} ) as billing_tin
         , fac_prvdr_npi_num as facility_npi
         , case
             when clm_efctv_dt in ('1000-01-01', '9999-12-31') then null
@@ -407,20 +404,21 @@ with sort_adjusted_claims as (
           end as paid_date
           /* use flag to determine if claim line payments should be used */
         , case
-            when use_line_payments_flag = 1 then clm_line_cvrd_pd_amt
-            when use_line_payments_flag = 0 and coalesce(clm_line_num, 1) = 1 then remove_dupes.clm_pmt_amt
-            else 0
+            when use_line_payments_flag = 1 then cast(clm_line_cvrd_pd_amt as {{ dbt.type_string() }} )
+            when use_line_payments_flag = 0 and coalesce(cast(clm_line_num as integer), 1) = 1
+            then cast(remove_dupes.clm_pmt_amt as {{ dbt.type_string() }} )
+            else cast(0 as {{ dbt.type_string() }} )
           end as paid_amount
-        , null as allowed_amount
+        , cast(null as {{ dbt.type_string() }} ) as allowed_amount
         , case
-            when revenue_center_code = '0001'
-            then clm_mdcr_instnl_tot_chrg_amt
-            else null
+            when clm_line_prod_rev_ctr_cd = '0001'
+            then cast(clm_mdcr_instnl_tot_chrg_amt as {{ dbt.type_string() }} )
+            else cast(null as {{ dbt.type_string() }} )
           end as charge_amount
-        , null as coinsurance_amount
-        , null as copayment_amount
-        , null as deductible_amount
-        , null as total_cost_amount
+        , cast(null as {{ dbt.type_string() }} ) as coinsurance_amount
+        , cast(null as {{ dbt.type_string() }} ) as copayment_amount
+        , cast(null as {{ dbt.type_string() }} ) as deductible_amount
+        , cast(null as {{ dbt.type_string() }} ) as total_cost_amount
         , case
             when cast(diagnosis_icd_ind as {{ dbt.type_string() }} ) = '0' then 'icd-10-cm'
             when cast(diagnosis_icd_ind as {{ dbt.type_string() }} ) = '9' then 'icd-9-cm'
@@ -532,7 +530,7 @@ with sort_adjusted_claims as (
         , procedure_date_24
         , procedure_date_25
         , 1 as in_network_flag
-        , 'medicare cclf' as data_source
+        , cast('medicare cclf' as {{ dbt.type_string() }} ) as data_source
         , file_name
         , file_date as ingest_datetime
     from remove_dupes
@@ -565,7 +563,7 @@ with sort_adjusted_claims as (
         , cast(ms_drg_code as {{ dbt.type_string() }} ) as ms_drg_code
         , cast(apr_drg_code as {{ dbt.type_string() }} ) as apr_drg_code
         , cast(revenue_center_code as {{ dbt.type_string() }} ) as revenue_center_code
-        , cast(service_unit_quantity as float) as service_unit_quantity
+        , {{ cast_numeric('service_unit_quantity') }} as service_unit_quantity
         , cast(hcpcs_code as {{ dbt.type_string() }} ) as hcpcs_code
         , cast(hcpcs_modifier_1 as {{ dbt.type_string() }} ) as hcpcs_modifier_1
         , cast(hcpcs_modifier_2 as {{ dbt.type_string() }} ) as hcpcs_modifier_2

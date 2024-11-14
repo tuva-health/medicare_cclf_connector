@@ -91,15 +91,15 @@ with sort_adjusted_claims as (
         , 1 as claim_line_number
         , current_bene_mbi_id as patient_id
         , current_bene_mbi_id as member_id
-        , 'medicare' as payer
-        , 'medicare' as plan
+        , cast('medicare' as {{ dbt.type_string() }} ) as payer
+        , cast('medicare'as {{ dbt.type_string() }} ) as plan
         , case
-            when prvdr_prsbng_id_qlfyr_cd in (1, 01)
+            when prvdr_prsbng_id_qlfyr_cd in ('1', '01')
             then clm_prsbng_prvdr_gnrc_id_num
             else null
             end as prescribing_provider_npi
         , case
-            when prvdr_srvc_id_qlfyr_cd in (1, 01)
+            when prvdr_srvc_id_qlfyr_cd in ('1', '01')
             then clm_srvc_prvdr_gnrc_id_num
             else null
             end as dispensing_provider_npi
@@ -110,13 +110,13 @@ with sort_adjusted_claims as (
         , clm_line_rx_fill_num as refills
         , clm_line_from_dt as paid_date
         , clm_line_bene_pmt_amt as paid_amount
-        , null as allowed_amount
-        , null as charge_amount
-        , null as coinsurance_amount
+        , cast(null as {{ dbt.type_string() }} ) as allowed_amount
+        , cast(null as {{ dbt.type_string() }} ) as charge_amount
+        , cast(null as {{ dbt.type_string() }} ) as coinsurance_amount
         , clm_line_bene_pmt_amt as copayment_amount
-        , null as deductible_amount
+        , cast(null as {{ dbt.type_string() }} ) as deductible_amount
         , 1 as in_network_flag
-        , 'medicare cclf' as data_source
+        , cast('medicare cclf' as {{ dbt.type_string() }} ) as data_source
         , file_name as file_name
         , file_date as ingest_datetime
     from remove_dupes
