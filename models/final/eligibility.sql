@@ -94,7 +94,8 @@ with demographics as (
           end as integer) as death_flag
         , cast(enrollment.enrollment_start_date as date) as enrollment_start_date
         , case
-            when enrollment.enrollment_end_date >= {{ dbt.current_timestamp() }} then {{ last_day(dbt.current_timestamp(), 'month') }}
+            when enrollment.enrollment_end_date >= cast({{ dbt.current_timestamp() }} as date)
+            then {{ last_day(dbt.current_timestamp(), 'month') }}
             when enrollment.enrollment_end_date is null then {{ last_day(dbt.current_timestamp(), 'month') }}
             else cast(enrollment.enrollment_end_date as date)
           end as enrollment_end_date
