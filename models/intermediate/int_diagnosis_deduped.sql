@@ -52,7 +52,7 @@ select
     , cast(bene_hic_num as {{ dbt.type_string() }} ) as bene_hic_num
     , cast(clm_type_cd as {{ dbt.type_string() }} ) as clm_type_cd
     , cast(clm_prod_type_cd as {{ dbt.type_string() }} ) as clm_prod_type_cd
-    , cast(clm_val_sqnc_num as integer) as clm_val_sqnc_num
+    , cast(cast(clm_val_sqnc_num as integer) as {{ dbt.type_string() }} ) as clm_val_sqnc_num
     , cast(clm_dgns_cd as {{ dbt.type_string() }} ) as clm_dgns_cd
     , cast(bene_eqtbl_bic_hicn_num as {{ dbt.type_string() }} ) as bene_eqtbl_bic_hicn_num
     , cast(prvdr_oscar_num as {{ dbt.type_string() }} ) as prvdr_oscar_num

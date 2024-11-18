@@ -49,7 +49,7 @@ select
     , cast(bene_mbi_id as {{ dbt.type_string() }} ) as bene_mbi_id
     , cast(bene_hic_num as {{ dbt.type_string() }} ) as bene_hic_num
     , cast(clm_type_cd as {{ dbt.type_string() }} ) as clm_type_cd
-    , cast(clm_val_sqnc_num as integer) as clm_val_sqnc_num
+    , cast(cast(clm_val_sqnc_num as integer) as {{ dbt.type_string() }} ) as clm_val_sqnc_num
     , cast(clm_prcdr_cd as {{ dbt.type_string() }} ) as clm_prcdr_cd
     , cast(clm_prcdr_prfrm_dt as {{ dbt.type_string() }} ) as clm_prcdr_prfrm_dt
     , cast(bene_eqtbl_bic_hicn_num as {{ dbt.type_string() }} ) as bene_eqtbl_bic_hicn_num
