@@ -18,7 +18,7 @@ with staged_data as (
 
     select *, row_number() over (
         partition by prvs_num
-        order by file_date desc
+        order by file_date desc, prvs_id_efctv_dt desc
         ) as row_num
     from staged_data
 
