@@ -1,128 +1,76 @@
-/*
-  This model takes in eligibility data on the member month grain and converts
-  it to enrollment date spans using row number and lag to account for
-  continuous enrollment and gaps in coverage.
-*/
-
+/* prep address details for concat */
 with demographics as (
 
     select
-          bene_mbi_id
-        , cast(bene_sex_cd as {{ dbt.type_string() }} ) as bene_sex_cd
-        , cast(bene_race_cd as {{ dbt.type_string() }} ) as bene_race_cd
-        , bene_dob
-        , bene_death_dt
-        , {{ try_to_cast_date('bene_member_month', 'YYYY-MM-DD') }} as bene_member_month
-        , bene_dual_stus_cd
-        , bene_mdcr_stus_cd
-        , bene_orgnl_entlmt_rsn_cd
-        , bene_1st_name
-        , bene_last_name
-        , bene_line_1_adr
-        , geo_zip_plc_name
-        , cast(bene_fips_state_cd as {{ dbt.type_string() }} ) as bene_fips_state_cd
+          current_bene_mbi_id
+        , bene_hic_num
+        , bene_fips_state_cd
+        , bene_fips_cnty_cd
         , bene_zip_cd
-        , file_name
-        , ingest_datetime
-    from {{ ref('stg_beneficiary_demographics') }}
-
-)
-
-, fips_state as (
-
-    select * from {{ ref('reference_data__ansi_fips_state') }}
-
-)
-
-, add_row_num as (
-
-    select *
-         , row_number() over (
-             partition by bene_mbi_id
-             order by bene_member_month
-           ) as row_num
-    from demographics
-
-)
-
-, add_lag_enrollment as (
-
-    select
-          bene_mbi_id
-        , bene_member_month
-        , row_num
-        , lag(bene_member_month) over (
-            partition by bene_mbi_id
-            order by row_num
-          ) as lag_enrollment
-    from add_row_num
-
-)
-
-, calculate_lag_diff as (
-
-    select
-          bene_mbi_id
-        , bene_member_month
-        , row_num
-        , lag_enrollment
-        , {{ datediff('lag_enrollment', 'bene_member_month', 'month') }} as lag_diff
-    from add_lag_enrollment
-
-)
-
-, calculate_gaps as (
-
-     select
-          bene_mbi_id
-        , bene_member_month
-        , row_num
-        , lag_enrollment
-        , lag_diff
+        , bene_dob
+        , bene_sex_cd
+        , bene_race_cd
+        , bene_mdcr_stus_cd
+        , bene_dual_stus_cd
+        , bene_death_dt
+        , bene_rng_bgn_dt
+        , bene_rng_end_dt
+        , bene_1st_name
+        , bene_midl_name
+        , bene_last_name
+        , bene_orgnl_entlmt_rsn_cd
+        , bene_entlmt_buyin_ind
+        , bene_part_a_enrlmt_bgn_dt
+        , bene_part_b_enrlmt_bgn_dt
+        , bene_line_1_adr
         , case
-            when lag_diff > 1 then 1
-            else 0
-          end as gap_flag
-    from calculate_lag_diff
+            when bene_line_2_adr is null then ''
+            else cast({{ dbt.concat(["', '","bene_line_2_adr"]) }} as {{ dbt.type_string() }} )
+          end as bene_line_2_adr
+        , case
+            when bene_line_3_adr is null then ''
+            else cast({{ dbt.concat(["', '","bene_line_3_adr"]) }} as {{ dbt.type_string() }} )
+          end as bene_line_3_adr
+        , case
+            when bene_line_4_adr is null then ''
+            else cast({{ dbt.concat(["', '","bene_line_4_adr"]) }} as {{ dbt.type_string() }} )
+          end as bene_line_4_adr
+        , case
+            when bene_line_5_adr is null then ''
+            else cast({{ dbt.concat(["', '","bene_line_5_adr"]) }} as {{ dbt.type_string() }} )
+          end as bene_line_5_adr
+        , case
+            when bene_line_6_adr is null then ''
+            else cast({{ dbt.concat(["', '","bene_line_6_adr"]) }} as {{ dbt.type_string() }} )
+          end as bene_line_6_adr
+        , geo_zip_plc_name
+        , geo_usps_state_cd
+        , geo_zip5_cd
+        , case
+            when geo_zip4_cd is null then ''
+            else cast({{ dbt.concat(["'-'","geo_zip4_cd"]) }} as {{ dbt.type_string() }} )
+            end as geo_zip4_cd
+        , file_name
+        , file_date
+    from {{ ref('int_beneficiary_demographics_deduped') }}
 
 )
 
-, calculate_groups as (
-
-     select
-          bene_mbi_id
-        , bene_member_month
-        , row_num
-        , lag_enrollment
-        , lag_diff
-        , gap_flag
-        , sum(gap_flag) over (
-            partition by bene_mbi_id
-            order by row_num
-            rows between unbounded preceding and current row
-          ) as row_group
-    from calculate_gaps
-
-)
-
-, enrollment_span as (
+, enrollment as (
 
     select
-          bene_mbi_id
-        , row_group
-        , min(bene_member_month) as enrollment_start_date
-        , max(bene_member_month) as enrollment_end_date_max
-        , {{ last_day('max(bene_member_month)', 'month') }} as enrollment_end_date_last
-    from calculate_groups
-    group by bene_mbi_id, row_group
+          current_bene_mbi_id
+        , cast(enrollment_start_date as date) as enrollment_start_date
+        , cast(enrollment_end_date as date) as enrollment_end_date
+    from {{ ref('int_enrollment') }}
 
 )
 
 , joined as (
 
     select
-          cast(enrollment_span.bene_mbi_id as {{ dbt.type_string() }} ) as patient_id
-        , cast(enrollment_span.bene_mbi_id as {{ dbt.type_string() }} ) as member_id
+          cast(demographics.current_bene_mbi_id as {{ dbt.type_string() }} ) as patient_id
+        , cast(demographics.current_bene_mbi_id as {{ dbt.type_string() }} ) as member_id
         , cast(null as {{ dbt.type_string() }} ) as subscriber_id
         , case demographics.bene_sex_cd
             when '0' then 'unknown'
@@ -144,32 +92,48 @@ with demographics as (
                when demographics.bene_death_dt is null then 0
                else 1
           end as integer) as death_flag
-        , enrollment_span.enrollment_start_date
-        , enrollment_span.enrollment_end_date_last as enrollment_end_date
+        , cast(enrollment.enrollment_start_date as date) as enrollment_start_date
+        , case
+            when enrollment.enrollment_end_date >= cast({{ dbt.current_timestamp() }} as date)
+            then {{ last_day(dbt.current_timestamp(), 'month') }}
+            when enrollment.enrollment_end_date is null then {{ last_day(dbt.current_timestamp(), 'month') }}
+            else cast(enrollment.enrollment_end_date as date)
+          end as enrollment_end_date
         , 'medicare' as payer
         , 'medicare' as payer_type
-        , 'medicare' as plan
-        , cast(bene_orgnl_entlmt_rsn_cd as {{ dbt.type_string() }} ) as original_reason_entitlement_code
+        , 'medicare' as {{ the_tuva_project.quote_column('plan') }}
+        , cast(demographics.bene_orgnl_entlmt_rsn_cd as {{ dbt.type_string() }} ) as original_reason_entitlement_code
         , cast(demographics.bene_dual_stus_cd as {{ dbt.type_string() }} ) as dual_status_code
         , cast(demographics.bene_mdcr_stus_cd as {{ dbt.type_string() }} ) as medicare_status_code
         , cast(demographics.bene_1st_name as {{ dbt.type_string() }} ) as first_name
         , cast(demographics.bene_last_name as {{ dbt.type_string() }} ) as last_name
         , cast(null as {{ dbt.type_string() }} ) as social_security_number
-        , cast(null as {{ dbt.type_string() }} ) as subscriber_relation
-        , cast(demographics.bene_line_1_adr as {{ dbt.type_string() }} ) as address
+        , cast('self' as {{ dbt.type_string() }} ) as subscriber_relation
+        , {{ dbt.concat(
+            [
+                "demographics.bene_line_1_adr",
+                "demographics.bene_line_2_adr",
+                "demographics.bene_line_3_adr",
+                "demographics.bene_line_4_adr",
+                "demographics.bene_line_5_adr",
+                "demographics.bene_line_6_adr"
+            ]
+          ) }} as address
         , cast(demographics.geo_zip_plc_name as {{ dbt.type_string() }} ) as city
-        , cast(fips_state.ansi_fips_state_name as {{ dbt.type_string() }} ) as state
-        , cast(demographics.bene_zip_cd as {{ dbt.type_string() }} ) as zip_code
+        , cast(demographics.geo_usps_state_cd as {{ dbt.type_string() }} ) as state
+        , {{ dbt.concat(
+            [
+                "demographics.geo_zip5_cd",
+                "demographics.geo_zip4_cd"
+            ]
+          ) }} as zip_code
         , cast(NULL as {{ dbt.type_string() }} ) as phone
         , 'medicare cclf' as data_source
         , cast(demographics.file_name as {{ dbt.type_string() }} ) as file_name
-        , cast(demographics.ingest_datetime as {{ dbt.type_timestamp() }} ) as ingest_datetime
-    from enrollment_span
-        left join demographics
-            on enrollment_span.bene_mbi_id = demographics.bene_mbi_id
-            and enrollment_span.enrollment_end_date_max = demographics.bene_member_month
-        left join fips_state
-            on demographics.bene_fips_state_cd = fips_state.ansi_fips_state_code
+        , cast(demographics.file_date as {{ dbt.type_timestamp() }} ) as ingest_datetime
+    from demographics
+        left join enrollment
+            on demographics.current_bene_mbi_id = enrollment.current_bene_mbi_id
 
 )
 
@@ -186,7 +150,7 @@ select
     , enrollment_end_date
     , payer
     , payer_type
-    , plan
+    , {{ the_tuva_project.quote_column('plan') }}
     , original_reason_entitlement_code
     , dual_status_code
     , medicare_status_code

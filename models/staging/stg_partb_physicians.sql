@@ -49,5 +49,5 @@ select
     , clm_dgns_12_cd
     , hcpcs_betos_cd
     , file_name
-    , ingest_datetime
+    , file_date
 from {{ source('medicare_cclf','partb_physicians') }}

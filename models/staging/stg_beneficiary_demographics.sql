@@ -1,6 +1,5 @@
 select
       bene_mbi_id
-    , bene_member_month
     , bene_hic_num
     , bene_fips_state_cd
     , bene_fips_cnty_cd
@@ -32,5 +31,5 @@ select
     , geo_zip5_cd
     , geo_zip4_cd
     , file_name
-    , ingest_datetime
+    , file_date
 from {{ source('medicare_cclf','beneficiary_demographics') }}
