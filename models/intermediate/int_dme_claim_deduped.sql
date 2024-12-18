@@ -110,7 +110,7 @@ with sort_adjusted_claims as (
           cur_clm_uniq_id as claim_id
         , clm_line_num as claim_line_number
         , cast('professional' as {{ dbt.type_string() }} ) as claim_type
-        , current_bene_mbi_id as patient_id
+        , current_bene_mbi_id as person_id
         , current_bene_mbi_id as member_id
         , cast('medicare' as {{ dbt.type_string() }} ) as payer
         , cast('medicare'as {{ dbt.type_string() }} ) as {{ the_tuva_project.quote_column('plan') }}
@@ -279,7 +279,7 @@ with sort_adjusted_claims as (
           cast(claim_id as {{ dbt.type_string() }} ) as claim_id
         , cast(claim_line_number as integer) as claim_line_number
         , cast(claim_type as {{ dbt.type_string() }} ) as claim_type
-        , cast(patient_id as {{ dbt.type_string() }} ) as patient_id
+        , cast(person_id as {{ dbt.type_string() }} ) as person_id
         , cast(member_id as {{ dbt.type_string() }} ) as member_id
         , cast(payer as {{ dbt.type_string() }} ) as payer
         , cast({{ the_tuva_project.quote_column('plan') }} as {{ dbt.type_string() }} ) as {{ the_tuva_project.quote_column('plan') }}
@@ -431,7 +431,7 @@ select
       claim_id
     , claim_line_number
     , claim_type
-    , patient_id
+    , person_id
     , member_id
     , payer
     , {{ the_tuva_project.quote_column('plan') }}

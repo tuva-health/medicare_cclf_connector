@@ -16,7 +16,7 @@ models:
             - enrollment_start_date
             - enrollment_end_date
     columns:
-      - name: patient_id
+      - name: person_id
         tests:
           - not_null
       - name: member_id
@@ -50,7 +50,7 @@ models:
       - name: claim_line_number
         tests:
           - not_null
-      - name: patient_id
+      - name: person_id
         tests:
           - not_null
       - name: member_id
@@ -116,7 +116,7 @@ models:
       - name: claim_line_number
         tests:
           - not_null
-      - name: patient_id
+      - name: person_id
         tests:
           - not_null
       - name: member_id

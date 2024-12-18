@@ -69,7 +69,7 @@ with demographics as (
 , joined as (
 
     select
-          cast(demographics.current_bene_mbi_id as {{ dbt.type_string() }} ) as patient_id
+          cast(demographics.current_bene_mbi_id as {{ dbt.type_string() }} ) as person_id
         , cast(demographics.current_bene_mbi_id as {{ dbt.type_string() }} ) as member_id
         , cast(null as {{ dbt.type_string() }} ) as subscriber_id
         , case demographics.bene_sex_cd
@@ -138,7 +138,7 @@ with demographics as (
 )
 
 select
-      patient_id
+      person_id
     , member_id
     , subscriber_id
     , gender
