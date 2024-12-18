@@ -89,7 +89,7 @@ with sort_adjusted_claims as (
     select
           cur_clm_uniq_id as claim_id
         , 1 as claim_line_number
-        , current_bene_mbi_id as patient_id
+        , current_bene_mbi_id as person_id
         , current_bene_mbi_id as member_id
         , cast('medicare' as {{ dbt.type_string() }} ) as payer
         , cast('medicare'as {{ dbt.type_string() }} ) as {{ the_tuva_project.quote_column('plan') }}
@@ -126,7 +126,7 @@ with sort_adjusted_claims as (
 select
       claim_id
     , claim_line_number
-    , patient_id
+    , person_id
     , member_id
     , payer
     , {{ the_tuva_project.quote_column('plan') }}

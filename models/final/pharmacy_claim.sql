@@ -9,7 +9,7 @@ with deduped_claims as (
     select
           cast(claim_id as {{ dbt.type_string() }}) as claim_id
         , cast(claim_line_number as integer) as claim_line_number
-        , cast(patient_id as {{ dbt.type_string() }}) as patient_id
+        , cast(person_id as {{ dbt.type_string() }}) as person_id
         , cast(member_id as {{ dbt.type_string() }}) as member_id
         , cast(payer as {{ dbt.type_string() }}) as payer
         , cast({{ the_tuva_project.quote_column('plan') }} as {{ dbt.type_string() }}) as {{ the_tuva_project.quote_column('plan') }}
@@ -38,7 +38,7 @@ with deduped_claims as (
 select
       claim_id
     , claim_line_number
-    , patient_id
+    , person_id
     , member_id
     , payer
     , {{ the_tuva_project.quote_column('plan') }}
