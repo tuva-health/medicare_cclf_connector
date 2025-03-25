@@ -374,6 +374,7 @@ with sort_adjusted_claims as (
           end as discharge_date
         , clm_admsn_src_cd as admit_source_code
         , clm_admsn_type_cd as admit_type_code
+        /* make sure we get 2 digits for discharge disposition for readmissions mart*/ 
         , right(concat('00', bene_ptnt_stus_cd), 2) as discharge_disposition_code
         , cast(null as {{ dbt.type_string() }} ) as place_of_service_code
         , {{ dbt.concat(
