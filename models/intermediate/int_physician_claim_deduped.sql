@@ -310,6 +310,7 @@ with sort_adjusted_claims as (
         , 1 as in_network_flag
         , cast('medicare cclf' as {{ dbt.type_string() }} ) as data_source
         , file_name
+        , file_date
         , file_date as ingest_datetime
     from remove_dupes
 
@@ -464,6 +465,7 @@ with sort_adjusted_claims as (
         , cast(in_network_flag as integer) as in_network_flag
         , cast(data_source as {{ dbt.type_string() }} ) as data_source
         , cast(file_name as {{ dbt.type_string() }} ) as file_name
+        , cast(file_date as date) as file_date
         , cast(ingest_datetime as {{ dbt.type_string() }} ) as ingest_datetime
     from mapping
 
@@ -616,5 +618,6 @@ select
     , in_network_flag
     , data_source
     , file_name
+    , file_date
     , ingest_datetime
 from add_data_types

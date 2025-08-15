@@ -130,6 +130,7 @@ with demographics as (
         , cast(NULL as {{ dbt.type_string() }} ) as phone
         , 'medicare cclf' as data_source
         , cast(demographics.file_name as {{ dbt.type_string() }} ) as file_name
+        , cast(demographics.file_date as date) as file_date
         , cast(demographics.file_date as {{ dbt.type_timestamp() }} ) as ingest_datetime
     from demographics
         left join enrollment
@@ -154,6 +155,8 @@ select
     , original_reason_entitlement_code
     , dual_status_code
     , medicare_status_code
+    , "" as group_id
+    , "" as group_name
     , first_name
     , last_name
     , social_security_number
@@ -165,5 +168,6 @@ select
     , phone
     , data_source
     , file_name
+    , file_date
     , ingest_datetime
 from joined

@@ -10,6 +10,17 @@ with unioned as (
 
     ) }}
 
+),
+
+ranked_claims as(
+    select
+        *,
+        row_number() over (
+            partition by claim_id, claim_line_number
+            order by paid_date desc NULLS LAST, ingest_datetime desc NULLS LAST
+        ) as row_num
+    from unioned
+    qualify row_num = 1
 )
 
 select
@@ -31,8 +42,16 @@ select
     , discharge_disposition_code
     , place_of_service_code
     , bill_type_code
-    , ms_drg_code
-    , apr_drg_code
+    , CASE
+        WHEN ms_drg_code IS NOT NULL THEN ms_drg_code
+        WHEN apr_drg_code IS NOT NULL THEN apr_drg_code
+        ELSE NULL
+    END AS drg_code
+    , CASE
+        WHEN ms_drg_code IS NOT NULL THEN 'ms-drg'
+        WHEN apr_drg_code IS NOT NULL THEN 'apr-drg'
+        ELSE NULL
+    END AS drg_code_type
     , revenue_center_code
     , service_unit_quantity
     , hcpcs_code
@@ -159,5 +178,6 @@ select
     , in_network_flag
     , data_source
     , file_name
+    , file_date
     , ingest_datetime
-from unioned
+from ranked_claims
