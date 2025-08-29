@@ -105,7 +105,9 @@ with demographics as (
         , cast(demographics.bene_orgnl_entlmt_rsn_cd as {{ dbt.type_string() }} ) as original_reason_entitlement_code
         , cast(demographics.bene_dual_stus_cd as {{ dbt.type_string() }} ) as dual_status_code
         , cast(demographics.bene_mdcr_stus_cd as {{ dbt.type_string() }} ) as medicare_status_code
+        , cast(null as {{ dbt.type_string() }} ) as name_suffix
         , cast(demographics.bene_1st_name as {{ dbt.type_string() }} ) as first_name
+        , cast(demographics.bene_midl_name as {{ dbt.type_string() }} ) as middle_name
         , cast(demographics.bene_last_name as {{ dbt.type_string() }} ) as last_name
         , cast(null as {{ dbt.type_string() }} ) as social_security_number
         , cast('self' as {{ dbt.type_string() }} ) as subscriber_relation
@@ -128,6 +130,8 @@ with demographics as (
             ]
           ) }} as zip_code
         , cast(NULL as {{ dbt.type_string() }} ) as phone
+        , cast(NULL as {{ dbt.type_string() }} ) as email
+        , cast(NULL as {{ dbt.type_string() }} ) as ethnicity
         , 'medicare cclf' as data_source
         , cast(demographics.file_name as {{ dbt.type_string() }} ) as file_name
         , cast(demographics.file_date as {{ dbt.type_timestamp() }} ) as ingest_datetime
@@ -154,7 +158,9 @@ select
     , original_reason_entitlement_code
     , dual_status_code
     , medicare_status_code
+    , name_suffix
     , first_name
+    , middle_name
     , last_name
     , social_security_number
     , subscriber_relation
@@ -163,6 +169,8 @@ select
     , state
     , zip_code
     , phone
+    , email
+    , ethnicity
     , data_source
     , file_name
     , ingest_datetime
