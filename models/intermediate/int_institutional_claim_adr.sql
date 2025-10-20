@@ -123,10 +123,10 @@ with staged_data as (
 
     select
           cur_clm_uniq_id as cur_clm_uniq_id
-        /*, prvdr_oscar_num*/
+        , prvdr_oscar_num
         , bene_mbi_id
         /*, bene_hic_num*/
-        /*, clm_type_cd*/
+        , clm_type_cd
         , clm_from_dt
         , clm_thru_dt
         , clm_bill_fac_type_cd
@@ -141,9 +141,9 @@ with staged_data as (
         , dgns_drg_cd
         /*, clm_op_srvc_type_cd*/
         , fac_prvdr_npi_num
-        /*, oprtg_prvdr_npi_num*/
+        , oprtg_prvdr_npi_num
         , atndg_prvdr_npi_num
-        /*, othr_prvdr_npi_num*/
+        , othr_prvdr_npi_num
         , clm_adjsmt_type_cd
         , clm_efctv_dt
         /*, clm_idr_ld_dt*/
@@ -171,7 +171,8 @@ with staged_data as (
         , file_date
     from add_row_num
     where row_num = 1
-
+        -- Exclude unpaid claims
+        and nullif(trim(clm_mdcr_npmt_rsn_cd),'') is null
 )
 
 /* coalesce current MBI from XREF if exists and MBI on claim */
@@ -187,8 +188,12 @@ with staged_data as (
         , dedupe.clm_pmt_amt
         , dedupe.bene_ptnt_stus_cd
         , dedupe.dgns_drg_cd
+        , dedupe.ccn
+        , dedupe.clm_type_cd        
         , dedupe.fac_prvdr_npi_num
+        , dedupe.othr_prvdr_npi_num
         , dedupe.atndg_prvdr_npi_num
+        , dedupe.oprtg_prvdr_npi_num  
         , dedupe.clm_adjsmt_type_cd
         , dedupe.clm_efctv_dt
         , dedupe.clm_admsn_type_cd
@@ -235,8 +240,12 @@ with staged_data as (
           end as clm_pmt_amt
         , bene_ptnt_stus_cd
         , dgns_drg_cd
+        , ccn
+        , clm_type_cd        
         , fac_prvdr_npi_num
+        , othr_prvdr_npi_num
         , atndg_prvdr_npi_num
+        , oprtg_prvdr_npi_num     
         , clm_adjsmt_type_cd
         , clm_efctv_dt
         , clm_admsn_type_cd
@@ -274,8 +283,12 @@ select
     , clm_pmt_amt
     , bene_ptnt_stus_cd
     , dgns_drg_cd
+    , ccn
+    , clm_type_cd    
     , fac_prvdr_npi_num
+    , othr_prvdr_npi_num
     , atndg_prvdr_npi_num
+    , oprtg_prvdr_npi_num  
     , clm_adjsmt_type_cd
     , clm_efctv_dt
     , clm_admsn_type_cd
