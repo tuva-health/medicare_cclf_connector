@@ -41,7 +41,7 @@ select
     , hcpcs_modifier_3
     , hcpcs_modifier_4
     , hcpcs_modifier_5
-    , ccn
+    , RIGHT('000000' + ccn,6) as ccn
     , claim_type_code
     , nullif(other_npi,'~') as other_npi
     , nullif(attending_npi,'~') as attending_npi
