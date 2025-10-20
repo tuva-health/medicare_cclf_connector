@@ -10,8 +10,12 @@ with sort_adjusted_claims as (
         , clm_pmt_amt
         , bene_ptnt_stus_cd
         , dgns_drg_cd
+        , ccn
+        , clm_type_cd         
         , fac_prvdr_npi_num
+        , othr_prvdr_npi_num
         , atndg_prvdr_npi_num
+        , oprtg_prvdr_npi_num    
         , clm_adjsmt_type_cd
         , clm_efctv_dt
         , clm_admsn_type_cd
@@ -84,8 +88,12 @@ with sort_adjusted_claims as (
         , header_totals.sum_clm_pmt_amt as clm_pmt_amt
         , sort_adjusted_claims.bene_ptnt_stus_cd
         , sort_adjusted_claims.dgns_drg_cd
+        , sort_adjusted_claims.ccn
+        , sort_adjusted_claims.clm_type_cd        
         , sort_adjusted_claims.fac_prvdr_npi_num
+        , sort_adjusted_claims.othr_prvdr_npi_num
         , sort_adjusted_claims.atndg_prvdr_npi_num
+        , sort_adjusted_claims.oprtg_prvdr_npi_num 
         , sort_adjusted_claims.clm_adjsmt_type_cd
         , sort_adjusted_claims.clm_efctv_dt
         , sort_adjusted_claims.clm_admsn_type_cd
@@ -119,8 +127,12 @@ with sort_adjusted_claims as (
         , filter_claims.clm_pmt_amt
         , filter_claims.bene_ptnt_stus_cd
         , filter_claims.dgns_drg_cd
+        , filter_claims.ccn
+        , filter_claims.clm_type_cd        
         , filter_claims.fac_prvdr_npi_num
+        , filter_claims.othr_prvdr_npi_num
         , filter_claims.atndg_prvdr_npi_num
+        , filter_claims.oprtg_prvdr_npi_num
         , filter_claims.clm_adjsmt_type_cd
         , filter_claims.clm_efctv_dt
         , filter_claims.clm_admsn_type_cd
@@ -394,6 +406,11 @@ with sort_adjusted_claims as (
         , hcpcs_3_mdfr_cd as hcpcs_modifier_3
         , hcpcs_4_mdfr_cd as hcpcs_modifier_4
         , hcpcs_5_mdfr_cd as hcpcs_modifier_5
+        , ccn
+        , clm_type_cd        
+        , othr_prvdr_npi_num as othr_prvdr_npi
+        , atndg_prvdr_npi_num as atndg_prvdr_npi
+        , oprtg_prvdr_npi_num as oprtg_prvdr_npi        
         , atndg_prvdr_npi_num as rendering_npi
         , cast(null as {{ dbt.type_string() }} ) as rendering_tin
         , cast(null as {{ dbt.type_string() }} ) as billing_npi
@@ -571,6 +588,11 @@ with sort_adjusted_claims as (
         , cast(hcpcs_modifier_3 as {{ dbt.type_string() }} ) as hcpcs_modifier_3
         , cast(hcpcs_modifier_4 as {{ dbt.type_string() }} ) as hcpcs_modifier_4
         , cast(hcpcs_modifier_5 as {{ dbt.type_string() }} ) as hcpcs_modifier_5
+        , cast(ccn as {{ dbt.type_string()}} ) as ccn
+        , cast(clm_type_cd as {{ dbt.type_string()}} ) as clm_type_cd
+        , cast(othr_prvdr_npi as {{ dbt.type_string()}}) as othr_prvdr_npi
+        , cast(atndg_prvdr_npi as {{ dbt.type_string()}}) as atndg_prvdr_npi
+        , cast(oprtg_prvdr_npi as {{ dbt.type_string()}}) as oprtg_prvdr_npi
         , cast(rendering_npi as {{ dbt.type_string() }} ) as rendering_npi
         , cast(rendering_tin as {{ dbt.type_string() }} ) as rendering_tin
         , cast(billing_npi as {{ dbt.type_string() }} ) as billing_npi
@@ -723,6 +745,11 @@ select
     , hcpcs_modifier_3
     , hcpcs_modifier_4
     , hcpcs_modifier_5
+    , ccn
+    , clm_type_cd       as claim_type_code
+    , othr_prvdr_npi    as other_npi
+    , atndg_prvdr_npi   as attending_npi
+    , oprtg_prvdr_npi   as operating_npi    
     , rendering_npi
     , rendering_tin
     , billing_npi

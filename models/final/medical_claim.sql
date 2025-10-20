@@ -41,6 +41,11 @@ select
     , hcpcs_modifier_3
     , hcpcs_modifier_4
     , hcpcs_modifier_5
+    , RIGHT('000000' + ccn,6) as ccn
+    , claim_type_code
+    , nullif(other_npi,'~') as other_npi
+    , nullif(attending_npi,'~') as attending_npi
+    , nullif(operating_npi,'~') as operating_npi    
     , rendering_npi
     , rendering_tin
     , billing_npi
