@@ -164,6 +164,6 @@ select
     , in_network_flag
     , data_source
     , file_name
-    , ingest_datetime as file_date
+    , cast(ingest_datetime as date) as file_date
     , ingest_datetime
 from unioned
