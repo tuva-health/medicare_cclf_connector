@@ -19,7 +19,7 @@ with demographics as (
         , bene_midl_name
         , bene_last_name
         , bene_orgnl_entlmt_rsn_cd
-        , bene_entlmt_buyin_ind
+        , nullif(trim(bene_entlmt_buyin_ind),'') as bene_entlmt_buyin_ind
         , bene_part_a_enrlmt_bgn_dt
         , bene_part_b_enrlmt_bgn_dt
         , bene_line_1_adr
@@ -50,6 +50,7 @@ with demographics as (
             when geo_zip4_cd is null then ''
             else cast({{ dbt.concat(["'-'","geo_zip4_cd"]) }} as {{ dbt.type_string() }} )
             end as geo_zip4_cd
+        , d.coverage_month
         , file_name
         , file_date
     from {{ ref('int_beneficiary_demographics_deduped') }}
@@ -105,6 +106,7 @@ with demographics as (
         , cast(demographics.bene_orgnl_entlmt_rsn_cd as {{ dbt.type_string() }} ) as original_reason_entitlement_code
         , cast(demographics.bene_dual_stus_cd as {{ dbt.type_string() }} ) as dual_status_code
         , cast(demographics.bene_mdcr_stus_cd as {{ dbt.type_string() }} ) as medicare_status_code
+        , cast(demographics.bene_entlmt_buyin_ind as {{ dbt.type_string() }} ) as medicare_entitlement_buyin_indicator
         , cast(null as {{ dbt.type_string() }} ) as name_suffix
         , cast(demographics.bene_1st_name as {{ dbt.type_string() }} ) as first_name
         , cast(demographics.bene_midl_name as {{ dbt.type_string() }} ) as middle_name
@@ -122,7 +124,7 @@ with demographics as (
             ]
           ) }} as address
         , cast(demographics.geo_zip_plc_name as {{ dbt.type_string() }} ) as city
-        , cast(demographics.geo_usps_state_cd as {{ dbt.type_string() }} ) as state
+        , cast(demographics.bene_fips_state_cd as {{ dbt.type_string() }} ) as state
         , {{ dbt.concat(
             [
                 "demographics.geo_zip5_cd",
@@ -136,8 +138,11 @@ with demographics as (
         , cast(demographics.file_name as {{ dbt.type_string() }} ) as file_name
         , cast(demographics.file_date as {{ dbt.type_timestamp() }} ) as ingest_datetime
     from demographics
-        left join enrollment
-            on demographics.current_bene_mbi_id = enrollment.current_bene_mbi_id
+    left join enrollment
+        on demographics.current_bene_mbi_id = enrollment.current_bene_mbi_id
+      -- Subtracting 1 month since files typically lag the month by 1 month
+      -- Having prior years files come in January is indicative of this
+        and dateadd(month, -1, demographics.coverage_month) = enrollment.member_month_date
 
 )
 
@@ -150,6 +155,7 @@ select
     , birth_date
     , death_date
     , death_flag
+    , {{ extract_year('enrollment_start_date') }} as reference_year
     , enrollment_start_date
     , enrollment_end_date
     , payer
@@ -158,6 +164,7 @@ select
     , original_reason_entitlement_code
     , dual_status_code
     , medicare_status_code
+    , nullif(trim(medicare_entitlement_buyin_indicator),'') as medicare_entitlement_buyin_indicator
     , name_suffix
     , first_name
     , middle_name
@@ -166,7 +173,7 @@ select
     , subscriber_relation
     , address
     , city
-    , state
+    , nullif(trim(state),'') as state
     , zip_code
     , phone
     , email
