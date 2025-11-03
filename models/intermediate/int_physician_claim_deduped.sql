@@ -18,6 +18,7 @@ with sort_adjusted_claims as (
         , clm_cntl_num
         , clm_line_alowd_chrg_amt
         , clm_line_srvc_unit_qty
+        , clm_prvdr_spclty_cd
         , hcpcs_1_mdfr_cd
         , hcpcs_2_mdfr_cd
         , hcpcs_3_mdfr_cd
@@ -88,6 +89,7 @@ with sort_adjusted_claims as (
         , sort_adjusted_claims.clm_cntl_num
         , line_totals.sum_clm_line_alowd_chrg_amt as clm_line_alowd_chrg_amt
         , sort_adjusted_claims.clm_line_srvc_unit_qty
+        , sort_adjusted_claims.clm_prvdr_spclty_cd
         , sort_adjusted_claims.hcpcs_1_mdfr_cd
         , sort_adjusted_claims.hcpcs_2_mdfr_cd
         , sort_adjusted_claims.hcpcs_3_mdfr_cd
@@ -179,6 +181,7 @@ with sort_adjusted_claims as (
         , cast(null as {{ dbt.type_string() }} ) as apr_drg_code
         , cast(null as {{ dbt.type_string() }} ) as revenue_center_code
         , clm_line_srvc_unit_qty as service_unit_quantity
+        , clm_prvdr_spclty_cd as claim_provider_specialty_code
         , clm_line_hcpcs_cd as hcpcs_code
         , hcpcs_1_mdfr_cd as hcpcs_modifier_1
         , hcpcs_2_mdfr_cd as hcpcs_modifier_2
@@ -309,6 +312,7 @@ with sort_adjusted_claims as (
         , cast(null as date) as procedure_date_25
         , 1 as in_network_flag
         , cast('medicare cclf' as {{ dbt.type_string() }} ) as data_source
+        , file_date
         , file_name
         , file_date as ingest_datetime
     from remove_dupes
@@ -340,6 +344,7 @@ with sort_adjusted_claims as (
         , cast(apr_drg_code as {{ dbt.type_string() }} ) as apr_drg_code
         , cast(revenue_center_code as {{ dbt.type_string() }} ) as revenue_center_code
         , {{ cast_numeric('service_unit_quantity') }} as service_unit_quantity
+        , cast(claim_provider_specialty_code as {{ dbt.type_string() }}) as claim_provider_specialty_code
         , cast(hcpcs_code as {{ dbt.type_string() }} ) as hcpcs_code
         , cast(hcpcs_modifier_1 as {{ dbt.type_string() }} ) as hcpcs_modifier_1
         , cast(hcpcs_modifier_2 as {{ dbt.type_string() }} ) as hcpcs_modifier_2
@@ -492,6 +497,7 @@ select
     , apr_drg_code
     , revenue_center_code
     , service_unit_quantity
+    , claim_provider_specialty_code
     , hcpcs_code
     , hcpcs_modifier_1
     , hcpcs_modifier_2

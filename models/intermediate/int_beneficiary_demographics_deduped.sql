@@ -34,6 +34,7 @@ with staged_data as (
         , geo_zip4_cd
         , file_name
         , file_date
+        , datefromparts(year(file_date), month(file_date), 1) as coverage_month
     from {{ ref('stg_beneficiary_demographics') }}
 
 )
@@ -74,6 +75,7 @@ with staged_data as (
             , geo_usps_state_cd
             , geo_zip5_cd
             , geo_zip4_cd
+            , coverage_month
         order by file_date desc
         ) as row_num
     from staged_data
@@ -123,6 +125,7 @@ with staged_data as (
         , add_row_num.geo_usps_state_cd
         , add_row_num.geo_zip5_cd
         , add_row_num.geo_zip4_cd
+        , add_row_num.coverage_month
         , add_row_num.file_name
         , add_row_num.file_date
     from add_row_num
@@ -166,10 +169,11 @@ with staged_data as (
         , geo_usps_state_cd
         , geo_zip5_cd
         , geo_zip4_cd
+        , coverage_month
         , file_name
         , file_date
         , row_number() over (
-            partition by current_bene_mbi_id
+            partition by current_bene_mbi_id, coverage_month
             order by file_date desc
           ) as row_num
     from add_mbi_xref
@@ -207,6 +211,7 @@ select
     , geo_usps_state_cd
     , geo_zip5_cd
     , geo_zip4_cd
+    , coverage_month
     , file_name
     , file_date
 from get_latest_mbi

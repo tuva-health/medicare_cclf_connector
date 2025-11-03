@@ -135,7 +135,7 @@ with staged_data as (
         , clm_thru_dt
         /*, rndrg_prvdr_type_cd*/
         /*, rndrg_prvdr_fips_st_cd*/
-        /*, clm_prvdr_spclty_cd*/
+        , clm_prvdr_spclty_cd
         /*, clm_fed_type_srvc_cd*/
         , clm_pos_cd
         , clm_line_from_dt
@@ -179,7 +179,8 @@ with staged_data as (
         , file_date
     from add_row_num
     where row_num = 1
-
+        -- Exclude denied claims
+        and not ((upper(trim(clm_prcsg_ind_cd)) not in ('A','O','S','R')) or clm_carr_pmt_dnl_cd = '0')
 )
 
 /* coalesce current MBI from XREF if exists and MBI on claim */
@@ -203,6 +204,7 @@ with staged_data as (
         , dedupe.clm_cntl_num
         , dedupe.clm_line_alowd_chrg_amt
         , dedupe.clm_line_srvc_unit_qty
+        , dedupe.clm_prvdr_spclty_cd
         , dedupe.claim_type_code
         , dedupe.hcpcs_1_mdfr_cd
         , dedupe.hcpcs_2_mdfr_cd
@@ -270,6 +272,7 @@ with staged_data as (
             else {{ cast_numeric('clm_line_alowd_chrg_amt') }}
           end as clm_line_alowd_chrg_amt
         , clm_line_srvc_unit_qty
+        , clm_prvdr_spclty_cd
         , hcpcs_1_mdfr_cd
         , hcpcs_2_mdfr_cd
         , hcpcs_3_mdfr_cd

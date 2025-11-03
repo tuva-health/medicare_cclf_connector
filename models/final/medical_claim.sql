@@ -35,6 +35,7 @@ select
     , apr_drg_code
     , revenue_center_code
     , service_unit_quantity
+    , claim_provider_specialty_code
     , hcpcs_code
     , hcpcs_modifier_1
     , hcpcs_modifier_2
@@ -164,5 +165,6 @@ select
     , in_network_flag
     , data_source
     , file_name
+    , cast(ingest_datetime as date) as file_date
     , ingest_datetime
 from unioned
