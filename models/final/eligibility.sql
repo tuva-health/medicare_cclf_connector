@@ -143,9 +143,6 @@ with demographics as (
     from enrollment
     left join demographics
         on demographics.current_bene_mbi_id = enrollment.current_bene_mbi_id
-      -- Subtracting 1 month since files typically lag the month by 1 month
-      -- Having prior years files come in January is indicative of this
-        -- and dateadd(month, -1, demographics.coverage_month) = enrollment.member_month_date
         and demographics.coverage_month = datefromparts(year(enrollment.enrollment_end_date), month(enrollment.enrollment_end_date), 1)
 )
 
