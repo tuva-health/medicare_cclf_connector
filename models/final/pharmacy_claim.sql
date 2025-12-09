@@ -30,6 +30,7 @@ with deduped_claims as (
         , cast(in_network_flag as integer) as in_network_flag
         , cast(data_source as {{ dbt.type_string() }}) as data_source
         , cast(file_name as {{ dbt.type_string() }}) as file_name
+        , cast(NULL as date) as file_date
         , cast(ingest_datetime as {{ dbt.type_timestamp() }}) as ingest_datetime
     from deduped_claims
 
@@ -59,5 +60,6 @@ select
     , in_network_flag
     , data_source
     , file_name
+    , file_date
     , ingest_datetime
 from data_types

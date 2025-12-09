@@ -205,7 +205,7 @@ with staged_data as (
         , dedupe.clm_line_alowd_chrg_amt
         , dedupe.clm_line_srvc_unit_qty
         , dedupe.clm_prvdr_spclty_cd
-        , dedupe.claim_type_code
+        , dedupe.clm_type_cd
         , dedupe.hcpcs_1_mdfr_cd
         , dedupe.hcpcs_2_mdfr_cd
         , dedupe.hcpcs_3_mdfr_cd
@@ -278,7 +278,7 @@ with staged_data as (
         , hcpcs_3_mdfr_cd
         , hcpcs_4_mdfr_cd
         , hcpcs_5_mdfr_cd
-        , claim_type_code
+        , clm_type_cd
         , clm_dgns_1_cd
         , clm_dgns_2_cd
         , clm_dgns_3_cd
@@ -325,7 +325,7 @@ select
     , clm_cntl_num
     , clm_line_alowd_chrg_amt
     , clm_line_srvc_unit_qty
-    , claim_type_code
+    , clm_type_cd
     , hcpcs_1_mdfr_cd
     , hcpcs_2_mdfr_cd
     , hcpcs_3_mdfr_cd

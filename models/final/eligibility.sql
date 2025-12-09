@@ -106,6 +106,8 @@ with demographics as (
         , cast(demographics.bene_orgnl_entlmt_rsn_cd as {{ dbt.type_string() }} ) as original_reason_entitlement_code
         , cast(demographics.bene_dual_stus_cd as {{ dbt.type_string() }} ) as dual_status_code
         , cast(demographics.bene_mdcr_stus_cd as {{ dbt.type_string() }} ) as medicare_status_code
+        , cast(null as {{ dbt.type_string() }} ) as group_id
+        , cast(null as {{ dbt.type_string() }} ) as group_name
         , cast(demographics.bene_entlmt_buyin_ind as {{ dbt.type_string() }} ) as medicare_entitlement_buyin_indicator
         , cast(null as {{ dbt.type_string() }} ) as name_suffix
         , cast(demographics.bene_1st_name as {{ dbt.type_string() }} ) as first_name
@@ -136,6 +138,7 @@ with demographics as (
         , cast(NULL as {{ dbt.type_string() }} ) as ethnicity
         , 'medicare cclf' as data_source
         , cast(demographics.file_name as {{ dbt.type_string() }} ) as file_name
+        , cast(NULL as date ) as file_date
         , cast(demographics.file_date as {{ dbt.type_timestamp() }} ) as ingest_datetime
     from demographics
     left join enrollment

@@ -19,6 +19,7 @@ with sort_adjusted_claims as (
         , clm_line_alowd_chrg_amt
         , clm_line_srvc_unit_qty
         , clm_prvdr_spclty_cd
+        , clm_type_cd
         , hcpcs_1_mdfr_cd
         , hcpcs_2_mdfr_cd
         , hcpcs_3_mdfr_cd
