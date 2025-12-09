@@ -710,6 +710,7 @@ with sort_adjusted_claims as (
         , {{ try_to_cast_date('procedure_date_25', 'YYYY-MM-DD') }} as procedure_date_25
         , cast(in_network_flag as integer) as in_network_flag
         , cast(data_source as {{ dbt.type_string() }} ) as data_source
+        , file_name
         , cast(NULL as date ) as file_date
         , cast(ingest_datetime as {{ dbt.type_string() }} ) as ingest_datetime
     from mapping

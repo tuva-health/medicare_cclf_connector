@@ -50,7 +50,7 @@ with demographics as (
             when geo_zip4_cd is null then ''
             else cast({{ dbt.concat(["'-'","geo_zip4_cd"]) }} as {{ dbt.type_string() }} )
             end as geo_zip4_cd
-        , d.coverage_month
+        , coverage_month
         , file_name
         , file_date
     from {{ ref('int_beneficiary_demographics_deduped') }}
@@ -140,13 +140,13 @@ with demographics as (
         , cast(demographics.file_name as {{ dbt.type_string() }} ) as file_name
         , cast(NULL as date ) as file_date
         , cast(demographics.file_date as {{ dbt.type_timestamp() }} ) as ingest_datetime
-    from demographics
-    left join enrollment
+    from enrollment
+    left join demographics
         on demographics.current_bene_mbi_id = enrollment.current_bene_mbi_id
       -- Subtracting 1 month since files typically lag the month by 1 month
       -- Having prior years files come in January is indicative of this
-        and dateadd(month, -1, demographics.coverage_month) = enrollment.member_month_date
-
+        -- and dateadd(month, -1, demographics.coverage_month) = enrollment.member_month_date
+        and demographics.coverage_month = datefromparts(year(enrollment.enrollment_end_date), month(enrollment.enrollment_end_date), 1)
 )
 
 select
@@ -167,6 +167,8 @@ select
     , original_reason_entitlement_code
     , dual_status_code
     , medicare_status_code
+    , group_id
+    , group_name
     , nullif(trim(medicare_entitlement_buyin_indicator),'') as medicare_entitlement_buyin_indicator
     , name_suffix
     , first_name
@@ -183,5 +185,6 @@ select
     , ethnicity
     , data_source
     , file_name
+    , file_date
     , ingest_datetime
 from joined

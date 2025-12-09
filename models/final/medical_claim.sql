@@ -12,6 +12,16 @@ with unioned as (
 
 )
 
+, final_claims as (
+    SELECT
+    row_number() over (
+            partition by claim_id, claim_line_number
+            order by file_date, paid_date  desc
+          ) as row_num,
+        *
+    FROM unioned
+)
+
 select
       claim_id
     , claim_line_number
@@ -167,4 +177,5 @@ select
     , file_name
     , cast(ingest_datetime as date) as file_date
     , ingest_datetime
-from unioned
+from final_claims
+where row_num = 1
