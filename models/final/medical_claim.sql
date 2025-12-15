@@ -12,6 +12,16 @@ with unioned as (
 
 )
 
+, final_claims as (
+    SELECT
+    row_number() over (
+            partition by claim_id, claim_line_number
+            order by file_date, paid_date  desc
+          ) as row_num,
+        *
+    FROM unioned
+)
+
 select
       claim_id
     , claim_line_number
@@ -31,8 +41,8 @@ select
     , discharge_disposition_code
     , place_of_service_code
     , bill_type_code
-    , ms_drg_code
-    , apr_drg_code
+    , drg_code_type
+    , drg_code
     , revenue_center_code
     , service_unit_quantity
     , claim_provider_specialty_code
@@ -42,7 +52,7 @@ select
     , hcpcs_modifier_3
     , hcpcs_modifier_4
     , hcpcs_modifier_5
-    , RIGHT('000000' + ccn,6) as ccn
+    , RIGHT(CONCAT('000000', ccn), 6) AS ccn
     , claim_type_code
     , nullif(other_npi,'~') as other_npi
     , nullif(attending_npi,'~') as attending_npi
@@ -165,6 +175,7 @@ select
     , in_network_flag
     , data_source
     , file_name
-    , cast(ingest_datetime as date) as file_date
+    , cast(file_date as date) as file_date
     , ingest_datetime
-from unioned
+from final_claims
+where row_num = 1

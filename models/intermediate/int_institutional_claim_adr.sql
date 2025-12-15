@@ -123,7 +123,7 @@ with staged_data as (
 
     select
           cur_clm_uniq_id as cur_clm_uniq_id
-        , prvdr_oscar_num
+        , prvdr_oscar_num as ccn
         , bene_mbi_id
         /*, bene_hic_num*/
         , clm_type_cd

@@ -118,6 +118,7 @@ with sort_adjusted_claims as (
         , 1 as in_network_flag
         , cast('medicare cclf' as {{ dbt.type_string() }} ) as data_source
         , file_name as file_name
+        , file_date as file_date
         , file_date as ingest_datetime
     from remove_dupes
 
@@ -147,5 +148,6 @@ select
     , in_network_flag
     , data_source
     , file_name
+    , file_date
     , ingest_datetime
 from mapping
