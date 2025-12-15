@@ -70,8 +70,8 @@ with demographics as (
 , joined as (
 
     select
-          cast(demographics.current_bene_mbi_id as {{ dbt.type_string() }} ) as person_id
-        , cast(demographics.current_bene_mbi_id as {{ dbt.type_string() }} ) as member_id
+          cast(enrollment.current_bene_mbi_id as {{ dbt.type_string() }} ) as person_id
+        , cast(enrollment.current_bene_mbi_id as {{ dbt.type_string() }} ) as member_id
         , cast(null as {{ dbt.type_string() }} ) as subscriber_id
         , case demographics.bene_sex_cd
             when '0' then 'unknown'
@@ -138,7 +138,7 @@ with demographics as (
         , cast(NULL as {{ dbt.type_string() }} ) as ethnicity
         , 'medicare cclf' as data_source
         , cast(demographics.file_name as {{ dbt.type_string() }} ) as file_name
-        , cast(NULL as date ) as file_date
+        , cast(demographics.file_date as date ) as file_date
         , cast(demographics.file_date as {{ dbt.type_timestamp() }} ) as ingest_datetime
     from enrollment
     left join demographics

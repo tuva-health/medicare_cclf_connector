@@ -91,6 +91,7 @@ with sort_adjusted_claims as (
         , line_totals.sum_clm_line_alowd_chrg_amt as clm_line_alowd_chrg_amt
         , sort_adjusted_claims.clm_line_srvc_unit_qty
         , sort_adjusted_claims.clm_prvdr_spclty_cd
+        , sort_adjusted_claims.clm_type_cd
         , sort_adjusted_claims.hcpcs_1_mdfr_cd
         , sort_adjusted_claims.hcpcs_2_mdfr_cd
         , sort_adjusted_claims.hcpcs_3_mdfr_cd
@@ -189,6 +190,7 @@ with sort_adjusted_claims as (
         , hcpcs_3_mdfr_cd as hcpcs_modifier_3
         , hcpcs_4_mdfr_cd as hcpcs_modifier_4
         , hcpcs_5_mdfr_cd as hcpcs_modifier_5
+        , clm_type_cd as clm_type_cd
         , rndrg_prvdr_npi_num as rendering_npi
         , clm_rndrg_prvdr_tax_num as rendering_tin
         , cast(null as {{ dbt.type_string() }} ) as billing_npi
@@ -352,6 +354,7 @@ with sort_adjusted_claims as (
         , cast(hcpcs_modifier_3 as {{ dbt.type_string() }} ) as hcpcs_modifier_3
         , cast(hcpcs_modifier_4 as {{ dbt.type_string() }} ) as hcpcs_modifier_4
         , cast(hcpcs_modifier_5 as {{ dbt.type_string() }} ) as hcpcs_modifier_5
+        , cast(clm_type_cd as {{ dbt.type_string() }} ) as clm_type_cd
         , cast(rendering_npi as {{ dbt.type_string() }} ) as rendering_npi
         , cast(rendering_tin as {{ dbt.type_string() }} ) as rendering_tin
         , cast(billing_npi as {{ dbt.type_string() }} ) as billing_npi
@@ -505,6 +508,7 @@ select
     , hcpcs_modifier_3
     , hcpcs_modifier_4
     , hcpcs_modifier_5
+    , clm_type_cd
     , rendering_npi
     , rendering_tin
     , billing_npi

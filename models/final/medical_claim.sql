@@ -175,7 +175,7 @@ select
     , in_network_flag
     , data_source
     , file_name
-    , cast(ingest_datetime as date) as file_date
+    , cast(file_date as date) as file_date
     , ingest_datetime
 from final_claims
 where row_num = 1
