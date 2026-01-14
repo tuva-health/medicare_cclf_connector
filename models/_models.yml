@@ -163,6 +163,13 @@ models:
               min_value: 0
               config:
                 severity: warn
+  - name: provider_attribution
+    description: Provider attribution for all members
+    config:
+      schema: |
+        {%- if var('tuva_schema_prefix',None) != None -%}_{{var('tuva_schema_prefix')}}_input_layer{% else %}input_layer{%- endif -%}
+      materialized: table
+      tags: connector
 
 ### intermediate
   - name: int_beneficiary_demographics_deduped
@@ -286,6 +293,13 @@ models:
         {%- if var('tuva_schema_prefix',None) != None -%}_{{var('tuva_schema_prefix')}}_int_input_layer{% else %}_int_input_layer{%- endif -%}
       alias: revenue_center_deduped
 
+  - name: int_unpivoted_enrollment
+    description: Enrollment by year month from AALR
+    config:
+      schema: |
+        {%- if var('tuva_schema_prefix',None) != None -%}_{{var('tuva_schema_prefix')}}_int_input_layer{% else %}_int_input_layer{%- endif -%}
+      alias: int_unpivoted_enrollment
+
   ### staging
   - name: stg_beneficiary_demographics
     description: Staging model for beneficiary demographics (CCLF8).
@@ -362,3 +376,16 @@ models:
       schema: |
         {%- if var('tuva_schema_prefix',None) != None -%}_{{var('tuva_schema_prefix')}}_stg_input_layer{% else %}_stg_input_layer{%- endif -%}
       alias: partd_claims
+
+  - name: stg_aalr_2024
+    description: Staging model for AALR file 2024
+    config:
+      schema: |
+        {%- if var('tuva_schema_prefix',None) != None -%}_{{var('tuva_schema_prefix')}}_stg_input_layer{% else %}_stg_input_layer{%- endif -%}
+      alias: aalr_2024
+  - name: stg_aalr_2025
+    description: Staging model for AALR file 2025
+    config:
+      schema: |
+        {%- if var('tuva_schema_prefix',None) != None -%}_{{var('tuva_schema_prefix')}}_stg_input_layer{% else %}_stg_input_layer{%- endif -%}
+      alias: aalr_2025

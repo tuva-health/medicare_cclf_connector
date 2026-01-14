@@ -15,3 +15,9 @@ sources:
       - name: partb_dme #CCLF6
       - name: partb_physicians #CCLF5
       - name: partd_claims #CCLF7
+      - name: aalr_2024
+        identifier: aalr_2024
+      - name: aalr_2025
+        identifier: aalr_2025Q2
+      - name: aalr4_2025
+        identifier: aalr4_2025

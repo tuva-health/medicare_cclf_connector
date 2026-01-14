@@ -18,6 +18,7 @@ with sort_adjusted_claims as (
         , clm_cntl_num
         , clm_line_alowd_chrg_amt
         , clm_line_srvc_unit_qty
+        , clm_type_cd
         , hcpcs_1_mdfr_cd
         , hcpcs_2_mdfr_cd
         , hcpcs_3_mdfr_cd
@@ -88,6 +89,7 @@ with sort_adjusted_claims as (
         , sort_adjusted_claims.clm_cntl_num
         , line_totals.sum_clm_line_alowd_chrg_amt as clm_line_alowd_chrg_amt
         , sort_adjusted_claims.clm_line_srvc_unit_qty
+        , sort_adjusted_claims.clm_type_cd
         , sort_adjusted_claims.hcpcs_1_mdfr_cd
         , sort_adjusted_claims.hcpcs_2_mdfr_cd
         , sort_adjusted_claims.hcpcs_3_mdfr_cd
@@ -147,6 +149,7 @@ with sort_adjusted_claims as (
     select
           cur_clm_uniq_id as claim_id
         , clm_line_num as claim_line_number
+        , clm_type_cd as claim_type_code
         , cast('professional' as {{ dbt.type_string() }} ) as claim_type
         , current_bene_mbi_id as person_id
         , current_bene_mbi_id as member_id
@@ -320,6 +323,7 @@ with sort_adjusted_claims as (
     select
           cast(claim_id as {{ dbt.type_string() }} ) as claim_id
         , cast(claim_line_number as integer) as claim_line_number
+        , cast(claim_type_code as {{ dbt.type_string() }} ) as claim_type_code
         , cast(claim_type as {{ dbt.type_string() }} ) as claim_type
         , cast(person_id as {{ dbt.type_string() }} ) as person_id
         , cast(member_id as {{ dbt.type_string() }} ) as member_id
@@ -464,6 +468,7 @@ with sort_adjusted_claims as (
         , cast(in_network_flag as integer) as in_network_flag
         , cast(data_source as {{ dbt.type_string() }} ) as data_source
         , cast(file_name as {{ dbt.type_string() }} ) as file_name
+        , cast(NULL as date) as file_date
         , cast(ingest_datetime as {{ dbt.type_string() }} ) as ingest_datetime
     from mapping
 
@@ -616,5 +621,6 @@ select
     , in_network_flag
     , data_source
     , file_name
+    , file_date
     , ingest_datetime
 from add_data_types

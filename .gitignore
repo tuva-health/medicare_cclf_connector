@@ -9,3 +9,4 @@ package-lock.yml
 .venv/
 package-lock.yml
 .vscode
+dbt_internal_packages/

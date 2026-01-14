@@ -396,8 +396,8 @@ with sort_adjusted_claims as (
                 "clm_bill_freq_cd"
             ]
           ) }} as bill_type_code
-        , dgns_drg_cd as ms_drg_code
-        , cast(null as {{ dbt.type_string() }} ) as apr_drg_code
+        , 'ms-drg' as drg_code_type
+        , RIGHT(dgns_drg_cd, 3) as drg_code
         , clm_line_prod_rev_ctr_cd as revenue_center_code
         , clm_line_srvc_unit_qty as service_unit_quantity
         , clm_line_hcpcs_cd as hcpcs_code
@@ -578,8 +578,8 @@ with sort_adjusted_claims as (
         , cast(discharge_disposition_code as {{ dbt.type_string() }} ) as discharge_disposition_code
         , cast(place_of_service_code as {{ dbt.type_string() }} ) as place_of_service_code
         , cast(bill_type_code as {{ dbt.type_string() }} ) as bill_type_code
-        , cast(ms_drg_code as {{ dbt.type_string() }} ) as ms_drg_code
-        , cast(apr_drg_code as {{ dbt.type_string() }} ) as apr_drg_code
+        , cast(drg_code_type as {{ dbt.type_string() }} ) as drg_code_type
+        , cast(drg_code as {{ dbt.type_string() }} ) as drg_code
         , cast(revenue_center_code as {{ dbt.type_string() }} ) as revenue_center_code
         , {{ cast_numeric('service_unit_quantity') }} as service_unit_quantity
         , cast(hcpcs_code as {{ dbt.type_string() }} ) as hcpcs_code
@@ -711,6 +711,7 @@ with sort_adjusted_claims as (
         , cast(in_network_flag as integer) as in_network_flag
         , cast(data_source as {{ dbt.type_string() }} ) as data_source
         , cast(file_name as {{ dbt.type_string() }} ) as file_name
+        , cast(NULL as date ) as file_date
         , cast(ingest_datetime as {{ dbt.type_string() }} ) as ingest_datetime
     from mapping
 
@@ -735,8 +736,8 @@ select
     , discharge_disposition_code
     , place_of_service_code
     , bill_type_code
-    , ms_drg_code
-    , apr_drg_code
+    , drg_code_type
+    , drg_code
     , revenue_center_code
     , service_unit_quantity
     , hcpcs_code
@@ -868,5 +869,6 @@ select
     , in_network_flag
     , data_source
     , file_name
+    , file_date
     , ingest_datetime
 from add_data_types

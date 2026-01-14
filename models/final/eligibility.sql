@@ -96,7 +96,6 @@ with demographics as (
         , case
             when enrollment.enrollment_end_date >= cast({{ dbt.current_timestamp() }} as date)
             then {{ last_day(dbt.current_timestamp(), 'month') }}
-            when enrollment.enrollment_end_date is null then {{ last_day(dbt.current_timestamp(), 'month') }}
             else cast(enrollment.enrollment_end_date as date)
           end as enrollment_end_date
         , 'medicare' as payer
@@ -105,6 +104,8 @@ with demographics as (
         , cast(demographics.bene_orgnl_entlmt_rsn_cd as {{ dbt.type_string() }} ) as original_reason_entitlement_code
         , cast(demographics.bene_dual_stus_cd as {{ dbt.type_string() }} ) as dual_status_code
         , cast(demographics.bene_mdcr_stus_cd as {{ dbt.type_string() }} ) as medicare_status_code
+        , cast(null as {{ dbt.type_string() }} ) as group_id
+        , cast(null as {{ dbt.type_string() }} ) as group_name
         , cast(null as {{ dbt.type_string() }} ) as name_suffix
         , cast(demographics.bene_1st_name as {{ dbt.type_string() }} ) as first_name
         , cast(demographics.bene_midl_name as {{ dbt.type_string() }} ) as middle_name
@@ -134,6 +135,7 @@ with demographics as (
         , cast(NULL as {{ dbt.type_string() }} ) as ethnicity
         , 'medicare cclf' as data_source
         , cast(demographics.file_name as {{ dbt.type_string() }} ) as file_name
+        , cast(NULL as date ) as file_date
         , cast(demographics.file_date as {{ dbt.type_timestamp() }} ) as ingest_datetime
     from demographics
         left join enrollment
@@ -150,14 +152,16 @@ select
     , birth_date
     , death_date
     , death_flag
-    , enrollment_start_date
-    , enrollment_end_date
+    , coalesce(enrollment_start_date, '2024-01-01') as enrollment_start_date
+    , coalesce(enrollment_end_date, '2023-12-31') as enrollment_end_date
     , payer
     , payer_type
     , {{ the_tuva_project.quote_column('plan') }}
     , original_reason_entitlement_code
     , dual_status_code
     , medicare_status_code
+    , group_id
+    , group_name
     , name_suffix
     , first_name
     , middle_name
@@ -173,5 +177,6 @@ select
     , ethnicity
     , data_source
     , file_name
+    , file_date
     , ingest_datetime
 from joined
