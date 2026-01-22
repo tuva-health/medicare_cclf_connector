@@ -1,5 +1,8 @@
+-- CTE that selects from either the source table or the demo data seed based on the 'demo_data_only' variable
 with beneficiary_xref as (
-  SELECT * FROM
+  SELECT 
+    *
+  FROM
   {% if var('demo_data_only', false) %} {{ ref('beneficiary_xref') }} {% else %} {{ source('medicare_cclf','beneficiary_xref') }}{% endif %}
 )
 

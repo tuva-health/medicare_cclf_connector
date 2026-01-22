@@ -1,5 +1,8 @@
+-- CTE that selects from either the source table or the demo data seed based on the 'demo_data_only' variable
 with partd_claims as (
-  SELECT * FROM
+  SELECT
+    * 
+  FROM
   {% if var('demo_data_only', false) %} {{ ref('partd_claims') }} {% else %} {{ source('medicare_cclf','partd_claims') }}{% endif %}
 )
 

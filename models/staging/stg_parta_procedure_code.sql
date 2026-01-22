@@ -1,5 +1,8 @@
+-- CTE that selects from either the source table or the demo data seed based on the 'demo_data_only' variable
 with parta_procedure_code as (
-  SELECT * FROM
+  SELECT
+    *
+  FROM
   {% if var('demo_data_only', false) %} {{ ref('parta_procedure_code') }} {% else %} {{ source('medicare_cclf','parta_procedure_code') }}{% endif %}
 )
 
