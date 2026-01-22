@@ -1,0 +1,94 @@
+name: Databricks CICD Full Refresh
+on:
+#   pull_request:
+#     branches:
+#       - main
+  workflow_dispatch: # Allows manual trigger from UI
+
+jobs:
+  dbt_run:
+    runs-on: ubuntu-latest
+
+    env:
+      # Environment variables
+      PYTHON_VERSION: "3.10"
+      DBT_PROJECT_DIR: "."
+      DBT_CORE_VERSION: "1.10.15"
+      # Databricks connection variables
+      DATABRICKS_HOST: ${{ secrets.DBT_DATABRICKS_HOST }}
+      DATABRICKS_HTTP_PATH: ${{ secrets.DBT_DATABRICKS_HTTP_PATH }}
+      DATABRICKS_TOKEN: ${{ secrets.DBT_DATABRICKS_TOKEN }}
+      DATABRICKS_CATALOG: ${{ secrets.DBT_DATABRICKS_CATALOG }}
+      SCHEMA_SUFFIX: ${{ github.run_id }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+#      Certifi addresses a known certificate issue with databricks and dbt
+      - name: Install dbt-core and Databricks adapter
+        run: |
+          python -m pip install --upgrade pip
+          pip install dbt-core==1.10.15 dbt-databricks
+          # Install SSL certificates fix
+          pip install certifi
+
+      - name: Set SSL certificate environment variables
+        run: |
+          echo "SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt" >> $GITHUB_ENV
+          echo "REQUESTS_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt" >> $GITHUB_ENV
+
+      - name: Create dbt profile for Databricks
+        run: |
+          mkdir -p ./integration_tests/profiles/databricks
+          python3 << 'EOF'
+          import os
+          import yaml
+          
+          # Use schema suffix for CI isolation
+          schema_name = os.environ.get('DATABRICKS_SCHEMA', 'ci_testing')
+          if os.environ.get('SCHEMA_SUFFIX'):
+              schema_name = f"ci_test_{os.environ['SCHEMA_SUFFIX']}"
+          
+          profile = {
+              'default': {
+                  'outputs': {
+                      'dev': {
+                          'type': 'databricks',
+                          'host': os.environ['DATABRICKS_HOST'],
+                          'http_path': os.environ['DATABRICKS_HTTP_PATH'],
+                          'token': os.environ['DATABRICKS_TOKEN'],
+                          'catalog': os.environ.get('DATABRICKS_CATALOG', 'hive_metastore'),
+                          'schema': schema_name,
+                          'threads': 8,
+                          'connect_timeout': 60,
+                          'connect_retries': 3
+                      }
+                  },
+                  'target': 'dev'
+              }
+          }
+          
+          with open('./integration_tests/profiles/databricks/profiles.yml', 'w') as f:
+              yaml.dump(profile, f, default_flow_style=False)
+          
+          print(f"Created Databricks profile with catalog={profile['default']['outputs']['dev']['catalog']}, schema={schema_name}")
+          EOF
+        working-directory: ${{ env.DBT_PROJECT_DIR }}
+
+      - name: Load dbt dependencies
+        run: dbt deps --profiles-dir ./integration_tests/profiles/databricks
+        working-directory: ${{ env.DBT_PROJECT_DIR }}
+
+      - name: Test connection
+        run: dbt debug --profiles-dir ./integration_tests/profiles/databricks
+        working-directory: ${{ env.DBT_PROJECT_DIR }}
+
+      - name: Build dbt models (full-refresh)
+        run: |
+          dbt build --full-refresh --profiles-dir ./integration_tests/profiles/databricks
+        working-directory: ${{ env.DBT_PROJECT_DIR }}

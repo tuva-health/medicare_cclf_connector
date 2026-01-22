@@ -1,0 +1,83 @@
+name: DuckDB/MotherDuck CICD Full Refresh
+on:
+#   pull_request:
+#     branches:
+#       - main
+  workflow_dispatch: # Allows manual trigger from UI
+
+jobs:
+  dbt_run:
+    name: dbt full refresh and test on DuckDB/MotherDuck
+    runs-on: ubuntu-latest
+
+    env:
+      # Environment variables
+      PYTHON_VERSION: "3.10"
+      DBT_PROJECT_DIR: "."
+      DBT_CORE_VERSION: "1.10.15"
+      
+      # Connection variables
+      MOTHERDUCK_TOKEN: ${{ secrets.DBT_MOTHERDUCK_TOKEN }}
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dbt-core and DuckDB adapter
+        run: |
+          python -m pip install --upgrade pip
+          pip install dbt-core==${{ env.DBT_CORE_VERSION}} dbt-duckdb
+
+      - name: Create dbt profile for DuckDB/MotherDuck
+        run: |
+          mkdir -p ./integration_tests/profiles/duckdb
+          python3 << 'EOF'
+          import os
+          import yaml
+          
+          # Create unique database name for CI run
+          db_name = "my_db"
+          
+          # Build the MotherDuck connection string
+          motherduck_path = f"md:{db_name}?motherduck_token={os.environ['MOTHERDUCK_TOKEN']}"
+          
+          profile = {
+              'default': {
+                  'outputs': {
+                      'dev': {
+                          'type': 'duckdb',
+                          'path': motherduck_path,
+                          'threads': 4,
+                          'settings': {
+                              'custom_user_agent': 'dbt-ci'
+                          }
+                      }
+                  },
+                  'target': 'dev'
+              }
+          }
+          
+          with open('./integration_tests/profiles/duckdb/profiles.yml', 'w') as f:
+              yaml.dump(profile, f, default_flow_style=False)
+          
+          print(f"Created DuckDB/MotherDuck profile with database: {db_name}")
+          EOF
+        working-directory: ${{ env.DBT_PROJECT_DIR }}
+
+      - name: Install dbt dependencies
+        run: dbt deps --profiles-dir ./integration_tests/profiles/b
+        working-directory: ${{ env.DBT_PROJECT_DIR }}
+
+      - name: Test Connection
+        run: dbt debug --profiles-dir ./integration_tests/profiles/duckdb
+        working-directory: ${{ env.DBT_PROJECT_DIR }}
+
+      - name: Build dbt models (full-refresh)
+        run: |
+          dbt build --full-refresh --profiles-dir ./integration_tests/profiles/duckdb
+        working-directory: ${{ env.DBT_PROJECT_DIR }}
