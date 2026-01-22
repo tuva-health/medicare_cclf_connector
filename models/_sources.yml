@@ -4,7 +4,7 @@ sources:
   - name: medicare_cclf
     config:
       enabled: "{{ var('demo_data_only', false) == false }}"
-    # database: "{{ var('input_database') }}"
+    database: "{{ var('input_database') }}"
     schema:  "{{ var('input_schema') }}"
     tables:
       - name: beneficiary_demographics #CCLF8d
