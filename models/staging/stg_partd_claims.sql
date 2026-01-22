@@ -1,25 +1,30 @@
+with partd_claims as (
+  SELECT * FROM
+  {% if var('demo_data_only', false) %} {{ ref('partd_claims') }} {% else %} {{ source('medicare_cclf','partd_claims') }}{% endif %}
+)
+
 select
-      cur_clm_uniq_id
-    , bene_mbi_id
-    , bene_hic_num
-    , clm_line_ndc_cd
-    , clm_type_cd
-    , clm_line_from_dt
-    , prvdr_srvc_id_qlfyr_cd
-    , clm_srvc_prvdr_gnrc_id_num
-    , clm_dspnsng_stus_cd
-    , clm_daw_prod_slctn_cd
-    , clm_line_srvc_unit_qty
-    , clm_line_days_suply_qty
-    , prvdr_prsbng_id_qlfyr_cd
-    , clm_prsbng_prvdr_gnrc_id_num
-    , clm_line_bene_pmt_amt
-    , clm_adjsmt_type_cd
-    , clm_efctv_dt
-    , clm_idr_ld_dt
-    , clm_line_rx_srvc_rfrnc_num
-    , clm_line_rx_fill_num
-    , clm_phrmcy_srvc_type_cd
-    , file_name
-    , file_date
-from {{ source('medicare_cclf','partd_claims') }}
+      CUR_CLM_UNIQ_ID
+    , BENE_MBI_ID
+    , BENE_HIC_NUM
+    , CLM_LINE_NDC_CD
+    , CLM_TYPE_CD
+    , CLM_LINE_FROM_DT
+    , PRVDR_SRVC_ID_QLFYR_CD
+    , CLM_SRVC_PRVDR_GNRC_ID_NUM
+    , CLM_DSPNSNG_STUS_CD
+    , CLM_DAW_PROD_SLCTN_CD
+    , CLM_LINE_SRVC_UNIT_QTY
+    , CLM_LINE_DAYS_SUPLY_QTY
+    , PRVDR_PRSBNG_ID_QLFYR_CD
+    , CLM_PRSBNG_PRVDR_GNRC_ID_NUM
+    , CLM_LINE_BENE_PMT_AMT
+    , CLM_ADJSMT_TYPE_CD
+    , CLM_EFCTV_DT
+    , CLM_IDR_LD_DT
+    , CLM_LINE_RX_SRVC_RFRNC_NUM
+    , CLM_LINE_RX_FILL_NUM
+    , CLM_PHRMCY_SRVC_TYPE_CD
+    , FILE_NAME
+    , FILE_DATE
+from partd_claims

@@ -2,12 +2,14 @@ version: 2
 
 sources:
   - name: medicare_cclf
-    database: "{{ var('input_database') }}"
+    config:
+      enabled: "{{ var('demo_data_only', false) == false }}"
+    # database: "{{ var('input_database') }}"
     schema:  "{{ var('input_schema') }}"
     tables:
-      - name: beneficiary_demographics #CCLF8
+      - name: beneficiary_demographics #CCLF8d
       - name: beneficiary_xref #CCLF9
-      - name: enrollment #custom input
+      - name: enrollment #custom input mapped from AALRs
       - name: parta_claims_header #CCLF1
       - name: parta_claims_revenue_center_detail #CCLF2
       - name: parta_diagnosis_code #CCLF4

@@ -5,10 +5,11 @@ config-version: 2
 profile: default
 
 vars:
+  demo_data_only: false
 
   ## Set the database and schema where raw CCLF data is stored
   input_database: tuva
-  input_schema: raw_data
+  input_schema: raw
 
   claims_enabled: true
 

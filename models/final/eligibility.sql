@@ -143,7 +143,7 @@ with demographics as (
     from enrollment
     left join demographics
         on demographics.current_bene_mbi_id = enrollment.current_bene_mbi_id
-        and demographics.coverage_month = datefromparts(year(enrollment.enrollment_end_date), month(enrollment.enrollment_end_date), 1)
+        and demographics.coverage_month = {{ date_from_parts('year(enrollment.enrollment_end_date)', 'month(enrollment.enrollment_end_date)', 1) }}
 )
 
 select

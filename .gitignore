@@ -9,3 +9,6 @@ package-lock.yml
 .venv/
 package-lock.yml
 .vscode
+.envrc
+requirements.txt
+.direnv/

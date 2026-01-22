@@ -1,10 +1,15 @@
+with beneficiary_xref as (
+  SELECT * FROM
+  {% if var('demo_data_only', false) %} {{ ref('beneficiary_xref') }} {% else %} {{ source('medicare_cclf','beneficiary_xref') }}{% endif %}
+)
+
 select
-      hicn_mbi_xref_ind
-    , crnt_num
-    , prvs_num
-    , prvs_id_efctv_dt
-    , prvs_id_obslt_dt
-    , bene_rrb_num
-    , file_name
-    , file_date
-from {{ source('medicare_cclf','beneficiary_xref') }}
+      HICN_MBI_XREF_IND
+    , CRNT_NUM
+    , PRVS_NUM
+    , PRVS_ID_EFCTV_DT
+    , PRVS_ID_OBSLT_DT
+    , BENE_RRB_NUM
+    , FILE_NAME
+    , FILE_DATE
+from beneficiary_xref

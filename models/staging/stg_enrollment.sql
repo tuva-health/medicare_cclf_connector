@@ -1,8 +1,13 @@
+with enrollment as (
+  SELECT * FROM
+  {% if var('demo_data_only', false) %} {{ ref('enrollment') }} {% else %} {{ source('medicare_cclf','enrollment') }}{% endif %}
+)
+
 select
-      current_bene_mbi_id
-    , enrollment_start_date
-    , enrollment_end_date
-    , bene_member_month
-    , file_name
-    , file_date
-from {{ source('medicare_cclf','enrollment') }}
+      CURRENT_BENE_MBI_ID
+    , ENROLLMENT_START_DATE
+    , ENROLLMENT_END_DATE
+    , BENE_MEMBER_MONTH
+    , FILE_NAME
+    , FILE_DATE
+from enrollment

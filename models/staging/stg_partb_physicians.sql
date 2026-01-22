@@ -1,53 +1,61 @@
+with partb_physicians as (
+  SELECT * FROM
+  {% if var('demo_data_only', false) %} {{ ref('partb_physicians') }} {% else %} {{ source('medicare_cclf','partb_physicians') }}{% endif %}
+)
+
 select
-      cur_clm_uniq_id
-    , clm_line_num
-    , bene_mbi_id
-    , bene_hic_num
-    , clm_type_cd
-    , clm_from_dt
-    , clm_thru_dt
-    , rndrg_prvdr_type_cd
-    , rndrg_prvdr_fips_st_cd
-    , clm_prvdr_spclty_cd
-    , clm_fed_type_srvc_cd
-    , clm_pos_cd
-    , clm_line_from_dt
-    , clm_line_thru_dt
-    , clm_line_hcpcs_cd
-    , clm_line_cvrd_pd_amt
-    , clm_line_prmry_pyr_cd
-    , clm_line_dgns_cd
-    , clm_rndrg_prvdr_tax_num
-    , rndrg_prvdr_npi_num
-    , clm_carr_pmt_dnl_cd
-    , clm_prcsg_ind_cd
-    , clm_adjsmt_type_cd
-    , clm_efctv_dt
-    , clm_idr_ld_dt
-    , clm_cntl_num
-    , bene_eqtbl_bic_hicn_num
-    , clm_line_alowd_chrg_amt
-    , clm_line_srvc_unit_qty
-    , hcpcs_1_mdfr_cd
-    , hcpcs_2_mdfr_cd
-    , hcpcs_3_mdfr_cd
-    , hcpcs_4_mdfr_cd
-    , hcpcs_5_mdfr_cd
-    , clm_disp_cd
-    , clm_dgns_1_cd
-    , clm_dgns_2_cd
-    , clm_dgns_3_cd
-    , clm_dgns_4_cd
-    , clm_dgns_5_cd
-    , clm_dgns_6_cd
-    , clm_dgns_7_cd
-    , clm_dgns_8_cd
-    , dgns_prcdr_icd_ind
-    , clm_dgns_9_cd
-    , clm_dgns_10_cd
-    , clm_dgns_11_cd
-    , clm_dgns_12_cd
-    , hcpcs_betos_cd
-    , file_name
-    , file_date
-from {{ source('medicare_cclf','partb_physicians') }}
+      CUR_CLM_UNIQ_ID
+    , CLM_LINE_NUM
+    , BENE_MBI_ID
+    , BENE_HIC_NUM
+    , CLM_TYPE_CD
+    , CLM_FROM_DT
+    , CLM_THRU_DT
+    , RNDRG_PRVDR_TYPE_CD
+    , RNDRG_PRVDR_FIPS_ST_CD
+    , CLM_PRVDR_SPCLTY_CD
+    , CLM_FED_TYPE_SRVC_CD
+    , CLM_POS_CD
+    , CLM_LINE_FROM_DT
+    , CLM_LINE_THRU_DT
+    , CLM_LINE_HCPCS_CD
+    , CLM_LINE_CVRD_PD_AMT
+    , CLM_LINE_PRMRY_PYR_CD
+    , CLM_LINE_DGNS_CD
+    , CLM_RNDRG_PRVDR_TAX_NUM
+    , RNDRG_PRVDR_NPI_NUM
+    , CLM_CARR_PMT_DNL_CD
+    , CLM_PRCSG_IND_CD
+    , CLM_ADJSMT_TYPE_CD
+    , CLM_EFCTV_DT
+    , CLM_IDR_LD_DT
+    , CLM_CNTL_NUM
+    , BENE_EQTBL_BIC_HICN_NUM
+    , CLM_LINE_ALOWD_CHRG_AMT
+    , CLM_LINE_SRVC_UNIT_QTY
+    , HCPCS_1_MDFR_CD
+    , HCPCS_2_MDFR_CD
+    , HCPCS_3_MDFR_CD
+    , HCPCS_4_MDFR_CD
+    , HCPCS_5_MDFR_CD
+    , CLM_DISP_CD
+    , CLM_DGNS_1_CD
+    , CLM_DGNS_2_CD
+    , CLM_DGNS_3_CD
+    , CLM_DGNS_4_CD
+    , CLM_DGNS_5_CD
+    , CLM_DGNS_6_CD
+    , CLM_DGNS_7_CD
+    , CLM_DGNS_8_CD
+    , DGNS_PRCDR_ICD_IND
+    , CLM_DGNS_9_CD
+    , CLM_DGNS_10_CD
+    , CLM_DGNS_11_CD
+    , CLM_DGNS_12_CD
+    , HCPCS_BETOS_CD
+    , CLM_RNDRG_PRVDR_NPI_NUM
+    , CLM_RFRG_PRVDR_NPI_NUM
+    , CLM_CNTRCTR_NUM
+    , FILE_NAME
+    , FILE_DATE
+from partb_physicians

@@ -34,7 +34,7 @@ with staged_data as (
         , geo_zip4_cd
         , file_name
         , file_date
-        , datefromparts(year(file_date), month(file_date), 1) as coverage_month
+        , {{ date_from_parts('year(file_date)', 'month(file_date)', 1) }} as coverage_month
     from {{ ref('stg_beneficiary_demographics') }}
 
 )
