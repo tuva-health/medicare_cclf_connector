@@ -106,6 +106,10 @@ with demographics as (
         , cast(demographics.bene_orgnl_entlmt_rsn_cd as {{ dbt.type_string() }} ) as original_reason_entitlement_code
         , cast(demographics.bene_dual_stus_cd as {{ dbt.type_string() }} ) as dual_status_code
         , cast(demographics.bene_mdcr_stus_cd as {{ dbt.type_string() }} ) as medicare_status_code
+        , cast(null as {{ dbt.type_string() }} ) as enrollment_status
+        , cast(null as {{ dbt.type_string() }} ) as hospice_flag
+        , cast(null as {{ dbt.type_string() }} ) as institutional_snp_flag
+        , cast(null as {{ dbt.type_string() }} ) as long_term_institutional_flag
         , cast(null as {{ dbt.type_string() }} ) as group_id
         , cast(null as {{ dbt.type_string() }} ) as group_name
         , cast(demographics.bene_entlmt_buyin_ind as {{ dbt.type_string() }} ) as medicare_entitlement_buyin_indicator
@@ -164,6 +168,10 @@ select
     , original_reason_entitlement_code
     , dual_status_code
     , medicare_status_code
+    , enrollment_status
+    , hospice_flag
+    , institutional_snp_flag
+    , long_term_institutional_flag
     , group_id
     , group_name
     , nullif(trim(medicare_entitlement_buyin_indicator),'') as medicare_entitlement_buyin_indicator
