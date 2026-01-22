@@ -1,35 +1,43 @@
+-- CTE that selects from either the source table or the demo data seed based on the 'demo_data_only' variable
+with beneficiary_demographics as (
+  SELECT 
+    * 
+  FROM
+  {% if var('demo_data_only', false) %} {{ ref('beneficiary_demographics') }} {% else %} {{ source('medicare_cclf','beneficiary_demographics') }}{% endif %}
+)
+
 select
-      bene_mbi_id
-    , bene_hic_num
-    , bene_fips_state_cd
-    , bene_fips_cnty_cd
-    , bene_zip_cd
-    , bene_dob
-    , bene_sex_cd
-    , bene_race_cd
-    , bene_age
-    , bene_mdcr_stus_cd
-    , bene_dual_stus_cd
-    , bene_death_dt
-    , bene_rng_bgn_dt
-    , bene_rng_end_dt
-    , bene_1st_name
-    , bene_midl_name
-    , bene_last_name
-    , bene_orgnl_entlmt_rsn_cd
-    , bene_entlmt_buyin_ind
-    , bene_part_a_enrlmt_bgn_dt
-    , bene_part_b_enrlmt_bgn_dt
-    , bene_line_1_adr
-    , bene_line_2_adr
-    , bene_line_3_adr
-    , bene_line_4_adr
-    , bene_line_5_adr
-    , bene_line_6_adr
-    , geo_zip_plc_name
-    , geo_usps_state_cd
-    , geo_zip5_cd
-    , geo_zip4_cd
-    , file_name
-    , file_date
-from {{ source('medicare_cclf','beneficiary_demographics') }}
+      BENE_MBI_ID
+    , BENE_HIC_NUM
+    , BENE_FIPS_STATE_CD
+    , BENE_FIPS_CNTY_CD
+    , BENE_ZIP_CD
+    , BENE_DOB
+    , BENE_SEX_CD
+    , BENE_RACE_CD
+    , BENE_AGE
+    , BENE_MDCR_STUS_CD
+    , BENE_DUAL_STUS_CD
+    , BENE_DEATH_DT
+    , BENE_RNG_BGN_DT
+    , BENE_RNG_END_DT
+    , BENE_1ST_NAME
+    , BENE_MIDL_NAME
+    , BENE_LAST_NAME
+    , BENE_ORGNL_ENTLMT_RSN_CD
+    , BENE_ENTLMT_BUYIN_IND
+    , BENE_PART_A_ENRLMT_BGN_DT
+    , BENE_PART_B_ENRLMT_BGN_DT
+    , BENE_LINE_1_ADR
+    , BENE_LINE_2_ADR
+    , BENE_LINE_3_ADR
+    , BENE_LINE_4_ADR
+    , BENE_LINE_5_ADR
+    , BENE_LINE_6_ADR
+    , GEO_ZIP_PLC_NAME
+    , GEO_USPS_STATE_CD
+    , GEO_ZIP5_CD
+    , GEO_ZIP4_CD
+    , FILE_NAME
+    , CAST(FILE_DATE AS date) AS FILE_DATE
+from beneficiary_demographics

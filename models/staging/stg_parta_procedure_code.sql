@@ -1,16 +1,25 @@
+-- CTE that selects from either the source table or the demo data seed based on the 'demo_data_only' variable
+with parta_procedure_code as (
+  SELECT
+    *
+  FROM
+  {% if var('demo_data_only', false) %} {{ ref('parta_procedure_code') }} {% else %} {{ source('medicare_cclf','parta_procedure_code') }}{% endif %}
+)
+
 select
-      cur_clm_uniq_id
-    , bene_mbi_id
-    , bene_hic_num
-    , clm_type_cd
-    , clm_val_sqnc_num
-    , clm_prcdr_cd
-    , clm_prcdr_prfrm_dt
-    , bene_eqtbl_bic_hicn_num
-    , prvdr_oscar_num
-    , clm_from_dt
-    , clm_thru_dt
-    , dgns_prcdr_icd_ind
-    , file_name
-    , file_date
-from {{ source('medicare_cclf','parta_procedure_code') }}
+      CUR_CLM_UNIQ_ID
+    , BENE_MBI_ID
+    , BENE_HIC_NUM
+    , CLM_TYPE_CD
+    , CLM_VAL_SQNC_NUM
+    , CLM_PRCDR_CD
+    , CLM_PRCDR_PRFRM_DT
+    , BENE_EQTBL_BIC_HICN_NUM
+    , PRVDR_OSCAR_NUM
+    , CLM_FROM_DT
+    , CLM_THRU_DT
+    , DGNS_PRCDR_ICD_IND
+    , CLM_BLG_PRVDR_OSCAR_NUM
+    , FILE_NAME
+    , FILE_DATE
+from parta_procedure_code
