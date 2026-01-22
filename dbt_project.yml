@@ -9,7 +9,7 @@ vars:
 
   ## Set the database and schema where raw CCLF data is stored
   input_database: tuva
-  input_schema: raw
+  input_schema: raw_data
 
   claims_enabled: true
 
