@@ -37,49 +37,6 @@ jobs:
           # Install SSL certificates fix
           pip install certifi
 
-      - name: Set SSL certificate environment variables
-        run: |
-          echo "SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt" >> $GITHUB_ENV
-          echo "REQUESTS_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt" >> $GITHUB_ENV
-
-      - name: Create dbt profile for Databricks
-        run: |
-          mkdir -p ./integration_tests/profiles/databricks
-          python3 << 'EOF'
-          import os
-          import yaml
-          
-          # Use schema suffix for CI isolation
-          schema_name = os.environ.get('DATABRICKS_SCHEMA', 'ci_testing')
-          if os.environ.get('SCHEMA_SUFFIX'):
-              schema_name = f"ci_test_{os.environ['SCHEMA_SUFFIX']}"
-          
-          profile = {
-              'default': {
-                  'outputs': {
-                      'dev': {
-                          'type': 'databricks',
-                          'host': os.environ['DATABRICKS_HOST'],
-                          'http_path': os.environ['DATABRICKS_HTTP_PATH'],
-                          'token': os.environ['DATABRICKS_TOKEN'],
-                          'catalog': os.environ.get('DATABRICKS_CATALOG', 'hive_metastore'),
-                          'schema': schema_name,
-                          'threads': 8,
-                          'connect_timeout': 60,
-                          'connect_retries': 3
-                      }
-                  },
-                  'target': 'dev'
-              }
-          }
-          
-          with open('./integration_tests/profiles/databricks/profiles.yml', 'w') as f:
-              yaml.dump(profile, f, default_flow_style=False)
-          
-          print(f"Created Databricks profile with catalog={profile['default']['outputs']['dev']['catalog']}, schema={schema_name}")
-          EOF
-        working-directory: ${{ env.DBT_PROJECT_DIR }}
-
       - name: Load dbt dependencies
         run: dbt deps --profiles-dir ./integration_tests/profiles/databricks
         working-directory: ${{ env.DBT_PROJECT_DIR }}

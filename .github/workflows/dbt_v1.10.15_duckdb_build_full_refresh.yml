@@ -18,6 +18,8 @@ jobs:
       
       # Connection variables
       MOTHERDUCK_TOKEN: ${{ secrets.DBT_MOTHERDUCK_TOKEN }}
+      MOTHERDUCK_DB_NAME: "my_db"
+      MOTHERDUCK_PATH: "md:${{ env.MOTHERDUCK_DB_NAME }}?motherduck_token=${{ env.MOTHERDUCK_TOKEN }}"
 
     steps:
       - name: Checkout Code
@@ -33,44 +35,8 @@ jobs:
           python -m pip install --upgrade pip
           pip install dbt-core==${{ env.DBT_CORE_VERSION}} dbt-duckdb
 
-      - name: Create dbt profile for DuckDB/MotherDuck
-        run: |
-          mkdir -p ./integration_tests/profiles/duckdb
-          python3 << 'EOF'
-          import os
-          import yaml
-          
-          # Create unique database name for CI run
-          db_name = "my_db"
-          
-          # Build the MotherDuck connection string
-          motherduck_path = f"md:{db_name}?motherduck_token={os.environ['MOTHERDUCK_TOKEN']}"
-          
-          profile = {
-              'default': {
-                  'outputs': {
-                      'dev': {
-                          'type': 'duckdb',
-                          'path': motherduck_path,
-                          'threads': 4,
-                          'settings': {
-                              'custom_user_agent': 'dbt-ci'
-                          }
-                      }
-                  },
-                  'target': 'dev'
-              }
-          }
-          
-          with open('./integration_tests/profiles/duckdb/profiles.yml', 'w') as f:
-              yaml.dump(profile, f, default_flow_style=False)
-          
-          print(f"Created DuckDB/MotherDuck profile with database: {db_name}")
-          EOF
-        working-directory: ${{ env.DBT_PROJECT_DIR }}
-
       - name: Install dbt dependencies
-        run: dbt deps --profiles-dir ./integration_tests/profiles/b
+        run: dbt deps --profiles-dir ./integration_tests/profiles/duckdb
         working-directory: ${{ env.DBT_PROJECT_DIR }}
 
       - name: Test Connection
