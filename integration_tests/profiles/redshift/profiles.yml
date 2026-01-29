@@ -1,6 +1,7 @@
 default:
+  target: ci
   outputs:
-    dev:
+    ci:
       type: redshift
       host: "{{ env_var('DBT_REDSHIFT_CI_HOST') }}"
       user: "{{ env_var('DBT_REDSHIFT_CI_USER') }}"
@@ -12,5 +13,3 @@ default:
       port: 5439
       ra3_node: true
       threads: 2
-      
-  target: dev

@@ -1,6 +1,7 @@
   default:
+    target: ci
     outputs:
-      dev:
+      ci:
         type: snowflake
         account: "{{ env_var('DBT_SNOWFLAKE_CI_ACCOUNT') }}"
         warehouse: "{{ env_var('DBT_SNOWFLAKE_CI_WAREHOUSE') }}"
@@ -10,4 +11,3 @@
         user: "{{ env_var('DBT_SNOWFLAKE_CI_USER') }}"
         password: "{{ env_var('DBT_SNOWFLAKE_CI_PASSWORD') }}"
         threads: 5
-    target: dev
