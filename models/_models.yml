@@ -104,6 +104,14 @@ models:
               min_value: 0
               config:
                 severity: warn
+      - name: paid_reduced_by
+        description: >
+          Amount the Medicare fee-for-service payment was reduced by under the
+          Population-Based Payment (PBP / AIPBP) benefit enhancement
+          (CLM_PBP_RDCTN_AMT from the CCLFA / CCLFB demonstration code files).
+          Populated on claim line 1 for institutional claims and on each claim
+          line for professional claims. Null when the claim has no
+          demonstration code record.
 
   - name: pharmacy_claim
     description: Claim line level pharmacy data.
@@ -905,4 +913,137 @@ models:
       - name: FILE_NAME
         description: "{{ doc('cclf_file_name') }}"
       - name: FILE_DATE
+        description: "{{ doc('cclf_file_date') }}"
+
+
+  - name: stg_parta_demo_codes
+    description: Staging model for part A benefit enhancement and demonstration codes (CCLFA).
+    config:
+      schema: |
+        {%- if var('tuva_schema_prefix',None) != None -%}_{{var('tuva_schema_prefix')}}_stg_input_layer{% else %}_stg_input_layer{%- endif -%}
+      alias: parta_demo_codes
+    columns:
+      - name: cur_clm_uniq_id
+        description: "{{ doc('cclf_cur_clm_uniq_id') }}"
+      - name: bene_mbi_id
+        description: "{{ doc('cclf_bene_mbi_id') }}"
+      - name: bene_hic_num
+        description: "{{ doc('cclf_bene_hic_num') }}"
+      - name: clm_type_cd
+        description: "{{ doc('cclf_clm_type_cd') }}"
+      - name: clm_actv_care_from_dt
+        description: "{{ doc('cclf_clm_actv_care_from_dt') }}"
+      - name: clm_ngaco_pbpmt_sw
+        description: "{{ doc('cclf_clm_ngaco_pbpmt_sw') }}"
+      - name: clm_ngaco_pdschrg_hcbs_sw
+        description: "{{ doc('cclf_clm_ngaco_pdschrg_hcbs_sw') }}"
+      - name: clm_ngaco_snf_wvr_sw
+        description: "{{ doc('cclf_clm_ngaco_snf_wvr_sw') }}"
+      - name: clm_ngaco_tlhlth_sw
+        description: "{{ doc('cclf_clm_ngaco_tlhlth_sw') }}"
+      - name: clm_ngaco_cptatn_sw
+        description: "{{ doc('cclf_clm_ngaco_cptatn_sw') }}"
+      - name: clm_demo_1st_num
+        description: "{{ doc('cclf_clm_demo_1st_num') }}"
+      - name: clm_demo_2nd_num
+        description: "{{ doc('cclf_clm_demo_2nd_num') }}"
+      - name: clm_demo_3rd_num
+        description: "{{ doc('cclf_clm_demo_3rd_num') }}"
+      - name: clm_demo_4th_num
+        description: "{{ doc('cclf_clm_demo_4th_num') }}"
+      - name: clm_demo_5th_num
+        description: "{{ doc('cclf_clm_demo_5th_num') }}"
+      - name: clm_pbp_inclsn_amt
+        description: "{{ doc('cclf_clm_pbp_inclsn_amt') }}"
+      - name: clm_pbp_rdctn_amt
+        description: "{{ doc('cclf_clm_pbp_rdctn_amt') }}"
+      - name: clm_ngaco_cmg_wvr_sw
+        description: "{{ doc('cclf_clm_ngaco_cmg_wvr_sw') }}"
+      - name: clm_instnl_per_diem_amt
+        description: "{{ doc('cclf_clm_instnl_per_diem_amt') }}"
+      - name: clm_mdcr_ip_bene_ddctbl_amt
+        description: "{{ doc('cclf_clm_mdcr_ip_bene_ddctbl_amt') }}"
+      - name: clm_mdcr_coinsrnc_amt
+        description: "{{ doc('cclf_clm_mdcr_coinsrnc_amt') }}"
+      - name: clm_blood_lblty_amt
+        description: "{{ doc('cclf_clm_blood_lblty_amt') }}"
+      - name: clm_instnl_prfnl_amt
+        description: "{{ doc('cclf_clm_instnl_prfnl_amt') }}"
+      - name: clm_ncvrd_chrg_amt
+        description: "{{ doc('cclf_clm_ncvrd_chrg_amt') }}"
+      - name: clm_mdcr_ddctbl_amt
+        description: "{{ doc('cclf_clm_mdcr_ddctbl_amt') }}"
+      - name: clm_rlt_cond_cd
+        description: "{{ doc('cclf_clm_rlt_cond_cd') }}"
+      - name: clm_oprtnl_outlr_amt
+        description: "{{ doc('cclf_clm_oprtnl_outlr_amt') }}"
+      - name: clm_mdcr_new_tech_amt
+        description: "{{ doc('cclf_clm_mdcr_new_tech_amt') }}"
+      - name: clm_islet_isoln_amt
+        description: "{{ doc('cclf_clm_islet_isoln_amt') }}"
+      - name: clm_sqstrtn_rdctn_amt
+        description: "{{ doc('cclf_clm_sqstrtn_rdctn_amt') }}"
+      - name: clm_1_rev_cntr_ansi_rsn_cd
+        description: "{{ doc('cclf_clm_1_rev_cntr_ansi_rsn_cd') }}"
+      - name: clm_1_rev_cntr_ansi_grp_cd
+        description: "{{ doc('cclf_clm_1_rev_cntr_ansi_grp_cd') }}"
+      - name: clm_mips_pmt_amt
+        description: "{{ doc('cclf_clm_mips_pmt_amt') }}"
+      - name: file_name
+        description: "{{ doc('cclf_file_name') }}"
+      - name: file_date
+        description: "{{ doc('cclf_file_date') }}"
+
+  - name: stg_partb_demo_codes
+    description: Staging model for part B benefit enhancement and demonstration codes (CCLFB).
+    config:
+      schema: |
+        {%- if var('tuva_schema_prefix',None) != None -%}_{{var('tuva_schema_prefix')}}_stg_input_layer{% else %}_stg_input_layer{%- endif -%}
+      alias: partb_demo_codes
+    columns:
+      - name: cur_clm_uniq_id
+        description: "{{ doc('cclf_cur_clm_uniq_id') }}"
+      - name: clm_line_num
+        description: "{{ doc('cclf_clm_line_num') }}"
+      - name: bene_mbi_id
+        description: "{{ doc('cclf_bene_mbi_id') }}"
+      - name: bene_hic_num
+        description: "{{ doc('cclf_bene_hic_num') }}"
+      - name: clm_type_cd
+        description: "{{ doc('cclf_clm_type_cd') }}"
+      - name: clm_line_ngaco_pbpmt_sw
+        description: "{{ doc('cclf_clm_line_ngaco_pbpmt_sw') }}"
+      - name: clm_line_ngaco_pdschrg_hcbs_sw
+        description: "{{ doc('cclf_clm_line_ngaco_pdschrg_hcbs_sw') }}"
+      - name: clm_line_ngaco_snf_wvr_sw
+        description: "{{ doc('cclf_clm_line_ngaco_snf_wvr_sw') }}"
+      - name: clm_line_ngaco_tlhlth_sw
+        description: "{{ doc('cclf_clm_line_ngaco_tlhlth_sw') }}"
+      - name: clm_line_ngaco_cptatn_sw
+        description: "{{ doc('cclf_clm_line_ngaco_cptatn_sw') }}"
+      - name: clm_demo_1st_num
+        description: "{{ doc('cclf_clm_demo_1st_num') }}"
+      - name: clm_demo_2nd_num
+        description: "{{ doc('cclf_clm_demo_2nd_num') }}"
+      - name: clm_demo_3rd_num
+        description: "{{ doc('cclf_clm_demo_3rd_num') }}"
+      - name: clm_demo_4th_num
+        description: "{{ doc('cclf_clm_demo_4th_num') }}"
+      - name: clm_demo_5th_num
+        description: "{{ doc('cclf_clm_demo_5th_num') }}"
+      - name: clm_pbp_inclsn_amt
+        description: "{{ doc('cclf_clm_pbp_inclsn_amt') }}"
+      - name: clm_pbp_rdctn_amt
+        description: "{{ doc('cclf_clm_pbp_rdctn_amt') }}"
+      - name: clm_ngaco_cmg_wvr_sw
+        description: "{{ doc('cclf_clm_ngaco_cmg_wvr_sw') }}"
+      - name: clm_mdcr_ddctbl_amt
+        description: "{{ doc('cclf_clm_mdcr_ddctbl_amt') }}"
+      - name: clm_sqstrtn_rdctn_amt
+        description: "{{ doc('cclf_clm_sqstrtn_rdctn_amt') }}"
+      - name: clm_line_carr_hpsa_scrcty_cd
+        description: "{{ doc('cclf_clm_line_carr_hpsa_scrcty_cd') }}"
+      - name: file_name
+        description: "{{ doc('cclf_file_name') }}"
+      - name: file_date
         description: "{{ doc('cclf_file_date') }}"
