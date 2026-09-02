@@ -35,6 +35,14 @@ The source table names the connector is expecting can be found in the
 `_sources.yml` config file. You can rename your source tables if needed or add an 
 alias to the config.  
 
+#### Demonstration code files (optional):
+The connector also reads the Part A and Part B Benefit Enhancement and 
+Demonstration Codes files (CCLFA and CCLFB) as the `parta_demo_codes` and 
+`partb_demo_codes` sources. These are used to populate `paid_reduced_by` in 
+`medical_claim` from `CLM_PBP_RDCTN_AMT`, the amount the Medicare payment was 
+reduced by under Population-Based Payment. If you do not receive these files, 
+set the variable `demo_codes_enabled` to false in `dbt_project.yml`.
+
 #### File Dates:
 The field `file_date` is used throughout this connector to deduplicate data 
 received across regular and run-out CCLFs. We recommend parsing this date from 

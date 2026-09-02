@@ -13,6 +13,11 @@ vars:
 
   claims_enabled: true
 
+  ## Set to false if the CCLFA / CCLFB benefit enhancement and demonstration
+  ## code files (parta_demo_codes, partb_demo_codes) are not available. The
+  ## paid_reduced_by column in medical_claim will then be null.
+  demo_codes_enabled: true
+
   ## Uncomment this variable if enrollment source is member months
   #  member_months_enrollment: true
 

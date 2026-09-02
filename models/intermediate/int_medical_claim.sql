@@ -56,6 +56,10 @@ with winning_keys as (
         , institutional_claims.copayment_amount
         , institutional_claims.deductible_amount
         , institutional_claims.total_cost_amount
+        , case
+            when institutional_claims.claim_line_number = 1 then parta_demo_codes.clm_pbp_rdctn_amt
+            else null
+          end as paid_reduced_by
         , institutional_claims.diagnosis_code_type
         , institutional_claims.diagnosis_code_1
         , institutional_claims.diagnosis_code_2
@@ -167,6 +171,8 @@ with winning_keys as (
     from {{ ref('int_institutional_claim_deduped') }} institutional_claims
     inner join winning_keys
         on institutional_claims.branch_row_key = winning_keys.branch_row_key
+    left join {{ ref('int_parta_demo_codes_deduped') }} parta_demo_codes
+        on institutional_claims.claim_id = parta_demo_codes.claim_id
 
 )
 
@@ -220,6 +226,7 @@ with winning_keys as (
         , physician_claims.copayment_amount
         , physician_claims.deductible_amount
         , physician_claims.total_cost_amount
+        , partb_demo_codes.clm_pbp_rdctn_amt as paid_reduced_by
         , physician_claims.diagnosis_code_type
         , physician_claims.diagnosis_code_1
         , physician_claims.diagnosis_code_2
@@ -331,6 +338,9 @@ with winning_keys as (
     from {{ ref('int_physician_claim_deduped') }} physician_claims
     inner join winning_keys
         on physician_claims.branch_row_key = winning_keys.branch_row_key
+    left join {{ ref('int_partb_demo_codes_deduped') }} partb_demo_codes
+        on physician_claims.claim_id = partb_demo_codes.claim_id
+        and physician_claims.claim_line_number = partb_demo_codes.claim_line_number
 
 )
 
@@ -384,6 +394,7 @@ with winning_keys as (
         , dme_claims.copayment_amount
         , dme_claims.deductible_amount
         , dme_claims.total_cost_amount
+        , partb_demo_codes.clm_pbp_rdctn_amt as paid_reduced_by
         , dme_claims.diagnosis_code_type
         , dme_claims.diagnosis_code_1
         , dme_claims.diagnosis_code_2
@@ -495,6 +506,9 @@ with winning_keys as (
     from {{ ref('int_dme_claim_deduped') }} dme_claims
     inner join winning_keys
         on dme_claims.branch_row_key = winning_keys.branch_row_key
+    left join {{ ref('int_partb_demo_codes_deduped') }} partb_demo_codes
+        on dme_claims.claim_id = partb_demo_codes.claim_id
+        and dme_claims.claim_line_number = partb_demo_codes.claim_line_number
 
 )
 

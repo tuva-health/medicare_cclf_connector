@@ -597,3 +597,143 @@ Sequential fill number for the original prescription or refill.
 {% docs cclf_clm_phrmcy_srvc_type_cd %}
 Pharmacy service type code for the Part D claim line.
 {% enddocs %}
+
+{% docs cclf_clm_actv_care_from_dt %}
+Date the active care period began on the Part A claim.
+{% enddocs %}
+
+{% docs cclf_clm_ngaco_pbpmt_sw %}
+Switch indicating the claim was processed under the Population-Based Payment (PBP) or All-Inclusive Population-Based Payment (AIPBP) benefit enhancement.
+{% enddocs %}
+
+{% docs cclf_clm_ngaco_pdschrg_hcbs_sw %}
+Switch indicating the claim was processed under the Post-Discharge Home Visit benefit enhancement.
+{% enddocs %}
+
+{% docs cclf_clm_ngaco_snf_wvr_sw %}
+Switch indicating the claim was processed under the SNF 3-Day Rule Waiver benefit enhancement.
+{% enddocs %}
+
+{% docs cclf_clm_ngaco_tlhlth_sw %}
+Switch indicating the claim was processed under the Telehealth Expansion benefit enhancement.
+{% enddocs %}
+
+{% docs cclf_clm_ngaco_cptatn_sw %}
+Switch indicating the claim was processed under a capitation benefit enhancement.
+{% enddocs %}
+
+{% docs cclf_clm_demo_1st_num %}
+First Medicare demonstration special processing number associated with the claim.
+{% enddocs %}
+
+{% docs cclf_clm_demo_2nd_num %}
+Second Medicare demonstration special processing number associated with the claim.
+{% enddocs %}
+
+{% docs cclf_clm_demo_3rd_num %}
+Third Medicare demonstration special processing number associated with the claim.
+{% enddocs %}
+
+{% docs cclf_clm_demo_4th_num %}
+Fourth Medicare demonstration special processing number associated with the claim.
+{% enddocs %}
+
+{% docs cclf_clm_demo_5th_num %}
+Fifth Medicare demonstration special processing number associated with the claim.
+{% enddocs %}
+
+{% docs cclf_clm_pbp_inclsn_amt %}
+PBP/AIPBP inclusion amount. The portion of the claim payment that is included in the Population-Based Payment calculation.
+{% enddocs %}
+
+{% docs cclf_clm_pbp_rdctn_amt %}
+PBP/AIPBP reduction amount. The amount by which the Medicare fee-for-service payment on the claim (Part A) or claim line (Part B) was reduced because the ACO is paid prospectively under Population-Based Payment. Mapped to paid_reduced_by in the medical_claim model.
+{% enddocs %}
+
+{% docs cclf_clm_ngaco_cmg_wvr_sw %}
+Switch indicating the claim was processed under the Care Management Home Visit waiver benefit enhancement.
+{% enddocs %}
+
+{% docs cclf_clm_instnl_per_diem_amt %}
+Institutional per diem amount on the claim.
+{% enddocs %}
+
+{% docs cclf_clm_mdcr_ip_bene_ddctbl_amt %}
+Medicare inpatient beneficiary deductible amount applied to the claim.
+{% enddocs %}
+
+{% docs cclf_clm_mdcr_coinsrnc_amt %}
+Medicare coinsurance amount applied to the claim.
+{% enddocs %}
+
+{% docs cclf_clm_blood_lblty_amt %}
+Beneficiary blood deductible liability amount on the claim.
+{% enddocs %}
+
+{% docs cclf_clm_instnl_prfnl_amt %}
+Institutional professional component amount on the claim.
+{% enddocs %}
+
+{% docs cclf_clm_ncvrd_chrg_amt %}
+Non-covered charge amount on the claim.
+{% enddocs %}
+
+{% docs cclf_clm_mdcr_ddctbl_amt %}
+Medicare deductible amount applied to the claim (Part A) or claim line (Part B).
+{% enddocs %}
+
+{% docs cclf_clm_rlt_cond_cd %}
+Claim related condition code. A Part A claim can appear on multiple rows of the CCLFA file, one per condition code.
+{% enddocs %}
+
+{% docs cclf_clm_oprtnl_outlr_amt %}
+Operating outlier payment amount on the claim.
+{% enddocs %}
+
+{% docs cclf_clm_mdcr_new_tech_amt %}
+Medicare new technology add-on payment amount on the claim.
+{% enddocs %}
+
+{% docs cclf_clm_islet_isoln_amt %}
+Islet isolation add-on payment amount on the claim.
+{% enddocs %}
+
+{% docs cclf_clm_sqstrtn_rdctn_amt %}
+Sequestration reduction amount applied to the claim payment.
+{% enddocs %}
+
+{% docs cclf_clm_1_rev_cntr_ansi_rsn_cd %}
+ANSI claim adjustment reason code for the first revenue center on the claim.
+{% enddocs %}
+
+{% docs cclf_clm_1_rev_cntr_ansi_grp_cd %}
+ANSI claim adjustment group code for the first revenue center on the claim.
+{% enddocs %}
+
+{% docs cclf_clm_mips_pmt_amt %}
+Merit-based Incentive Payment System (MIPS) payment adjustment amount on the claim.
+{% enddocs %}
+
+{% docs cclf_clm_line_ngaco_pbpmt_sw %}
+Switch indicating the claim line was processed under the Population-Based Payment (PBP) or All-Inclusive Population-Based Payment (AIPBP) benefit enhancement.
+{% enddocs %}
+
+{% docs cclf_clm_line_ngaco_pdschrg_hcbs_sw %}
+Switch indicating the claim line was processed under the Post-Discharge Home Visit benefit enhancement.
+{% enddocs %}
+
+{% docs cclf_clm_line_ngaco_snf_wvr_sw %}
+Switch indicating the claim line was processed under the SNF 3-Day Rule Waiver benefit enhancement.
+{% enddocs %}
+
+{% docs cclf_clm_line_ngaco_tlhlth_sw %}
+Switch indicating the claim line was processed under the Telehealth Expansion benefit enhancement.
+{% enddocs %}
+
+{% docs cclf_clm_line_ngaco_cptatn_sw %}
+Switch indicating the claim line was processed under a capitation benefit enhancement.
+{% enddocs %}
+
+{% docs cclf_clm_line_carr_hpsa_scrcty_cd %}
+Carrier Health Professional Shortage Area (HPSA) or physician scarcity bonus code for the claim line.
+{% enddocs %}
