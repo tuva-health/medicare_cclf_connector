@@ -2,14 +2,16 @@
     CCLFB (Part B benefit enhancement and demonstration codes) is a claim-line
     level file. The same claim line can be delivered in several monthly /
     run-out files, so we keep one row per claim line, preferring the most
-    recent file.
+    recent file. clm_line_num is zero padded in the raw file ('01'), so the
+    dedupe partitions on the integer value to match claim_line_number in the
+    physician and DME branches.
 #}
 
 with demo_codes as (
 
     select
           cur_clm_uniq_id
-        , clm_line_num
+        , {{ try_to_cast_int('clm_line_num') }} as claim_line_number
         , clm_pbp_inclsn_amt
         , clm_pbp_rdctn_amt
         , clm_mdcr_ddctbl_amt
@@ -17,7 +19,7 @@ with demo_codes as (
         , file_name
         , file_date
         , row_number() over (
-            partition by cur_clm_uniq_id, clm_line_num
+            partition by cur_clm_uniq_id, {{ try_to_cast_int('clm_line_num') }}
             order by
                   file_date desc
                 , file_name desc
@@ -29,7 +31,7 @@ with demo_codes as (
 
 select
       cast(cur_clm_uniq_id as {{ dbt.type_string() }}) as claim_id
-    , {{ try_to_cast_int('clm_line_num') }} as claim_line_number
+    , claim_line_number
     , {{ cast_numeric('clm_pbp_inclsn_amt') }} as clm_pbp_inclsn_amt
     , {{ cast_numeric('clm_pbp_rdctn_amt') }} as clm_pbp_rdctn_amt
     , {{ cast_numeric('clm_mdcr_ddctbl_amt') }} as clm_mdcr_ddctbl_amt

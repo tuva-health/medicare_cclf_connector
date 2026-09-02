@@ -1,6 +1,6 @@
 -- CTE that selects from either the source table or the demo data seed based on the 'demo_data_only' variable.
 -- The CCLFA file is optional; set the 'demo_codes_enabled' variable to false if it is not
--- available and this model will produce an empty table with the expected columns.
+-- available and this model will return an empty result set with the expected columns.
 with parta_demo_codes as (
 {% if var('demo_data_only', false) %}
   select * from {{ ref('parta_demo_codes') }}
