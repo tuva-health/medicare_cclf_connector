@@ -21,6 +21,6 @@ select
     , CLM_POA_IND
     , DGNS_PRCDR_ICD_IND
     , CLM_BLG_PRVDR_OSCAR_NUM
-    , null as FILE_NAME
+    , FILE_GROUP_ID as FILE_NAME
     , null as FILE_DATE
 from parta_diagnosis_code

@@ -52,6 +52,6 @@ select
     , CLM_CNTL_NUM
     , CLM_ORG_CNTL_NUM
     , CLM_CNTRCTR_NUM
-    , null as FILE_NAME
+    , FILE_GROUP_ID as FILE_NAME
     , null as FILE_DATE
 from parta_claims_header

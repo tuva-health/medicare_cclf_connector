@@ -20,6 +20,6 @@ select
     , {{ try_to_cast_date('CLM_THRU_DT') }} as CLM_THRU_DT
     , DGNS_PRCDR_ICD_IND
     , CLM_BLG_PRVDR_OSCAR_NUM
-    , null as FILE_NAME
+    , FILE_GROUP_ID as FILE_NAME
     , null as FILE_DATE
 from parta_procedure_code

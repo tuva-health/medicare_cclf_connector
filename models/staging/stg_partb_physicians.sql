@@ -59,6 +59,6 @@ select
     , CLM_RNDRG_PRVDR_NPI_NUM
     , CLM_RFRG_PRVDR_NPI_NUM
     , CLM_CNTRCTR_NUM
-    , null as FILE_NAME
+    , FILE_GROUP_ID as FILE_NAME
     , null as FILE_DATE
 from partb_physicians

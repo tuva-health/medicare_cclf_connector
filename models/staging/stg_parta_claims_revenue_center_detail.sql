@@ -30,6 +30,6 @@ select
     , HCPCS_5_MDFR_CD
     , CLM_REV_APC_HIPPS_CD
     , CLM_FAC_PRVDR_OSCAR_NUM
-    , null as FILE_NAME
+    , FILE_GROUP_ID as FILE_NAME
     , null as FILE_DATE
 from parta_claims_revenue_center_detail

@@ -13,6 +13,6 @@ select
     , {{ try_to_cast_date('PRVS_ID_EFCTV_DT') }} as PRVS_ID_EFCTV_DT
     , {{ try_to_cast_date('PRVS_ID_OBSLT_DT') }} as PRVS_ID_OBSLT_DT
     , BENE_RRB_NUM
-    , null as FILE_NAME
+    , FILE_GROUP_ID as FILE_NAME
     , null as FILE_DATE
 from beneficiary_xref
