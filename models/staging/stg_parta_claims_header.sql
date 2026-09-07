@@ -3,7 +3,7 @@ with parta_claims_header as (
   SELECT
     * 
   FROM
-  {% if var('demo_data_only', false) %} {{ ref('parta_claims_header') }} {% else %} {{ source('medicare_cclf','parta_claims_header') }}{% endif %}
+  {% if var('demo_data_only', false) %} {{ ref('parta_claims_header') }} {% else %} {{ source('medicare_cclf','cclf1_claim') }}{% endif %}
 )
 
 select
@@ -52,6 +52,6 @@ select
     , CLM_CNTL_NUM
     , CLM_ORG_CNTL_NUM
     , CLM_CNTRCTR_NUM
-    , FILE_NAME
-    , {{ try_to_cast_date('FILE_DATE') }} as FILE_DATE
+    , FILE_GROUP_ID as FILE_NAME
+    , null as FILE_DATE
 from parta_claims_header

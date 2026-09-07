@@ -3,7 +3,7 @@ with partb_physicians as (
   SELECT
     * 
   FROM
-  {% if var('demo_data_only', false) %} {{ ref('partb_physicians') }} {% else %} {{ source('medicare_cclf','partb_physicians') }}{% endif %}
+  {% if var('demo_data_only', false) %} {{ ref('partb_physicians') }} {% else %} {{ source('medicare_cclf','cclf5_claim') }}{% endif %}
 )
 
 select
@@ -59,6 +59,6 @@ select
     , CLM_RNDRG_PRVDR_NPI_NUM
     , CLM_RFRG_PRVDR_NPI_NUM
     , CLM_CNTRCTR_NUM
-    , FILE_NAME
-    , {{ try_to_cast_date('FILE_DATE') }} as FILE_DATE
+    , FILE_GROUP_ID as FILE_NAME
+    , null as FILE_DATE
 from partb_physicians

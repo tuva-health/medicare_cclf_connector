@@ -1,11 +1,17 @@
 version: 2
 
 sources:
+  - name: fhir
+    database: "fhir"
+    schema: relational_v1
+    tables:
+      - name: patient
+      - name: patient_identifier
   - name: medicare_cclf
     config:
       enabled: "{{ var('demo_data_only', false) == false }}"
-    database: "{{ var('input_database') }}"
-    schema:  "{{ var('input_schema') }}"
+    database: "zus_insights"
+    schema:  "insights_raw_claims_latest"
     tables:
       - name: beneficiary_demographics #CCLF8d
         description: CCLF8 beneficiary demographics feed aligned to the v41.0 specification.
@@ -109,7 +115,7 @@ sources:
           - name: file_date
             data_type: date
             description: "{{ doc('cclf_file_date') }}"
-      - name: beneficiary_xref #CCLF9
+      - name: cclf9_claim #CCLF9
         description: CCLF9 beneficiary cross-reference feed aligned to the v41.0 specification.
         columns:
           - name: hicn_mbi_xref_ind
@@ -157,7 +163,7 @@ sources:
           - name: file_date
             data_type: date
             description: "{{ doc('cclf_file_date') }}"
-      - name: parta_claims_header #CCLF1
+      - name: cclf1_claim #CCLF1
         description: CCLF1 Part A claims header feed aligned to the v41.0 specification.
         columns:
           - name: cur_clm_uniq_id
@@ -301,7 +307,7 @@ sources:
           - name: file_date
             data_type: date
             description: "{{ doc('cclf_file_date') }}"
-      - name: parta_claims_revenue_center_detail #CCLF2
+      - name: cclf2_claim #CCLF2
         description: CCLF2 Part A revenue center detail feed aligned to the v41.0 specification.
         columns:
           - name: cur_clm_uniq_id
@@ -379,7 +385,7 @@ sources:
           - name: file_date
             data_type: date
             description: "{{ doc('cclf_file_date') }}"
-      - name: parta_diagnosis_code #CCLF4
+      - name: cclf4_claim #CCLF4
         description: CCLF4 Part A diagnosis feed aligned to the v41.0 specification.
         columns:
           - name: cur_clm_uniq_id
@@ -430,7 +436,7 @@ sources:
           - name: file_date
             data_type: date
             description: "{{ doc('cclf_file_date') }}"
-      - name: parta_procedure_code #CCLF3
+      - name: cclf3_claim #CCLF3
         description: CCLF3 Part A procedure feed aligned to the v41.0 specification.
         columns:
           - name: cur_clm_uniq_id
@@ -568,7 +574,7 @@ sources:
           - name: file_date
             data_type: date
             description: "{{ doc('cclf_file_date') }}"
-      - name: partb_physicians #CCLF5
+      - name: cclf5_claim #CCLF5
         description: CCLF5 Part B physician feed aligned to the v41.0 specification.
         columns:
           - name: cur_clm_uniq_id

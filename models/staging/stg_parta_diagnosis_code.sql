@@ -3,7 +3,7 @@ with parta_diagnosis_code as (
   SELECT
     * 
   FROM
-  {% if var('demo_data_only', false) %} {{ ref('parta_diagnosis_code') }} {% else %} {{ source('medicare_cclf','parta_diagnosis_code') }}{% endif %}
+  {% if var('demo_data_only', false) %} {{ ref('parta_diagnosis_code') }} {% else %} {{ source('medicare_cclf','cclf4_claim') }}{% endif %}
 )
 
 select
@@ -21,6 +21,6 @@ select
     , CLM_POA_IND
     , DGNS_PRCDR_ICD_IND
     , CLM_BLG_PRVDR_OSCAR_NUM
-    , FILE_NAME
-    , {{ try_to_cast_date('FILE_DATE') }} as FILE_DATE
+    , FILE_GROUP_ID as FILE_NAME
+    , null as FILE_DATE
 from parta_diagnosis_code

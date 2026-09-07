@@ -3,7 +3,7 @@ with beneficiary_xref as (
   SELECT 
     *
   FROM
-  {% if var('demo_data_only', false) %} {{ ref('beneficiary_xref') }} {% else %} {{ source('medicare_cclf','beneficiary_xref') }}{% endif %}
+  {% if var('demo_data_only', false) %} {{ ref('beneficiary_xref') }} {% else %} {{ source('medicare_cclf','cclf9_claim') }}{% endif %}
 )
 
 select
@@ -13,6 +13,6 @@ select
     , {{ try_to_cast_date('PRVS_ID_EFCTV_DT') }} as PRVS_ID_EFCTV_DT
     , {{ try_to_cast_date('PRVS_ID_OBSLT_DT') }} as PRVS_ID_OBSLT_DT
     , BENE_RRB_NUM
-    , FILE_NAME
-    , {{ try_to_cast_date('FILE_DATE') }} as FILE_DATE
+    , FILE_GROUP_ID as FILE_NAME
+    , null as FILE_DATE
 from beneficiary_xref

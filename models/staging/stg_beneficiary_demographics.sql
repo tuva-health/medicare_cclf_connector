@@ -1,43 +1,53 @@
 -- CTE that selects from either the source table or the demo data seed based on the 'demo_data_only' variable
 with beneficiary_demographics as (
-  SELECT 
-    * 
-  FROM
-  {% if var('demo_data_only', false) %} {{ ref('beneficiary_demographics') }} {% else %} {{ source('medicare_cclf','beneficiary_demographics') }}{% endif %}
+  select pi.value as bene_mbi_id, * 
+  from {{ source('fhir', 'patient')}} p
+  inner join {{ source('fhir', 'patient_identifier')}} pi 
+    on pi.patient_id = p.id
+  where pi.system = 'http://hl7.org/fhir/sid/us-mbi'
 )
+
+
+{% set current_year = modules.datetime.date.today().year %}
+{% for month in range(1, 13) %}
 
 select
       bene_mbi_id
-    , bene_hic_num
-    , bene_fips_state_cd
-    , bene_fips_cnty_cd
-    , bene_zip_cd
-    , {{ try_to_cast_date('bene_dob') }} as bene_dob
-    , bene_sex_cd
-    , bene_race_cd
-    , {{ try_to_cast_int('bene_age') }} as bene_age
-    , bene_mdcr_stus_cd
-    , bene_dual_stus_cd
-    , {{ try_to_cast_date('bene_death_dt') }} as bene_death_dt
-    , {{ try_to_cast_date('bene_rng_bgn_dt') }} as bene_rng_bgn_dt
-    , {{ try_to_cast_date('bene_rng_end_dt') }} as bene_rng_end_dt
-    , bene_1st_name
-    , bene_midl_name
-    , bene_last_name
-    , bene_orgnl_entlmt_rsn_cd
-    , bene_entlmt_buyin_ind
-    , {{ try_to_cast_date('bene_part_a_enrlmt_bgn_dt') }} as bene_part_a_enrlmt_bgn_dt
-    , {{ try_to_cast_date('bene_part_b_enrlmt_bgn_dt') }} as bene_part_b_enrlmt_bgn_dt
-    , bene_line_1_adr
-    , bene_line_2_adr
-    , bene_line_3_adr
-    , bene_line_4_adr
-    , bene_line_5_adr
-    , bene_line_6_adr
-    , geo_zip_plc_name
-    , geo_usps_state_cd
-    , geo_zip5_cd
-    , geo_zip4_cd
-    , file_name
-    , {{ try_to_cast_date('file_date') }} as file_date
+    , null as bene_hic_num
+    , null as bene_fips_state_cd
+    , null as bene_fips_cnty_cd
+    , null as bene_zip_cd
+    , {{ try_to_cast_date('birth_date') }} as bene_dob
+    , gender as bene_sex_cd
+    , race as bene_race_cd
+    , null as bene_age
+    , null as bene_mdcr_stus_cd
+    , null as bene_dual_stus_cd
+    , deceased_datetime as bene_death_dt
+    , null as bene_rng_bgn_dt
+    , null as bene_rng_end_dt
+    , name_given_1 as bene_1st_name
+    , null as bene_midl_name
+    , name_family as bene_last_name
+    , null as bene_orgnl_entlmt_rsn_cd
+    , null as bene_entlmt_buyin_ind
+    , null as bene_part_a_enrlmt_bgn_dt
+    , null as bene_part_b_enrlmt_bgn_dt
+    , null as bene_line_1_adr
+    , null as bene_line_2_adr
+    , null as bene_line_3_adr
+    , null as bene_line_4_adr
+    , null as bene_line_5_adr
+    , null as bene_line_6_adr
+    , null as geo_zip_plc_name
+    , null as geo_usps_state_cd
+    , null as geo_zip5_cd
+    , null as geo_zip4_cd
+    , null as file_name
+    , date_from_parts({{ current_year }}, {{ month }}, 1) as file_date
 from beneficiary_demographics
+
+  {% if not loop.last %}
+  union all
+  {% endif %}
+{% endfor %}

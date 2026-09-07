@@ -3,7 +3,7 @@ with parta_claims_revenue_center_detail as (
   SELECT 
     * 
   FROM
-  {% if var('demo_data_only', false) %} {{ ref('parta_claims_revenue_center_detail') }} {% else %} {{ source('medicare_cclf','parta_claims_revenue_center_detail') }}{% endif %}
+  {% if var('demo_data_only', false) %} {{ ref('parta_claims_revenue_center_detail') }} {% else %} {{ source('medicare_cclf','cclf2_claim') }}{% endif %}
 )
 
 select
@@ -30,6 +30,6 @@ select
     , HCPCS_5_MDFR_CD
     , CLM_REV_APC_HIPPS_CD
     , CLM_FAC_PRVDR_OSCAR_NUM
-    , FILE_NAME
-    , {{ try_to_cast_date('FILE_DATE') }} as FILE_DATE
+    , FILE_GROUP_ID as FILE_NAME
+    , null as FILE_DATE
 from parta_claims_revenue_center_detail

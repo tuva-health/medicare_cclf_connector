@@ -455,6 +455,14 @@ select
     , hospice_flag
     , institutional_snp_flag
     , long_term_institutional_flag
+    , null as medicaid_indicator
+    , null as part_d_raf_type
+    , null as low_income_subsidy_indicator
+    , null as metal_level
+    , null as csr_indicator
+    , null as enrollment_duration_months
+    , null as esrd_status
+    , null as transplant_duration_months
     , group_id
     , group_name
     , nullif(trim(medicare_entitlement_buyin_indicator),'') as medicare_entitlement_buyin_indicator

@@ -149,7 +149,10 @@ select
     , procedure_date_24
     , procedure_date_25
     , in_network_flag
-    , 'medicare' as data_source
+    , case 
+        when file_name ilike '%D0236%' then 'medicare - honest'
+        else 'medicare'
+      end as data_source
     , file_name
     , cast(file_date as date) as file_date
     , ingest_datetime
