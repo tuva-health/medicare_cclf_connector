@@ -647,7 +647,7 @@ PBP/AIPBP inclusion amount. The portion of the claim payment that is included in
 {% enddocs %}
 
 {% docs cclf_clm_pbp_rdctn_amt %}
-PBP/AIPBP reduction amount. The amount by which the Medicare fee-for-service payment on the claim (Part A) or claim line (Part B) was reduced because the ACO is paid prospectively under Population-Based Payment. Mapped to paid_reduced_by in the medical_claim model.
+PBP/AIPBP reduction amount. The amount by which the Medicare fee-for-service payment on the claim (Part A) or claim line (Part B) was reduced because the ACO is paid prospectively under Population-Based Payment. Although the file layout declares the field as signed, the value is always positive in CMS files (a reduction of $250 arrives as 250.00). Mapped to paid_reduced_by in the medical_claim model.
 {% enddocs %}
 
 {% docs cclf_clm_ngaco_cmg_wvr_sw %}

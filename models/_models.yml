@@ -111,7 +111,8 @@ models:
           (CLM_PBP_RDCTN_AMT from the CCLFA / CCLFB demonstration code files).
           Populated on claim line 1 for institutional claims and on each claim
           line for professional claims. Null when the claim has no
-          demonstration code record.
+          demonstration code record. Always a positive amount in CMS files, so
+          paid_amount + paid_reduced_by restores the pre-reduction payment.
 
   - name: pharmacy_claim
     description: Claim line level pharmacy data.
