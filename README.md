@@ -11,6 +11,26 @@ Check out our [docs](https://thetuvaproject.com/) to learn about the project and
 The Medicare CCLF Connector is a dbt project that maps raw Medicare CCLF claims data to the Tuva Input Layer, which is the first step in running the Tuva Project.  This connector expects your CCLF data to be organized into the tables outlined in this [CMS data dictionary](https://www.cms.gov/files/document/cclf-information-packet.pdf), which is the most recent format CMS uses to distribute CCLF files.
 <br/><br/>  
 
+## 🔁 Related claims and adjustments
+
+CMS delivers every version of a claim (original, cancellation, adjustment). The connector
+resolves them following the CCLF Information Packet, sections 5.1 to 5.3:
+
+- Related claims are grouped by the CMS natural key: billing OSCAR, from date, thru date and
+  most recent MBI for Part A; claim control number and most recent MBI (plus line number)
+  for Part B physician and DME.
+- Re-delivered copies of the same claim version (same claim ID, line, adjustment type and
+  effective date) are collapsed to the most recently delivered file first.
+- Within a related set that contains a cancellation or adjustment, the latest version by
+  effective date wins and carries the signed (debit/credit) sum of the set. A winning
+  cancellation is dropped.
+- A related set made up only of original claims is a set of distinct final action claims
+  (IP 5.2.1), so each original is kept as its own claim with its own amounts. The
+  `adjustment_key` column on the `int_*_claim_adr` models is the claim ID for those sets and
+  a constant otherwise.
+
+These rules are covered by dbt unit tests in `models/intermediate/_unit_tests.yml`.
+
 ## 🔌 Database Support
 
 - BigQuery

@@ -122,12 +122,13 @@ unit_tests:
             , '111111' as clm_blg_prvdr_oscar_num
             , 'file_b.csv' as file_name
             , cast('2024-02-12' as date) as file_date
+            , '' as adjustment_key
             , 1 as row_num
         union all
         select
               'CLM-OLD', 'OLD-MBI', 'MBI-1', '2024-01-01', '2024-01-05', '1', '1', 100.00, '01', '001', '111111', '60',
               '1000000001', null, '1000000002', null, '0', '2024-01-10', '1', '2', '1', '0', 500.00, '111111', 'file_a.csv',
-              cast('2024-01-12' as date), 2
+              cast('2024-01-12' as date), '', 2
 
   - name: int_dme_claim_adr_ranks_adjusted_claim_versions
     description: DME ADR logic negates canceled line amounts and ranks adjusted versions by effective date within claim control, line, and member.
@@ -198,17 +199,18 @@ unit_tests:
             , -120.00 as clm_line_alowd_chrg_amt
             , 'dme_b.csv' as file_name
             , cast('2024-02-12' as date) as file_date
+            , '' as adjustment_key
             , 1 as row_num
         union all
         select
               'DME-OLD', '1', 'OLD-MBI', 'MBI-1', '2024-01-01', '2024-01-05', '12', '2024-01-01', '2024-01-05',
               'E0100', 80.00, '2000000001', '2000000002', '0', '2024-01-10', 'CTRL-DME-1', 120.00, 'dme_a.csv',
-              cast('2024-01-12' as date), 2
+              cast('2024-01-12' as date), '', 2
         union all
         select
               'DME-OTHER-LINE', '2', 'OLD-MBI', 'MBI-1', '2024-01-01', '2024-01-05', '12', '2024-01-01', '2024-01-05',
               'E0200', 30.00, '2000000001', '2000000002', '0', '2024-01-15', 'CTRL-DME-1', 50.00, 'dme_c.csv',
-              cast('2024-01-17' as date), 1
+              cast('2024-01-17' as date), '', 1
 
   - name: int_physician_claim_adr_ranks_adjusted_claim_versions
     description: Physician ADR logic excludes denied claims, negates canceled line amounts, and ranks adjusted versions by effective date.
@@ -328,13 +330,673 @@ unit_tests:
             , null as clm_dgns_12_cd
             , 'phys_b.csv' as file_name
             , cast('2024-02-12' as date) as file_date
+            , '' as adjustment_key
             , 1 as row_num
         union all
         select
               'PHY-OLD', '1', 'OLD-MBI', 'MBI-1', '2024-01-01', '2024-01-05', '11', '2024-01-01', '2024-01-05',
               '99213', 90.00, 'TIN-1', '3000000001', '0', '2024-01-10', 'CTRL-PHY-1', 130.00, '1', '08', '71',
               '25', null, null, null, null, 'D1', null, null, null, null, null, null, null, '0', null, null, null,
-              null, 'phys_a.csv', cast('2024-01-12' as date), 2
+              null, 'phys_a.csv', cast('2024-01-12' as date), '', 2
+
+  - name: int_institutional_claim_adr_keeps_original_only_related_sets_separate
+    description: >
+      Two original Part A claims on one natural key with no cancellation or adjustment are
+      distinct final action claims (CCLF IP 5.2.1). Each keeps row_num 1 under its own
+      adjustment_key, and a re-delivered copy of a claim version collapses to the latest file.
+    model: int_institutional_claim_adr
+    given:
+      - input: ref('int_parta_claims_header_normalized')
+        format: sql
+        rows: |
+          select
+              '12345' as cur_clm_uniq_id
+            , '76543' as prvdr_oscar_num
+            , 'MBI-1' as bene_mbi_id
+            , 'HIC-1' as bene_hic_num
+            , '40' as clm_type_cd
+            , '2025-11-10' as clm_from_dt
+            , '2025-11-10' as clm_thru_dt
+            , '1' as clm_bill_fac_type_cd
+            , '3' as clm_bill_clsfctn_cd
+            , 'D1' as prncpl_dgns_cd
+            , null as admtg_dgns_cd
+            , cast(null as varchar) as clm_mdcr_npmt_rsn_cd
+            , '65.00' as clm_pmt_amt
+            , null as clm_nch_prmry_pyr_cd
+            , null as prvdr_fac_fips_st_cd
+            , '01' as bene_ptnt_stus_cd
+            , null as dgns_drg_cd
+            , null as clm_op_srvc_type_cd
+            , '1000000001' as fac_prvdr_npi_num
+            , null as oprtg_prvdr_npi_num
+            , '1000000002' as atndg_prvdr_npi_num
+            , null as othr_prvdr_npi_num
+            , '0' as clm_adjsmt_type_cd
+            , '2025-12-13' as clm_efctv_dt
+            , '2025-12-14' as clm_idr_ld_dt
+            , null as bene_eqtbl_bic_hicn_num
+            , null as clm_admsn_type_cd
+            , null as clm_admsn_src_cd
+            , '1' as clm_bill_freq_cd
+            , null as clm_query_cd
+            , '0' as dgns_prcdr_icd_ind
+            , '200.00' as clm_mdcr_instnl_tot_chrg_amt
+            , null as clm_mdcr_ip_pps_cptl_ime_amt
+            , null as clm_oprtnl_ime_amt
+            , null as clm_mdcr_ip_pps_dsprprtnt_amt
+            , null as clm_hipps_uncompd_care_amt
+            , null as clm_oprtnl_dsprprtnt_amt
+            , '76543' as clm_blg_prvdr_oscar_num
+            , null as clm_blg_prvdr_npi_num
+            , null as clm_oprtg_prvdr_npi_num
+            , null as clm_atndg_prvdr_npi_num
+            , null as clm_othr_prvdr_npi_num
+            , null as clm_cntl_num
+            , null as clm_org_cntl_num
+            , null as clm_cntrctr_num
+            , 'MBI-1' as current_bene_mbi_id
+            , 'file_dec.csv' as file_name
+            , cast('2025-12-20' as date) as file_date
+          union all
+          select
+              '98765', '76543', 'MBI-1', 'HIC-1', '40', '2025-11-10', '2025-11-10', '1', '3', 'D2', null, null, '100.00',
+              null, null, '01', null, null, '1000000001', null, '1000000002', null, '0', '2026-07-28', '2026-07-29',
+              null, null, null, '1', null, '0', '300.00', null, null, null, null, null, '76543', null, null, null, null, null, null, null,
+              'MBI-1', 'file_aug.csv', cast('2026-08-20' as date)
+          union all
+          select
+              '98765', '76543', 'MBI-1', null, '40', '2025-11-10', '2025-11-10', '1', '3', 'D2', null, null, '100.00',
+              null, null, '01', null, null, '1000000001', null, '1000000002', null, '0', '2026-07-28', '2026-07-29',
+              null, null, null, '1', null, '0', '300.00', null, null, null, null, null, '76543', null, null, null, null, null, null, null,
+              'MBI-1', 'file_sep.csv', cast('2026-09-20' as date)
+    expect:
+      format: sql
+      rows: |
+        select
+              '12345' as cur_clm_uniq_id
+            , 'MBI-1' as bene_mbi_id
+            , 'MBI-1' as current_bene_mbi_id
+            , '2025-11-10' as clm_from_dt
+            , '2025-11-10' as clm_thru_dt
+            , '1' as clm_bill_fac_type_cd
+            , '3' as clm_bill_clsfctn_cd
+            , 65.00 as clm_pmt_amt
+            , '01' as bene_ptnt_stus_cd
+            , null as dgns_drg_cd
+            , '76543' as ccn
+            , '40' as clm_type_cd
+            , '1000000001' as fac_prvdr_npi_num
+            , null as othr_prvdr_npi_num
+            , '1000000002' as atndg_prvdr_npi_num
+            , null as oprtg_prvdr_npi_num
+            , '0' as clm_adjsmt_type_cd
+            , '2025-12-13' as clm_efctv_dt
+            , null as clm_admsn_type_cd
+            , null as clm_admsn_src_cd
+            , '1' as clm_bill_freq_cd
+            , '0' as dgns_prcdr_icd_ind
+            , 200.00 as clm_mdcr_instnl_tot_chrg_amt
+            , '76543' as clm_blg_prvdr_oscar_num
+            , 'file_dec.csv' as file_name
+            , cast('2025-12-20' as date) as file_date
+            , '12345' as adjustment_key
+            , 1 as row_num
+        union all
+        select
+              '98765', 'MBI-1', 'MBI-1', '2025-11-10', '2025-11-10', '1', '3', 100.00, '01', null, '76543', '40',
+              '1000000001', null, '1000000002', null, '0', '2026-07-28', null, null, '1', '0', 300.00, '76543', 'file_sep.csv',
+              cast('2026-09-20' as date), '98765', 1
+
+  - name: int_dme_claim_adr_keeps_original_only_related_sets_separate
+    description: >
+      Two original DME lines on one claim control number and line with no cancellation are
+      distinct final action claims. Each keeps row_num 1 under its own adjustment_key.
+    model: int_dme_claim_adr
+    given:
+      - input: ref('int_partb_dme_normalized')
+        format: sql
+        rows: |
+          select
+              'DME-A' as cur_clm_uniq_id
+            , '1' as clm_line_num
+            , 'MBI-1' as bene_mbi_id
+            , 'HIC-1' as bene_hic_num
+            , '71' as clm_type_cd
+            , '2024-01-01' as clm_from_dt
+            , '2024-01-05' as clm_thru_dt
+            , 'D' as clm_fed_type_srvc_cd
+            , '12' as clm_pos_cd
+            , '2024-01-01' as clm_line_from_dt
+            , '2024-01-05' as clm_line_thru_dt
+            , 'E0100' as clm_line_hcpcs_cd
+            , '80.00' as clm_line_cvrd_pd_amt
+            , null as clm_prmry_pyr_cd
+            , '2000000001' as payto_prvdr_npi_num
+            , '2000000002' as ordrg_prvdr_npi_num
+            , '1' as clm_carr_pmt_dnl_cd
+            , 'A' as clm_prcsg_ind_cd
+            , '0' as clm_adjsmt_type_cd
+            , '2024-01-10' as clm_efctv_dt
+            , '2024-01-11' as clm_idr_ld_dt
+            , 'CTRL-DME-9' as clm_cntl_num
+            , null as bene_eqtbl_bic_hicn_num
+            , '120.00' as clm_line_alowd_chrg_amt
+            , null as clm_disp_cd
+            , 'MBI-1' as current_bene_mbi_id
+            , 'dme_a.csv' as file_name
+            , cast('2024-01-12' as date) as file_date
+          union all
+          select
+              'DME-B', '1', 'MBI-1', 'HIC-1', '71', '2024-01-01', '2024-01-05', 'D', '12', '2024-01-01', '2024-01-05',
+              'E0200', '30.00', null, '2000000001', '2000000002', '1', 'A', '0', '2024-02-10', '2024-02-11', 'CTRL-DME-9',
+              null, '50.00', null, 'MBI-1', 'dme_b.csv', cast('2024-02-12' as date)
+    expect:
+      format: sql
+      rows: |
+        select
+              'DME-A' as cur_clm_uniq_id
+            , '1' as clm_line_num
+            , 'MBI-1' as bene_mbi_id
+            , 'MBI-1' as current_bene_mbi_id
+            , '2024-01-01' as clm_from_dt
+            , '2024-01-05' as clm_thru_dt
+            , '12' as clm_pos_cd
+            , '2024-01-01' as clm_line_from_dt
+            , '2024-01-05' as clm_line_thru_dt
+            , 'E0100' as clm_line_hcpcs_cd
+            , 80.00 as clm_line_cvrd_pd_amt
+            , '2000000001' as payto_prvdr_npi_num
+            , '2000000002' as ordrg_prvdr_npi_num
+            , '0' as clm_adjsmt_type_cd
+            , '2024-01-10' as clm_efctv_dt
+            , 'CTRL-DME-9' as clm_cntl_num
+            , 120.00 as clm_line_alowd_chrg_amt
+            , 'dme_a.csv' as file_name
+            , cast('2024-01-12' as date) as file_date
+            , 'DME-A' as adjustment_key
+            , 1 as row_num
+        union all
+        select
+              'DME-B', '1', 'MBI-1', 'MBI-1', '2024-01-01', '2024-01-05', '12', '2024-01-01', '2024-01-05',
+              'E0200', 30.00, '2000000001', '2000000002', '0', '2024-02-10', 'CTRL-DME-9', 50.00, 'dme_b.csv',
+              cast('2024-02-12' as date), 'DME-B', 1
+
+  - name: int_physician_claim_adr_keeps_original_only_related_sets_separate
+    description: >
+      Two original physician lines on one claim control number and line with no cancellation
+      are distinct final action claims. Each keeps row_num 1 under its own adjustment_key, and a
+      re-delivered copy that differs only in a blanked column collapses to the latest file.
+    model: int_physician_claim_adr
+    given:
+      - input: ref('int_partb_physicians_normalized')
+        format: sql
+        rows: |
+          select
+              'PHY-A' as cur_clm_uniq_id
+            , '1' as clm_line_num
+            , 'MBI-1' as bene_mbi_id
+            , 'HIC-1' as bene_hic_num
+            , '71' as clm_type_cd
+            , '2024-01-01' as clm_from_dt
+            , '2024-01-05' as clm_thru_dt
+            , '01' as rndrg_prvdr_type_cd
+            , '10' as rndrg_prvdr_fips_st_cd
+            , '08' as clm_prvdr_spclty_cd
+            , 'P' as clm_fed_type_srvc_cd
+            , '11' as clm_pos_cd
+            , '2024-01-01' as clm_line_from_dt
+            , '2024-01-05' as clm_line_thru_dt
+            , '99213' as clm_line_hcpcs_cd
+            , '90.00' as clm_line_cvrd_pd_amt
+            , null as clm_line_prmry_pyr_cd
+            , 'R51' as clm_line_dgns_cd
+            , 'TIN-1' as clm_rndrg_prvdr_tax_num
+            , '3000000001' as rndrg_prvdr_npi_num
+            , '1' as clm_carr_pmt_dnl_cd
+            , 'A' as clm_prcsg_ind_cd
+            , '0' as clm_adjsmt_type_cd
+            , '2024-01-10' as clm_efctv_dt
+            , '2024-01-11' as clm_idr_ld_dt
+            , 'CTRL-PHY-9' as clm_cntl_num
+            , null as bene_eqtbl_bic_hicn_num
+            , '130.00' as clm_line_alowd_chrg_amt
+            , '1' as clm_line_srvc_unit_qty
+            , null as hcpcs_1_mdfr_cd
+            , null as hcpcs_2_mdfr_cd
+            , null as hcpcs_3_mdfr_cd
+            , null as hcpcs_4_mdfr_cd
+            , null as hcpcs_5_mdfr_cd
+            , null as clm_disp_cd
+            , 'D1' as clm_dgns_1_cd
+            , null as clm_dgns_2_cd
+            , null as clm_dgns_3_cd
+            , null as clm_dgns_4_cd
+            , null as clm_dgns_5_cd
+            , null as clm_dgns_6_cd
+            , null as clm_dgns_7_cd
+            , null as clm_dgns_8_cd
+            , '0' as dgns_prcdr_icd_ind
+            , null as clm_dgns_9_cd
+            , null as clm_dgns_10_cd
+            , null as clm_dgns_11_cd
+            , null as clm_dgns_12_cd
+            , 'M1A' as hcpcs_betos_cd
+            , 'MBI-1' as current_bene_mbi_id
+            , 'phys_a.csv' as file_name
+            , cast('2024-01-12' as date) as file_date
+          union all
+          select
+              'PHY-A', '1', 'MBI-1', null, '71', '2024-01-01', '2024-01-05', '01', '10', '08', 'P', '11',
+              '2024-01-01', '2024-01-05', '99213', '90.00', null, 'R51', 'TIN-1', '3000000001', '1', 'A', '0',
+              '2024-01-10', '2024-01-11', 'CTRL-PHY-9', null, '130.00', '1', null, null, null, null, null, null,
+              'D1', null, null, null, null, null, null, null, '0', null, null, null, null, null, 'MBI-1', 'phys_b.csv',
+              cast('2024-02-12' as date)
+          union all
+          select
+              'PHY-B', '1', 'MBI-1', 'HIC-1', '71', '2024-01-01', '2024-01-05', '01', '10', '08', 'P', '11',
+              '2024-01-01', '2024-01-05', '99214', '70.00', null, 'R52', 'TIN-1', '3000000001', '1', 'A', '0',
+              '2024-03-10', '2024-03-11', 'CTRL-PHY-9', null, '110.00', '1', null, null, null, null, null, null,
+              'D2', null, null, null, null, null, null, null, '0', null, null, null, null, 'M1A', 'MBI-1', 'phys_c.csv',
+              cast('2024-03-12' as date)
+    expect:
+      format: sql
+      rows: |
+        select
+              'PHY-A' as cur_clm_uniq_id
+            , '1' as clm_line_num
+            , 'MBI-1' as bene_mbi_id
+            , 'MBI-1' as current_bene_mbi_id
+            , '2024-01-01' as clm_from_dt
+            , '2024-01-05' as clm_thru_dt
+            , '11' as clm_pos_cd
+            , '2024-01-01' as clm_line_from_dt
+            , '2024-01-05' as clm_line_thru_dt
+            , '99213' as clm_line_hcpcs_cd
+            , 90.00 as clm_line_cvrd_pd_amt
+            , 'TIN-1' as clm_rndrg_prvdr_tax_num
+            , '3000000001' as rndrg_prvdr_npi_num
+            , '0' as clm_adjsmt_type_cd
+            , '2024-01-10' as clm_efctv_dt
+            , 'CTRL-PHY-9' as clm_cntl_num
+            , 130.00 as clm_line_alowd_chrg_amt
+            , '1' as clm_line_srvc_unit_qty
+            , '08' as clm_prvdr_spclty_cd
+            , '71' as clm_type_cd
+            , null as hcpcs_1_mdfr_cd
+            , null as hcpcs_2_mdfr_cd
+            , null as hcpcs_3_mdfr_cd
+            , null as hcpcs_4_mdfr_cd
+            , null as hcpcs_5_mdfr_cd
+            , 'D1' as clm_dgns_1_cd
+            , null as clm_dgns_2_cd
+            , null as clm_dgns_3_cd
+            , null as clm_dgns_4_cd
+            , null as clm_dgns_5_cd
+            , null as clm_dgns_6_cd
+            , null as clm_dgns_7_cd
+            , null as clm_dgns_8_cd
+            , '0' as dgns_prcdr_icd_ind
+            , null as clm_dgns_9_cd
+            , null as clm_dgns_10_cd
+            , null as clm_dgns_11_cd
+            , null as clm_dgns_12_cd
+            , 'phys_b.csv' as file_name
+            , cast('2024-02-12' as date) as file_date
+            , 'PHY-A' as adjustment_key
+            , 1 as row_num
+        union all
+        select
+              'PHY-B', '1', 'MBI-1', 'MBI-1', '2024-01-01', '2024-01-05', '11', '2024-01-01', '2024-01-05',
+              '99214', 70.00, 'TIN-1', '3000000001', '0', '2024-03-10', 'CTRL-PHY-9', 110.00, '1', '08', '71',
+              null, null, null, null, null, 'D2', null, null, null, null, null, null, null, '0', null, null, null,
+              null, 'phys_c.csv', cast('2024-03-12' as date), 'PHY-B', 1
+
+  - name: int_institutional_claim_deduped_keeps_original_only_related_sets_separate
+    description: >
+      Mirrors the reported case: two original Part A claims on one natural key with different
+      claim IDs and HCPCS. Each must survive as its own claim line carrying only its own
+      header payment; neither claim ID nor revenue line may be dropped or summed into the other.
+    model: int_institutional_claim_deduped
+    given:
+      - input: ref('int_institutional_claim_adr')
+        format: sql
+        rows: |
+          select
+              '12345' as cur_clm_uniq_id
+            , 'MBI-1' as bene_mbi_id
+            , 'MBI-1' as current_bene_mbi_id
+            , '2025-11-10' as clm_from_dt
+            , '2025-11-10' as clm_thru_dt
+            , '1' as clm_bill_fac_type_cd
+            , '3' as clm_bill_clsfctn_cd
+            , 65.00 as clm_pmt_amt
+            , '01' as bene_ptnt_stus_cd
+            , cast(null as varchar) as dgns_drg_cd
+            , '76543' as ccn
+            , '40' as clm_type_cd
+            , '1000000001' as fac_prvdr_npi_num
+            , cast(null as varchar) as othr_prvdr_npi_num
+            , '1000000002' as atndg_prvdr_npi_num
+            , cast(null as varchar) as oprtg_prvdr_npi_num
+            , '0' as clm_adjsmt_type_cd
+            , '2025-12-13' as clm_efctv_dt
+            , cast(null as varchar) as clm_admsn_type_cd
+            , cast(null as varchar) as clm_admsn_src_cd
+            , '1' as clm_bill_freq_cd
+            , '0' as dgns_prcdr_icd_ind
+            , 200.00 as clm_mdcr_instnl_tot_chrg_amt
+            , '76543' as clm_blg_prvdr_oscar_num
+            , 'file_dec.csv' as file_name
+            , cast('2025-12-20' as date) as file_date
+            , '12345' as adjustment_key
+            , 1 as row_num
+          union all
+          select
+              '98765', 'MBI-1', 'MBI-1', '2025-11-10', '2025-11-10', '1', '3', 100.00, '01', cast(null as varchar), '76543', '40', '1000000001', cast(null as varchar), '1000000002', cast(null as varchar), '0', '2026-07-28', cast(null as varchar), cast(null as varchar), '1', '0', 300.00, '76543', 'file_sep.csv', cast('2026-09-20' as date), '98765', 1
+      - input: ref('int_revenue_center_deduped')
+        format: sql
+        rows: |
+          select
+              '12345' as cur_clm_uniq_id
+            , 'MBI-1' as current_bene_mbi_id
+            , '76543' as prvdr_oscar_num
+            , '2025-11-10' as clm_from_dt
+            , '2025-11-10' as clm_thru_dt
+            , '1' as clm_line_num
+            , '2025-11-10' as clm_line_from_dt
+            , '2025-11-10' as clm_line_thru_dt
+            , '92929' as clm_line_hcpcs_cd
+            , '0450' as clm_line_prod_rev_ctr_cd
+            , '1' as clm_line_srvc_unit_qty
+            , '65.00' as clm_line_cvrd_pd_amt
+            , cast(null as varchar) as hcpcs_1_mdfr_cd
+            , cast(null as varchar) as hcpcs_2_mdfr_cd
+            , cast(null as varchar) as hcpcs_3_mdfr_cd
+            , cast(null as varchar) as hcpcs_4_mdfr_cd
+            , cast(null as varchar) as hcpcs_5_mdfr_cd
+          union all
+          select
+              '98765', 'MBI-1', '76543', '2025-11-10', '2025-11-10', '1', '2025-11-10', '2025-11-10', '38383', '0450', '1', '100.00', cast(null as varchar), cast(null as varchar), cast(null as varchar), cast(null as varchar), cast(null as varchar)
+      - input: ref('int_diagnosis_pivot')
+        format: sql
+        rows: |
+          select
+              cast(null as varchar) as cur_clm_uniq_id
+            , cast(null as varchar) as current_bene_mbi_id
+            , cast(null as varchar) as dgns_prcdr_icd_ind
+            , cast(null as varchar) as diagnosis_code_1
+            , cast(null as varchar) as diagnosis_code_2
+            , cast(null as varchar) as diagnosis_code_3
+            , cast(null as varchar) as diagnosis_code_4
+            , cast(null as varchar) as diagnosis_code_5
+            , cast(null as varchar) as diagnosis_code_6
+            , cast(null as varchar) as diagnosis_code_7
+            , cast(null as varchar) as diagnosis_code_8
+            , cast(null as varchar) as diagnosis_code_9
+            , cast(null as varchar) as diagnosis_code_10
+            , cast(null as varchar) as diagnosis_code_11
+            , cast(null as varchar) as diagnosis_code_12
+            , cast(null as varchar) as diagnosis_code_13
+            , cast(null as varchar) as diagnosis_code_14
+            , cast(null as varchar) as diagnosis_code_15
+            , cast(null as varchar) as diagnosis_code_16
+            , cast(null as varchar) as diagnosis_code_17
+            , cast(null as varchar) as diagnosis_code_18
+            , cast(null as varchar) as diagnosis_code_19
+            , cast(null as varchar) as diagnosis_code_20
+            , cast(null as varchar) as diagnosis_code_21
+            , cast(null as varchar) as diagnosis_code_22
+            , cast(null as varchar) as diagnosis_code_23
+            , cast(null as varchar) as diagnosis_code_24
+            , cast(null as varchar) as diagnosis_code_25
+            , cast(null as varchar) as diagnosis_poa_1
+            , cast(null as varchar) as diagnosis_poa_2
+            , cast(null as varchar) as diagnosis_poa_3
+            , cast(null as varchar) as diagnosis_poa_4
+            , cast(null as varchar) as diagnosis_poa_5
+            , cast(null as varchar) as diagnosis_poa_6
+            , cast(null as varchar) as diagnosis_poa_7
+            , cast(null as varchar) as diagnosis_poa_8
+            , cast(null as varchar) as diagnosis_poa_9
+            , cast(null as varchar) as diagnosis_poa_10
+            , cast(null as varchar) as diagnosis_poa_11
+            , cast(null as varchar) as diagnosis_poa_12
+            , cast(null as varchar) as diagnosis_poa_13
+            , cast(null as varchar) as diagnosis_poa_14
+            , cast(null as varchar) as diagnosis_poa_15
+            , cast(null as varchar) as diagnosis_poa_16
+            , cast(null as varchar) as diagnosis_poa_17
+            , cast(null as varchar) as diagnosis_poa_18
+            , cast(null as varchar) as diagnosis_poa_19
+            , cast(null as varchar) as diagnosis_poa_20
+            , cast(null as varchar) as diagnosis_poa_21
+            , cast(null as varchar) as diagnosis_poa_22
+            , cast(null as varchar) as diagnosis_poa_23
+            , cast(null as varchar) as diagnosis_poa_24
+            , cast(null as varchar) as diagnosis_poa_25
+          where 1 = 0
+      - input: ref('int_procedure_pivot')
+        format: sql
+        rows: |
+          select
+              cast(null as varchar) as cur_clm_uniq_id
+            , cast(null as varchar) as current_bene_mbi_id
+            , cast(null as varchar) as dgns_prcdr_icd_ind
+            , cast(null as varchar) as procedure_code_1
+            , cast(null as varchar) as procedure_code_2
+            , cast(null as varchar) as procedure_code_3
+            , cast(null as varchar) as procedure_code_4
+            , cast(null as varchar) as procedure_code_5
+            , cast(null as varchar) as procedure_code_6
+            , cast(null as varchar) as procedure_code_7
+            , cast(null as varchar) as procedure_code_8
+            , cast(null as varchar) as procedure_code_9
+            , cast(null as varchar) as procedure_code_10
+            , cast(null as varchar) as procedure_code_11
+            , cast(null as varchar) as procedure_code_12
+            , cast(null as varchar) as procedure_code_13
+            , cast(null as varchar) as procedure_code_14
+            , cast(null as varchar) as procedure_code_15
+            , cast(null as varchar) as procedure_code_16
+            , cast(null as varchar) as procedure_code_17
+            , cast(null as varchar) as procedure_code_18
+            , cast(null as varchar) as procedure_code_19
+            , cast(null as varchar) as procedure_code_20
+            , cast(null as varchar) as procedure_code_21
+            , cast(null as varchar) as procedure_code_22
+            , cast(null as varchar) as procedure_code_23
+            , cast(null as varchar) as procedure_code_24
+            , cast(null as varchar) as procedure_code_25
+            , cast(null as varchar) as procedure_date_1
+            , cast(null as varchar) as procedure_date_2
+            , cast(null as varchar) as procedure_date_3
+            , cast(null as varchar) as procedure_date_4
+            , cast(null as varchar) as procedure_date_5
+            , cast(null as varchar) as procedure_date_6
+            , cast(null as varchar) as procedure_date_7
+            , cast(null as varchar) as procedure_date_8
+            , cast(null as varchar) as procedure_date_9
+            , cast(null as varchar) as procedure_date_10
+            , cast(null as varchar) as procedure_date_11
+            , cast(null as varchar) as procedure_date_12
+            , cast(null as varchar) as procedure_date_13
+            , cast(null as varchar) as procedure_date_14
+            , cast(null as varchar) as procedure_date_15
+            , cast(null as varchar) as procedure_date_16
+            , cast(null as varchar) as procedure_date_17
+            , cast(null as varchar) as procedure_date_18
+            , cast(null as varchar) as procedure_date_19
+            , cast(null as varchar) as procedure_date_20
+            , cast(null as varchar) as procedure_date_21
+            , cast(null as varchar) as procedure_date_22
+            , cast(null as varchar) as procedure_date_23
+            , cast(null as varchar) as procedure_date_24
+            , cast(null as varchar) as procedure_date_25
+          where 1 = 0
+    expect:
+      format: sql
+      rows: |
+        select
+              '12345' as claim_id
+            , 1 as claim_line_number
+            , 'institutional' as claim_type
+            , 'MBI-1' as bene_mbi_id
+            , 'MBI-1' as current_bene_mbi_id
+            , 'MBI-1' as person_id
+            , 'MBI-1' as member_id
+            , 'medicare' as payer
+            , 'medicare' as plan
+            , cast('2025-11-10' as date) as claim_start_date
+            , cast('2025-11-10' as date) as claim_end_date
+            , cast('2025-11-10' as date) as claim_line_start_date
+            , cast('2025-11-10' as date) as claim_line_end_date
+            , null as admission_date
+            , null as discharge_date
+            , null as admit_source_code
+            , null as admit_type_code
+            , '01' as discharge_disposition_code
+            , null as place_of_service_code
+            , '131' as bill_type_code
+            , 'ms-drg' as drg_code_type
+            , null as drg_code
+            , '0450' as revenue_center_code
+            , 1.00 as service_unit_quantity
+            , '92929' as hcpcs_code
+            , null as hcpcs_modifier_1
+            , null as hcpcs_modifier_2
+            , null as hcpcs_modifier_3
+            , null as hcpcs_modifier_4
+            , null as hcpcs_modifier_5
+            , '76543' as ccn
+            , '40' as claim_type_code
+            , null as other_npi
+            , '1000000002' as attending_npi
+            , null as operating_npi
+            , '1000000002' as rendering_npi
+            , null as rendering_tin
+            , null as billing_npi
+            , null as billing_tin
+            , '1000000001' as facility_npi
+            , cast('2025-12-13' as date) as paid_date
+            , 65.00 as paid_amount
+            , null as allowed_amount
+            , null as charge_amount
+            , null as coinsurance_amount
+            , null as copayment_amount
+            , null as deductible_amount
+            , null as total_cost_amount
+            , null as diagnosis_code_type
+            , null as diagnosis_code_1
+            , null as diagnosis_code_2
+            , null as diagnosis_code_3
+            , null as diagnosis_code_4
+            , null as diagnosis_code_5
+            , null as diagnosis_code_6
+            , null as diagnosis_code_7
+            , null as diagnosis_code_8
+            , null as diagnosis_code_9
+            , null as diagnosis_code_10
+            , null as diagnosis_code_11
+            , null as diagnosis_code_12
+            , null as diagnosis_code_13
+            , null as diagnosis_code_14
+            , null as diagnosis_code_15
+            , null as diagnosis_code_16
+            , null as diagnosis_code_17
+            , null as diagnosis_code_18
+            , null as diagnosis_code_19
+            , null as diagnosis_code_20
+            , null as diagnosis_code_21
+            , null as diagnosis_code_22
+            , null as diagnosis_code_23
+            , null as diagnosis_code_24
+            , null as diagnosis_code_25
+            , null as diagnosis_poa_1
+            , null as diagnosis_poa_2
+            , null as diagnosis_poa_3
+            , null as diagnosis_poa_4
+            , null as diagnosis_poa_5
+            , null as diagnosis_poa_6
+            , null as diagnosis_poa_7
+            , null as diagnosis_poa_8
+            , null as diagnosis_poa_9
+            , null as diagnosis_poa_10
+            , null as diagnosis_poa_11
+            , null as diagnosis_poa_12
+            , null as diagnosis_poa_13
+            , null as diagnosis_poa_14
+            , null as diagnosis_poa_15
+            , null as diagnosis_poa_16
+            , null as diagnosis_poa_17
+            , null as diagnosis_poa_18
+            , null as diagnosis_poa_19
+            , null as diagnosis_poa_20
+            , null as diagnosis_poa_21
+            , null as diagnosis_poa_22
+            , null as diagnosis_poa_23
+            , null as diagnosis_poa_24
+            , null as diagnosis_poa_25
+            , null as procedure_code_type
+            , null as procedure_code_1
+            , null as procedure_code_2
+            , null as procedure_code_3
+            , null as procedure_code_4
+            , null as procedure_code_5
+            , null as procedure_code_6
+            , null as procedure_code_7
+            , null as procedure_code_8
+            , null as procedure_code_9
+            , null as procedure_code_10
+            , null as procedure_code_11
+            , null as procedure_code_12
+            , null as procedure_code_13
+            , null as procedure_code_14
+            , null as procedure_code_15
+            , null as procedure_code_16
+            , null as procedure_code_17
+            , null as procedure_code_18
+            , null as procedure_code_19
+            , null as procedure_code_20
+            , null as procedure_code_21
+            , null as procedure_code_22
+            , null as procedure_code_23
+            , null as procedure_code_24
+            , null as procedure_code_25
+            , null as procedure_date_1
+            , null as procedure_date_2
+            , null as procedure_date_3
+            , null as procedure_date_4
+            , null as procedure_date_5
+            , null as procedure_date_6
+            , null as procedure_date_7
+            , null as procedure_date_8
+            , null as procedure_date_9
+            , null as procedure_date_10
+            , null as procedure_date_11
+            , null as procedure_date_12
+            , null as procedure_date_13
+            , null as procedure_date_14
+            , null as procedure_date_15
+            , null as procedure_date_16
+            , null as procedure_date_17
+            , null as procedure_date_18
+            , null as procedure_date_19
+            , null as procedure_date_20
+            , null as procedure_date_21
+            , null as procedure_date_22
+            , null as procedure_date_23
+            , null as procedure_date_24
+            , null as procedure_date_25
+            , 1 as in_network_flag
+            , 'medicare cclf' as data_source
+            , 'file_dec.csv' as file_name
+            , null as file_date
+            , '2025-12-20' as ingest_datetime
+            , '8f7cf6dbdf12622c93c78cb860d6c0d2' as branch_row_key
+        union all
+        select
+              '98765', 1, 'institutional', 'MBI-1', 'MBI-1', 'MBI-1', 'MBI-1', 'medicare', 'medicare', cast('2025-11-10' as date), cast('2025-11-10' as date), cast('2025-11-10' as date), cast('2025-11-10' as date), null, null, null, null, '01', null, '131', 'ms-drg', null, '0450', 1.00, '38383', null, null, null, null, null, '76543', '40', null, '1000000002', null, '1000000002', null, null, null, '1000000001', cast('2026-07-28' as date), 100.00, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, 1, 'medicare cclf', 'file_sep.csv', null, '2026-09-20', '5152c9296340cec503e173e5f5a9c178'
 
   - name: int_diagnosis_pivot_places_codes_by_sequence
     description: Diagnosis long rows are pivoted into the expected diagnosis and POA sequence columns.
