@@ -39,7 +39,9 @@ jobs:
         run: uv run dbt test --select "package:medicare_cclf_connector,test_type:unit"
 
       - name: Load local raw fixtures
-        run: uv run dbt seed --full-refresh --select package:medicare_cclf_connector --vars '{"demo_data_only": true}'
+        run: |
+          uv run dbt seed --full-refresh --select package:medicare_cclf_connector --vars '{"demo_data_only": true}'
 
       - name: Build connector project
-        run: uv run dbt build --full-refresh --select package:medicare_cclf_connector --exclude resource_type:seed --vars '{"demo_data_only": false, "input_database": "medicare_cclf_connector_ci", "input_schema": "raw"}'
+        run: |
+          uv run dbt build --full-refresh --select package:medicare_cclf_connector --exclude resource_type:seed --indirect-selection cautious --vars '{"demo_data_only": false, "input_database": "medicare_cclf_connector_ci", "input_schema": "raw"}'

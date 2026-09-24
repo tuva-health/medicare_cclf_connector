@@ -27,6 +27,7 @@ with sort_adjusted_claims as (
         , clm_blg_prvdr_oscar_num
         , file_name
         , file_date
+        , adjustment_key
         , row_num
     from {{ ref('int_institutional_claim_adr') }}
 
@@ -62,6 +63,7 @@ with sort_adjusted_claims as (
         , clm_from_dt
         , clm_thru_dt
         , current_bene_mbi_id
+        , adjustment_key
         , sum(clm_pmt_amt) as sum_clm_pmt_amt
         , sum(clm_mdcr_instnl_tot_chrg_amt) as sum_clm_mdcr_instnl_tot_chrg_amt
     from sort_adjusted_claims
@@ -70,6 +72,7 @@ with sort_adjusted_claims as (
         , clm_from_dt
         , clm_thru_dt
         , current_bene_mbi_id
+        , adjustment_key
 
 )
 
@@ -112,6 +115,7 @@ with sort_adjusted_claims as (
             and sort_adjusted_claims.clm_from_dt = header_totals.clm_from_dt
             and sort_adjusted_claims.clm_thru_dt = header_totals.clm_thru_dt
             and sort_adjusted_claims.current_bene_mbi_id = header_totals.current_bene_mbi_id
+            and sort_adjusted_claims.adjustment_key = header_totals.adjustment_key
     where sort_adjusted_claims.row_num = 1
     and sort_adjusted_claims.clm_adjsmt_type_cd <> '1'
 

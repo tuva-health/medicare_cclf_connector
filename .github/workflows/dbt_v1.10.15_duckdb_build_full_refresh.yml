@@ -19,7 +19,8 @@ jobs:
       # Connection variables
       DBT_MOTHERDUCK_CI_TOKEN: ${{ secrets.DBT_MOTHERDUCK_CI_TOKEN }}
       DBT_MOTHERDUCK_CI_DATABASE: "my_db"
-      DBT_MOTHERDUCK_CI_PATH: "md:${{ env.DBT_MOTHERDUCK_CI_DATABASE }}?motherduck_token=${{ env.DBT_MOTHERDUCK_CI_TOKEN }}"
+      # env.* cannot be referenced inside the top-level env block, so the values are inlined
+      DBT_MOTHERDUCK_CI_PATH: "md:my_db?motherduck_token=${{ secrets.DBT_MOTHERDUCK_CI_TOKEN }}"
 
     steps:
       - name: Checkout Code
