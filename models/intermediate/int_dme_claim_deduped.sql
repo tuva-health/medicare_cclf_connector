@@ -20,6 +20,7 @@ with sort_adjusted_claims as (
         , clm_line_alowd_chrg_amt
         , file_name
         , file_date
+        , adjustment_key
         , row_num
     from {{ ref('int_dme_claim_adr') }}
 
@@ -36,6 +37,7 @@ with sort_adjusted_claims as (
           clm_cntl_num
         , clm_line_num
         , current_bene_mbi_id
+        , adjustment_key
         , sum(clm_line_cvrd_pd_amt) as sum_clm_line_cvrd_pd_amt
         , sum(clm_line_alowd_chrg_amt) as sum_clm_line_alowd_chrg_amt
     from sort_adjusted_claims
@@ -43,6 +45,7 @@ with sort_adjusted_claims as (
         clm_cntl_num
       , clm_line_num
       , current_bene_mbi_id
+      , adjustment_key
 
 )
 
@@ -77,6 +80,7 @@ with sort_adjusted_claims as (
             on sort_adjusted_claims.clm_cntl_num = line_totals.clm_cntl_num
             and sort_adjusted_claims.clm_line_num = line_totals.clm_line_num
             and sort_adjusted_claims.current_bene_mbi_id = line_totals.current_bene_mbi_id
+            and sort_adjusted_claims.adjustment_key = line_totals.adjustment_key
     where sort_adjusted_claims.row_num = 1
     and sort_adjusted_claims.clm_adjsmt_type_cd <> '1'
 

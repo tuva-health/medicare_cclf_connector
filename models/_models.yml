@@ -202,7 +202,12 @@ models:
       alias: diagnosis_pivot
 
   - name: int_dme_claim_adr
-    description: Applying adjustment logic for part B DME claims.
+    description: >
+      Applies related-claims adjustment logic for part B DME claims (CCLF IP 5.1 to 5.3). Ranks claim versions within claim control number, line and most recent MBI; original-only related sets are kept as separate final action claims via adjustment_key.
+    columns:
+      - name: adjustment_key
+        description: >
+          CUR_CLM_UNIQ_ID when the related set (natural-key group) holds only original claims, so each original resolves as its own final action claim; empty string when the set holds a cancellation or adjustment and resolves to one claim.
     config:
       schema: |
         {%- if var('tuva_schema_prefix',None) != None -%}_{{var('tuva_schema_prefix')}}_int_input_layer{% else %}_int_input_layer{%- endif -%}
@@ -233,7 +238,12 @@ models:
       alias: eligibility_member_months_combined
 
   - name: int_institutional_claim_adr
-    description: Applying adjustment logic for part A institutional claims.
+    description: >
+      Applies related-claims adjustment logic for part A institutional claims (CCLF IP 5.1 to 5.3). Ranks claim versions within billing OSCAR, from date, thru date and most recent MBI; original-only related sets are kept as separate final action claims via adjustment_key.
+    columns:
+      - name: adjustment_key
+        description: >
+          CUR_CLM_UNIQ_ID when the related set (natural-key group) holds only original claims, so each original resolves as its own final action claim; empty string when the set holds a cancellation or adjustment and resolves to one claim.
     config:
       schema: |
         {%- if var('tuva_schema_prefix',None) != None -%}_{{var('tuva_schema_prefix')}}_int_input_layer{% else %}_int_input_layer{%- endif -%}
@@ -271,7 +281,12 @@ models:
       alias: pharmacy_claim_deduped
 
   - name: int_physician_claim_adr
-    description: Applying adjustment logic for part B physician claims.
+    description: >
+      Applies related-claims adjustment logic for part B physician claims (CCLF IP 5.1 to 5.3). Ranks claim versions within claim control number, line and most recent MBI; original-only related sets are kept as separate final action claims via adjustment_key.
+    columns:
+      - name: adjustment_key
+        description: >
+          CUR_CLM_UNIQ_ID when the related set (natural-key group) holds only original claims, so each original resolves as its own final action claim; empty string when the set holds a cancellation or adjustment and resolves to one claim.
     config:
       schema: |
         {%- if var('tuva_schema_prefix',None) != None -%}_{{var('tuva_schema_prefix')}}_int_input_layer{% else %}_int_input_layer{%- endif -%}
