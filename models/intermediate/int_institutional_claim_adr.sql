@@ -171,37 +171,46 @@ with staged_data as (
         and nullif(trim(clm_mdcr_npmt_rsn_cd),'') is null
 )
 
+/*
+    dedupe re-delivered copies of the same claim version. CMS re-delivers claims across
+    monthly files and later file layouts blank columns such as HIC and BETOS, so a full-row
+    partition cannot collapse them. A claim version is identified by its claim ID,
+    adjustment type and effective date; the most recently delivered copy wins.
+*/
 , normalized_data as (
 
     select *,
         row_number() over (
             partition by
                   cur_clm_uniq_id
-                , ccn
-                , current_bene_mbi_id
-                , clm_type_cd
-                , clm_from_dt
-                , clm_thru_dt
-                , clm_bill_fac_type_cd
-                , clm_bill_clsfctn_cd
-                , clm_pmt_amt
-                , bene_ptnt_stus_cd
-                , dgns_drg_cd
-                , fac_prvdr_npi_num
-                , oprtg_prvdr_npi_num
-                , atndg_prvdr_npi_num
-                , othr_prvdr_npi_num
                 , clm_adjsmt_type_cd
                 , clm_efctv_dt
-                , clm_admsn_type_cd
-                , clm_admsn_src_cd
-                , clm_bill_freq_cd
-                , dgns_prcdr_icd_ind
-                , clm_mdcr_instnl_tot_chrg_amt
-                , clm_blg_prvdr_oscar_num
             order by file_date desc
         ) as normalized_row_num
     from dedupe
+
+)
+
+/*
+    flag related sets (natural-key groups) that contain a cancellation (1) or adjustment (2).
+    A related set made up only of original claims is a set of distinct final action claims
+    (CCLF IP 5.2: "it is possible that there is more than one final action claim among a
+    related set of claims"), so those must not be collapsed into one claim. The adjustment
+    key falls back to CUR_CLM_UNIQ_ID for original-only sets and is a constant otherwise.
+*/
+, flag_adjusted_groups as (
+
+    select
+          *
+        , max(case when clm_adjsmt_type_cd in ('1', '2') then 1 else 0 end) over (
+            partition by
+                  clm_blg_prvdr_oscar_num
+                , clm_from_dt
+                , clm_thru_dt
+                , current_bene_mbi_id
+          ) as group_has_adjustment
+    from normalized_data
+    where normalized_row_num = 1
 
 )
 
@@ -211,6 +220,8 @@ with staged_data as (
      - CLM_FROM_DT
      - CLM_THRU_DT
      - Most Recent MBI
+     - adjustment_key (CUR_CLM_UNIQ_ID when the related set holds only original claims,
+       so each original stays its own claim; constant otherwise)
 
     2) sort grouped claims by the latest CLM_EFCTV_DT and CUR_CLM_UNIQ_ID since CLM_ADJSMT_TYPE_CD
     is not used consistently to indicate the latest final version of an adjusted claim.
@@ -254,18 +265,25 @@ with staged_data as (
         , clm_blg_prvdr_oscar_num
         , file_name
         , file_date
+        , case
+            when group_has_adjustment = 1 then cast('' as {{ dbt.type_string() }})
+            else cur_clm_uniq_id
+          end as adjustment_key
         , row_number() over (
             partition by
                   clm_blg_prvdr_oscar_num
                 , clm_from_dt
                 , clm_thru_dt
                 , current_bene_mbi_id
+                , case
+                    when group_has_adjustment = 1 then cast('' as {{ dbt.type_string() }})
+                    else cur_clm_uniq_id
+                  end
             order by
                   clm_efctv_dt desc
                 , cur_clm_uniq_id desc
         ) as row_num
-    from normalized_data
-    where normalized_row_num = 1
+    from flag_adjusted_groups
 
 )
 
@@ -296,5 +314,6 @@ select
     , clm_blg_prvdr_oscar_num
     , file_name
     , file_date
+    , adjustment_key
     , row_num
 from sort_adjusted_claims
