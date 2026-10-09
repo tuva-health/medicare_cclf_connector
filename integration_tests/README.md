@@ -1,10 +1,68 @@
-# Continuous integration
+# Integration tests
 
-Pull requests run local DuckDB checks and a Snowflake full-refresh build. DuckDB
-checks parse the project, run connector unit tests, load the bundled fixtures,
-and build the connector. Snowflake runs `dbt build --full-refresh`, including
-seeds, unit tests, data tests, and enabled Tuva package models. Other warehouse
-workflows are manual. Snowflake runs are serialized because they share CI schemas.
+`integration_tests` is the dbt project used for local development and CI of
+`medicare_cclf_connector`. It installs the connector as a local package
+(`packages.yml` → `local: ../`), loads fixture seeds where the connector's
+`source()` expects raw CCLF tables, and builds the connector against them. All CI
+and local runs use `--project-dir integration_tests`.
+
+## Layout
+
+- `dbt_project.yml`: the canonical, commented inventory of connector vars.
+- `seeds/`: fixture seeds, one per CCLF source table. They load into
+  `var('input_database')`.`var('input_schema')`, so the connector reads them
+  exactly as it reads a client's raw tables. Every column loads as a string.
+- `tests/`: integration-only singular tests.
+- `macros/`: CI helpers: schema naming, unit-test schema setup, and
+  `drop_ci_schemas` for per-run cleanup.
+- `profiles/`: CI warehouse profiles. `profiles/local_duckdb` is the default
+  for local runs and the DuckDB CI job.
+
+## Local runs
+
+From the repo root, `scripts/dbt-local` runs dbt with the uv-locked toolchain
+against this project and the local DuckDB profile
+(`/tmp/medicare_cclf_connector_ci.duckdb`):
+
+```sh
+scripts/dbt-local deps
+scripts/dbt-local seed --full-refresh --select package:integration_tests
+scripts/dbt-local build --full-refresh \
+  --select package:medicare_cclf_connector package:integration_tests \
+  --exclude package:integration_tests,resource_type:seed --indirect-selection cautious
+```
+
+Set `DBT_PROFILES_DIR` (and `DBT_PROFILE`) to use another warehouse. Without
+the wrapper: `uv run dbt <cmd> --project-dir integration_tests --profiles-dir
+integration_tests/profiles/local_duckdb`.
+
+## CI
+
+`.github/workflows/ci.yml` runs on every pull request to `main`:
+
+| Check | What it runs |
+| --- | --- |
+| `uv lock check` | `uv lock --check`: `uv.lock` is the single toolchain pin. |
+| `dbt build / duckdb` | deps, parse, connector unit tests, fixture seeds, connector build. No secrets; runs on fork PRs too. |
+| `dbt build / snowflake` | Same steps, then builds the connector and every installed package (the_tuva_project and its dependencies) downstream. Same-repo PRs only. |
+
+Each Snowflake run sets `tuva_schema_prefix` to
+`ci_pr_<pr>_<head sha8>_r<run id>_a<attempt>`, loads fixtures into
+`<prefix>_raw`, and writes every connector and Tuva schema as `<prefix>_*` or
+`_<prefix>_*`; the profile's default schema is `<prefix>_default`. A final `always()` step runs `drop_ci_schemas` to drop them, so
+concurrent PRs never share schemas. A new push cancels the PR's in-flight run.
+
+`ci.yml` is also a reusable workflow (`workflow_call`) with inputs `warehouse`
+(`duckdb`, `snowflake`, or `all`), `scope` (`full` or `connector`),
+`checkout_ref`, and `schema_prefix`.
+
+### Fork pull requests
+
+Fork PRs get the DuckDB check automatically; the Snowflake job is skipped
+because it would expose repository secrets to fork code. After reviewing the
+PR's code, a maintainer runs **Actions → External PR CI → Run workflow** from
+`main` with the PR number. It pins the PR's current test-merge commit and runs
+the Snowflake build through `ci.yml`.
 
 ## Snowflake authentication
 
@@ -18,15 +76,14 @@ secrets live under **Settings → Secrets and variables → Actions**. Configure
 | `DBT_SNOWFLAKE_CI_ROLE` | Role assigned to the service user |
 | `DBT_SNOWFLAKE_CI_WAREHOUSE` | CI warehouse |
 | `DBT_SNOWFLAKE_CI_DATABASE` | Dedicated, disposable CI database |
-| `DBT_SNOWFLAKE_CI_SCHEMA` | Default CI schema |
+| `DBT_SNOWFLAKE_CI_SCHEMA` | Unused by `ci.yml`, which sets the profile's default schema to `<prefix>_default` per run |
 | `DBT_SNOWFLAKE_CI_PRIVATE_KEY` | Entire PKCS#8 PEM private key, including header/footer and line breaks |
 | `DBT_SNOWFLAKE_CI_PRIVATE_KEY_PASSPHRASE` | Passphrase for an encrypted key; omit for an unencrypted key |
 
 The workflow no longer uses `DBT_SNOWFLAKE_CI_PASSWORD`. The role needs warehouse
 usage, database usage, and permission to create schemas and build objects in the
-CI database. Use the existing CI role where possible. A single default schema
-does not isolate this project: models and seeds also use configured schemas such
-as `raw` and `input_layer`.
+CI database (each run creates and drops its own schemas). Use the existing CI
+role where possible.
 
 ### Generate and register a key
 
@@ -61,13 +118,9 @@ Keep key material out of commits, issues, PR comments, and logs. For key rotatio
 register a new named key before updating GitHub and remove the old key only after
 a successful CI run. See [Snowflake key-pair authentication](https://docs.snowflake.com/en/user-guide/key-pair-auth).
 
-### Run checks on a PR
+## Rerunning checks
 
-Pushes to the PR branch start both checks automatically. After changing only
-secrets, rerun the failed Snowflake job from the PR's Checks tab. A rerun uses the
-original commit and workflow; push workflow changes before rerunning checks.
-Manual runs are also available under **Actions → Snowflake CICD Full Refresh →
-Run workflow**; select the PR branch, not `main`.
-
-Merge after both checks pass on the final revision and the repository's required
-review is satisfied.
+Pushes to a PR branch start the checks automatically. After changing only
+secrets, rerun the failed job from the PR's Checks tab; a rerun uses the
+original commit and workflow, and gets fresh schemas from its new attempt
+number.

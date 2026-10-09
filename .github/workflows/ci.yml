@@ -1,0 +1,356 @@
+name: CI
+
+# One CI workflow for every warehouse. All dbt commands run against the
+# integration_tests project (--project-dir integration_tests), which installs
+# this connector as a local package. See integration_tests/README.md.
+#
+# Check names are stable so they can be made required:
+#   uv lock check       uv.lock matches pyproject.toml
+#   dbt build / duckdb  connector only, no secrets, every PR (forks included)
+#   dbt build / <wh>    connector + the_tuva_project on a remote warehouse;
+#                       same-repo PRs run Snowflake automatically, fork PRs
+#                       run it through ci-external-pr.yml after review.
+
+on:
+  pull_request:
+    branches:
+      - main
+    types:
+      - opened
+      - reopened
+      - synchronize
+      - ready_for_review
+  workflow_call:
+    inputs:
+      warehouse:
+        description: Warehouse to build (duckdb, snowflake, or all)
+        required: true
+        type: string
+      scope:
+        description: >-
+          Remote-warehouse build scope: full (connector + the_tuva_project) or
+          connector (connector only). DuckDB always builds the connector only.
+        required: false
+        type: string
+        default: full
+      checkout_ref:
+        description: Exact 40-character commit SHA to build
+        required: true
+        type: string
+      schema_prefix:
+        description: >-
+          Base schema prefix, e.g. ci_pr_12_abcdef12. The run ID and attempt
+          are appended so reruns never share schemas.
+        required: true
+        type: string
+    secrets:
+      DBT_SNOWFLAKE_CI_ACCOUNT:
+        required: false
+      DBT_SNOWFLAKE_CI_WAREHOUSE:
+        required: false
+      DBT_SNOWFLAKE_CI_DATABASE:
+        required: false
+      DBT_SNOWFLAKE_CI_ROLE:
+        required: false
+      DBT_SNOWFLAKE_CI_SCHEMA:
+        required: false
+      DBT_SNOWFLAKE_CI_USER:
+        required: false
+      DBT_SNOWFLAKE_CI_PRIVATE_KEY:
+        required: false
+      DBT_SNOWFLAKE_CI_PRIVATE_KEY_PASSPHRASE:
+        required: false
+
+permissions: {}
+
+concurrency:
+  # Supersede older runs for the same PR. Each run writes only to its own
+  # schemas, so runs for different PRs never need to wait for each other.
+  group: >-
+    cclf-ci-${{
+      github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) ||
+      format('run-{0}-{1}', github.run_id, inputs.warehouse)
+    }}
+  cancel-in-progress: true
+
+env:
+  DBT_PROJECT_DIR: integration_tests
+  # connector: the connector's models and tests plus integration_tests' own
+  # tests; --indirect-selection cautious keeps downstream Tuva tests out.
+  # full: every installed package, as a client project builds it. The Tuva
+  # data-quality models need elementary's tables, so it cannot be narrowed to
+  # package:the_tuva_project.
+  CONNECTOR_SELECTOR: package:medicare_cclf_connector package:integration_tests
+  FULL_SELECTOR: fqn:*
+
+jobs:
+  resolve:
+    name: Resolve CI inputs
+    runs-on: ubuntu-latest
+    permissions: {}
+    outputs:
+      run_duckdb: ${{ steps.resolve.outputs.run_duckdb }}
+      warehouses: ${{ steps.resolve.outputs.warehouses }}
+      scope: ${{ steps.resolve.outputs.scope }}
+      checkout_ref: ${{ steps.resolve.outputs.checkout_ref }}
+      schema_prefix: ${{ steps.resolve.outputs.schema_prefix }}
+    steps:
+      - name: Normalize request
+        id: resolve
+        shell: bash
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          IN_WAREHOUSE: ${{ inputs.warehouse || '' }}
+          IN_SCOPE: ${{ inputs.scope || '' }}
+          IN_CHECKOUT_REF: ${{ inputs.checkout_ref || '' }}
+          IN_SCHEMA_PREFIX: ${{ inputs.schema_prefix || '' }}
+          PR_NUMBER: ${{ github.event.pull_request.number || '' }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha || '' }}
+          PR_HEAD_REPO: ${{ github.event.pull_request.head.repo.full_name || '' }}
+          BASE_REPO: ${{ github.repository }}
+          MERGE_SHA: ${{ github.sha }}
+          RUN_ID: ${{ github.run_id }}
+          RUN_ATTEMPT: ${{ github.run_attempt }}
+        run: |
+          set -euo pipefail
+          fail() { echo "::error::$1"; exit 1; }
+
+          if [[ -n "$IN_WAREHOUSE" ]]; then
+            # workflow_call (e.g. ci-external-pr.yml)
+            warehouse="$IN_WAREHOUSE"
+            scope="$IN_SCOPE"
+            checkout_ref="$IN_CHECKOUT_REF"
+            schema_base="$IN_SCHEMA_PREFIX"
+          elif [[ "$EVENT_NAME" == "pull_request" ]]; then
+            if [[ "${PR_HEAD_REPO,,}" == "${BASE_REPO,,}" ]]; then
+              warehouse=all
+            else
+              warehouse=duckdb
+              echo "::notice::Fork PR: remote-warehouse CI does not run fork code with repository secrets. After review, a maintainer can run 'External PR CI' from the Actions tab."
+            fi
+            scope=full
+            checkout_ref="$MERGE_SHA"
+            schema_base="ci_pr_${PR_NUMBER}_${PR_HEAD_SHA:0:8}"
+          else
+            fail "Unsupported event: $EVENT_NAME"
+          fi
+
+          case "$warehouse" in
+            duckdb)    run_duckdb=true;  warehouses='[]' ;;
+            snowflake) run_duckdb=false; warehouses='["snowflake"]' ;;
+            all)       run_duckdb=true;  warehouses='["snowflake"]' ;;
+            *) fail "Unsupported warehouse: $warehouse (expected duckdb, snowflake, or all)" ;;
+          esac
+          [[ "$scope" == full || "$scope" == connector ]] || fail "Unsupported scope: $scope (expected full or connector)"
+          [[ "$checkout_ref" =~ ^[0-9a-f]{40}$ ]] || fail "checkout_ref must be an exact 40-character commit SHA."
+          [[ "$schema_base" =~ ^ci_[a-z0-9_]+$ ]] || fail "Invalid schema prefix base: $schema_base"
+
+          {
+            echo "run_duckdb=$run_duckdb"
+            echo "warehouses=$warehouses"
+            echo "scope=$scope"
+            echo "checkout_ref=$checkout_ref"
+            echo "schema_prefix=${schema_base}_r${RUN_ID}_a${RUN_ATTEMPT}"
+          } >> "$GITHUB_OUTPUT"
+
+  lock:
+    name: uv lock check
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.checkout_ref || github.sha }}
+          persist-credentials: false
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+
+      - name: Check uv.lock is up to date
+        run: uv lock --check
+
+  duckdb:
+    name: dbt build / duckdb
+    needs: resolve
+    if: needs.resolve.outputs.run_duckdb == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    env:
+      DBT_PROFILES_DIR: integration_tests/profiles/local_duckdb
+      DBT_DUCKDB_PATH: ${{ github.workspace }}/medicare_cclf_connector_ci.duckdb
+      # The DuckDB database name is the file's stem; fixture seeds load into
+      # it and the connector's source() reads them back.
+      CI_DBT_VARS: '{"input_database": "medicare_cclf_connector_ci", "input_schema": "raw"}'
+    steps:
+      - name: Checkout exact commit
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.resolve.outputs.checkout_ref }}
+          persist-credentials: false
+
+      - name: Pin Python version
+        run: echo "UV_PYTHON=$(cat .python_version)" >> "$GITHUB_ENV"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+        with:
+          enable-cache: true
+          cache-dependency-glob: uv.lock
+
+      - name: Install locked toolchain
+        run: uv sync --locked
+
+      - name: Install dbt packages
+        run: uv run --locked dbt deps --project-dir "$DBT_PROJECT_DIR"
+
+      - name: Parse project
+        run: uv run --locked dbt parse --project-dir "$DBT_PROJECT_DIR" --vars "$CI_DBT_VARS"
+
+      - name: Run unit tests
+        run: >-
+          uv run --locked dbt test --project-dir "$DBT_PROJECT_DIR" --vars "$CI_DBT_VARS"
+          --select "package:medicare_cclf_connector,test_type:unit"
+
+      - name: Load fixture seeds
+        run: >-
+          uv run --locked dbt seed --full-refresh --project-dir "$DBT_PROJECT_DIR" --vars "$CI_DBT_VARS"
+          --select package:integration_tests
+
+      - name: Build connector
+        shell: bash
+        run: |
+          read -r -a selectors <<< "$CONNECTOR_SELECTOR"
+          uv run --locked dbt build --full-refresh --project-dir "$DBT_PROJECT_DIR" --vars "$CI_DBT_VARS" \
+            --select "${selectors[@]}" --exclude package:integration_tests,resource_type:seed \
+            --indirect-selection cautious
+
+  warehouse:
+    name: dbt build / ${{ matrix.warehouse }}
+    needs: resolve
+    if: needs.resolve.outputs.warehouses != '[]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        warehouse: ${{ fromJson(needs.resolve.outputs.warehouses) }}
+    env:
+      DBT_PROFILES_DIR: integration_tests/profiles/${{ matrix.warehouse }}
+      CI_SCOPE: ${{ needs.resolve.outputs.scope }}
+      TUVA_CI_SCHEMA_PREFIX: ${{ needs.resolve.outputs.schema_prefix }}
+      # Snowflake connection. DBT_ENV_SECRET_* values are redacted by dbt as
+      # well as by GitHub Actions.
+      DBT_SNOWFLAKE_CI_ACCOUNT: ${{ secrets.DBT_SNOWFLAKE_CI_ACCOUNT }}
+      DBT_SNOWFLAKE_CI_WAREHOUSE: ${{ secrets.DBT_SNOWFLAKE_CI_WAREHOUSE }}
+      DBT_SNOWFLAKE_CI_DATABASE: ${{ secrets.DBT_SNOWFLAKE_CI_DATABASE }}
+      DBT_SNOWFLAKE_CI_ROLE: ${{ secrets.DBT_SNOWFLAKE_CI_ROLE }}
+      # The profile's default schema is per run too, not the shared
+      # DBT_SNOWFLAKE_CI_SCHEMA secret: unit tests and any model without a
+      # custom schema land there, and cleanup drops it with the rest.
+      DBT_SNOWFLAKE_CI_SCHEMA: ${{ needs.resolve.outputs.schema_prefix }}_default
+      DBT_SNOWFLAKE_CI_USER: ${{ secrets.DBT_SNOWFLAKE_CI_USER }}
+      DBT_ENV_SECRET_SNOWFLAKE_PRIVATE_KEY: ${{ secrets.DBT_SNOWFLAKE_CI_PRIVATE_KEY }}
+      DBT_ENV_SECRET_SNOWFLAKE_PRIVATE_KEY_PASSPHRASE: ${{ secrets.DBT_SNOWFLAKE_CI_PRIVATE_KEY_PASSPHRASE }}
+    steps:
+      - name: Check required warehouse settings
+        shell: bash
+        run: |
+          case "${{ matrix.warehouse }}" in
+            snowflake)
+              required=(DBT_SNOWFLAKE_CI_ACCOUNT DBT_SNOWFLAKE_CI_WAREHOUSE
+                DBT_SNOWFLAKE_CI_DATABASE DBT_SNOWFLAKE_CI_ROLE
+                DBT_SNOWFLAKE_CI_USER
+                DBT_ENV_SECRET_SNOWFLAKE_PRIVATE_KEY)
+              ;;
+            *)
+              echo "::error::Unsupported warehouse: ${{ matrix.warehouse }}"
+              exit 1
+              ;;
+          esac
+          missing=0
+          for name in "${required[@]}"; do
+            if [[ -z "${!name}" ]]; then
+              echo "::error::Missing required CI setting: $name. See integration_tests/README.md."
+              missing=1
+            fi
+          done
+          exit "$missing"
+
+      - name: Checkout exact commit
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.resolve.outputs.checkout_ref }}
+          persist-credentials: false
+
+      - name: Pin Python version
+        run: echo "UV_PYTHON=$(cat .python_version)" >> "$GITHUB_ENV"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+        with:
+          enable-cache: true
+          cache-dependency-glob: uv.lock
+
+      - name: Install locked toolchain
+        run: uv sync --locked
+
+      - name: Resolve run vars
+        shell: bash
+        run: |
+          case "${{ matrix.warehouse }}" in
+            snowflake) input_database="$DBT_SNOWFLAKE_CI_DATABASE" ;;
+          esac
+          # Fixture seeds land in <prefix>_raw; every connector and Tuva
+          # schema is <prefix>_* or _<prefix>_*, so cleanup can find them all.
+          vars=$(jq -cn \
+            --arg prefix "$TUVA_CI_SCHEMA_PREFIX" \
+            --arg database "$input_database" \
+            '{tuva_schema_prefix: $prefix, input_database: $database, input_schema: ($prefix + "_raw")}')
+          echo "CI_DBT_VARS=$vars" >> "$GITHUB_ENV"
+          echo "Schema prefix for this run: $TUVA_CI_SCHEMA_PREFIX"
+
+      - name: Install dbt packages
+        run: uv run --locked dbt deps --project-dir "$DBT_PROJECT_DIR"
+
+      - name: Test connection
+        run: uv run --locked dbt debug --project-dir "$DBT_PROJECT_DIR" --vars "$CI_DBT_VARS"
+
+      - name: Parse project
+        run: uv run --locked dbt parse --project-dir "$DBT_PROJECT_DIR" --vars "$CI_DBT_VARS"
+
+      - name: Run unit tests
+        run: >-
+          uv run --locked dbt test --project-dir "$DBT_PROJECT_DIR" --vars "$CI_DBT_VARS"
+          --select "package:medicare_cclf_connector,test_type:unit"
+
+      - name: Load fixture seeds
+        run: >-
+          uv run --locked dbt seed --full-refresh --project-dir "$DBT_PROJECT_DIR" --vars "$CI_DBT_VARS"
+          --select package:integration_tests
+
+      - name: Build
+        shell: bash
+        run: |
+          if [[ "$CI_SCOPE" == full ]]; then
+            read -r -a selectors <<< "$FULL_SELECTOR"
+            indirect=eager
+          else
+            read -r -a selectors <<< "$CONNECTOR_SELECTOR"
+            indirect=cautious
+          fi
+          uv run --locked dbt build --full-refresh --project-dir "$DBT_PROJECT_DIR" --vars "$CI_DBT_VARS" \
+            --select "${selectors[@]}" --exclude package:integration_tests,resource_type:seed \
+            --indirect-selection "$indirect"
+
+      - name: Drop this run's schemas
+        if: always() && env.CI_DBT_VARS != ''
+        run: >-
+          uv run --locked dbt run-operation drop_ci_schemas
+          --project-dir "$DBT_PROJECT_DIR" --vars "$CI_DBT_VARS"
+          --args "{prefix: $TUVA_CI_SCHEMA_PREFIX}"
