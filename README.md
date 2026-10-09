@@ -46,6 +46,65 @@ Project uses `medical_claim` for spend, utilization and measures, where a denied
 service would inflate counts. Denied claims are therefore not available downstream; analyses
 of denials (prior authorization, medical necessity, coding) need the raw CCLF tables.
 
+## 🕳️ Placeholders and missing dates
+
+CMS fills fields that have no value with placeholders. The connector maps them to null
+before they reach the Tuva Input Layer:
+
+- **`1000-01-01` and `9999-12-31` in date fields → null.** The CCLF Information Packet
+  (v43, section 3.6) says these dates fill fields that are not required or not available,
+  and that they "should be treated as 'missing' or 'null' values". Every CCLF date column
+  is converted in the staging models, so neither date reaches an output column. For
+  example, Part D claims whose `CLM_EFCTV_DT` is `1000-01-01` get a null `paid_date`, and
+  a CCLF9 `PRVS_ID_OBSLT_DT` of `9999-12-31` is null.
+- **`~` in code and identifier fields → null (our choice).** The CCLF files use `~` in
+  fields that do not apply to a claim: admission type and source on non-inpatient claims,
+  operating and other NPI, unused diagnosis slots, present-on-admission indicators,
+  `HCPCS_5_MDFR_CD`, Part D dispensing status, and others. The Information Packet does not
+  define `~`; it only says that fields with no data are left blank (Appendix B). We treat
+  `~` the same way:
+  - Code and identifier columns of `medical_claim` and `pharmacy_claim` are null where
+    the source value is `~`. `ccn` is null where `PRVDR_OSCAR_NUM` is `~` and on claims
+    with no CCN (professional and DME), rather than the `000000` DuckDB used to produce.
+  - A claim whose `CLM_ADMSN_TYPE_CD` is `~` has no admission, so it gets no
+    `admission_date` or `discharge_date`.
+  - The staging and intermediate models keep `~` as delivered. The related-claims logic
+    groups and joins on raw source values (`PRVDR_OSCAR_NUM` joins the Part A files),
+    and nulls would not match in those joins.
+
+## 🪪 Eligibility (without `cms_alr_connector`)
+
+The CCLF Information Packet does not define an eligibility model, and enrollment comes from
+the `enrollment` source you supply, not from a CCLF file. These are the connector's own
+rules for building `eligibility` from that source and the beneficiary demographics file
+(CCLF8). The `cms_alr_connector` path builds eligibility differently and is not covered here.
+
+- **One person per beneficiary across MBI changes.** Each enrollment row's MBI is replaced
+  with the most recent MBI from the beneficiary XREF file (CCLF9) before member months are
+  rolled into spans, so months delivered under a previous MBI belong to the same
+  `person_id` and span. IP v43 5.1.1 requires this mapping for the claims natural key;
+  extending it to the enrollment source is our choice, made so that claims and eligibility
+  agree on `person_id`.
+- **Demographics come from the nearest CCLF8 delivery.** CCLF8 arrives monthly, so a
+  delivery rarely exists for every enrollment month. Each eligibility row takes its
+  demographics (name, address, dual status and so on) from the CCLF8 delivered in the
+  row's last month. If there is none, it uses the latest earlier delivery, and if there is
+  no earlier one, the earliest later delivery. This rule is our choice.
+- **A death date applies to the whole person.** CCLF8 reports `BENE_DEATH_DT` "if a
+  decedent" (IP v43 2.4.1), typically from the first delivery
+  after the death, which is often after the last enrollment month. The connector takes the
+  death date from the latest delivery that reports one and sets `death_date` and
+  `death_flag` on every eligibility row for that person. This rule is our choice. The
+  connector does not end coverage at the death date; coverage follows the enrollment source.
+- **State is the USPS abbreviation.** `state` comes from CCLF8 `GEO_USPS_STATE_CD`
+  (IP v43 Table 21), the two-letter code the Tuva input layer expects, not the numeric
+  `BENE_FIPS_STATE_CD`. This applies with or without `cms_alr_connector`.
+- **Non-dual beneficiaries get a null dual status.** CCLF8 reports beneficiaries with no
+  Medicaid as `BENE_DUAL_STUS_CD` `NA`. The Tuva input layer accepts only the numeric dual
+  codes, so the connector maps `NA` to null and passes every other value through. The CMS-HCC
+  mart treats a null dual status as non-dual, so risk scores are unchanged. This rule is our
+  choice. It applies with or without `cms_alr_connector`.
+
 ## 🔌 Database Support
 
 - DuckDB
@@ -111,33 +170,6 @@ The connector always reads these tables through `source('medicare_cclf', ...)` a
 Finally, run the connector and the Tuva Project. For example, using dbt CLI you would `cd` to the project root folder in the command line and execute `dbt build`.  
 
 Now you're ready to do claims data analytics!
-<br/><br/>
-
-## 🕳️ Placeholders and missing dates
-
-CMS fills fields that have no value with placeholders. The connector maps them to null
-before they reach the Tuva Input Layer:
-
-- **`1000-01-01` and `9999-12-31` in date fields → null.** The CCLF Information Packet
-  (v43, section 3.6) says these dates fill fields that are not required or not available,
-  and that they "should be treated as 'missing' or 'null' values". Every CCLF date column
-  is converted in the staging models, so neither date reaches an output column. For
-  example, Part D claims whose `CLM_EFCTV_DT` is `1000-01-01` get a null `paid_date`, and
-  a CCLF9 `PRVS_ID_OBSLT_DT` of `9999-12-31` is null.
-- **`~` in code and identifier fields → null (our choice).** The CCLF files use `~` in
-  fields that do not apply to a claim: admission type and source on non-inpatient claims,
-  operating and other NPI, unused diagnosis slots, present-on-admission indicators,
-  `HCPCS_5_MDFR_CD`, Part D dispensing status, and others. The Information Packet does not
-  define `~`; it only says that fields with no data are left blank (Appendix B). We treat
-  `~` the same way:
-  - Code and identifier columns of `medical_claim` and `pharmacy_claim` are null where
-    the source value is `~`. `ccn` is null where `PRVDR_OSCAR_NUM` is `~` and on claims
-    with no CCN (professional and DME), rather than the `000000` DuckDB used to produce.
-  - A claim whose `CLM_ADMSN_TYPE_CD` is `~` has no admission, so it gets no
-    `admission_date` or `discharge_date`.
-  - The staging and intermediate models keep `~` as delivered. The related-claims logic
-    groups and joins on raw source values (`PRVDR_OSCAR_NUM` joins the Part A files),
-    and nulls would not match in those joins.
 <br/><br/>
 
 ## 🚀 Releasing

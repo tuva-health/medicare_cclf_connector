@@ -1,6 +1,12 @@
 /*
   This model contains logic to convert member month grain to enrollment date
   spans, if needed.
+
+  Outside the cms_alr_connector path, each enrollment row's MBI is replaced
+  with the beneficiary's current MBI from CCLF9 (CCLF IP v43 5.1.1), before
+  member months are rolled up, so months delivered under a previous MBI join
+  the same person and span. The cms_alr_connector path applies the CCLF9
+  mapping downstream, in int_eligibility_member_months_combined.
 */
 
 with enrollment as (
@@ -10,11 +16,13 @@ with enrollment as (
     from {{ ref('stg_enrollment') }}
     {% else %}
     select
-          current_bene_mbi_id
-        , enrollment_start_date
-        , enrollment_end_date
-        , bene_member_month
-    from {{ ref('stg_enrollment') }}
+          coalesce(beneficiary_xref.crnt_num, stg_enrollment.current_bene_mbi_id) as current_bene_mbi_id
+        , stg_enrollment.enrollment_start_date
+        , stg_enrollment.enrollment_end_date
+        , stg_enrollment.bene_member_month
+    from {{ ref('stg_enrollment') }} as stg_enrollment
+    left join {{ ref('int_beneficiary_xref_deduped') }} as beneficiary_xref
+        on stg_enrollment.current_bene_mbi_id = beneficiary_xref.prvs_num
     {% endif %}
 
 )
