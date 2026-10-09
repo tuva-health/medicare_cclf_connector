@@ -9,14 +9,51 @@ and local runs use `--project-dir integration_tests`.
 ## Layout
 
 - `dbt_project.yml`: the canonical, commented inventory of connector vars.
-- `seeds/`: fixture seeds, one per CCLF source table. They load into
+- `seeds/`: synthetic fixture seeds, one per CCLF source table (see
+  [Fixtures](#fixtures)). They load into
   `var('input_database')`.`var('input_schema')`, so the connector reads them
   exactly as it reads a client's raw tables. Every column loads as a string.
-- `tests/`: integration-only singular tests.
+- `tests/`: integration-only singular tests, one per fixture scenario or group
+  of scenarios.
 - `macros/`: CI helpers: schema naming, unit-test schema setup, and
   `drop_ci_schemas` for per-run cleanup.
 - `profiles/`: CI warehouse profiles. `profiles/local_duckdb` is the default
   for local runs and the DuckDB CI job.
+
+## Fixtures
+
+The seeds are small, fully synthetic CCLF tables. A generator kept outside this
+repository builds them deterministically from the CCLF Information Packet v43
+layouts. Every identifier is invented and visibly fake (MBIs `9TT0FK…`, claim IDs
+`000000…`, ACO `A0000`, ZIP `00501`, names `SYN…`/`CCLFTEST`), and all dates fall
+in an invented CY25/CY26 window. No real beneficiary, provider or claim data is
+committed, and fixture files must not be hand-edited: change and rerun the
+generator instead.
+
+Each fixture row exists for a named scenario, and each scenario has a singular
+test in `tests/` that asserts the outcome the CCLF Information Packet (v43,
+sections 3 and 5) calls for. The tests do not assert the connector's current
+behaviour. The scenarios cover:
+
+- original claims of every claim type (S01);
+- Part A related claims: cancel + adjustment chains, ties on
+  `CLM_EFCTV_DT`, the IP 5.3.2 Table 4 example, original-only sets,
+  cancellation-only sets, a corrected through date, and a 0,1,2,1,2 chain
+  (S02-S11);
+- re-delivery of the same claim version in two files (S12) and denied claims
+  (S13);
+- MBI history in CCLF9: a single change, a two-hop chain, a self-mapping row,
+  a remapped previous MBI, two previous MBIs, and a pair that drops out of later
+  files (S14-S19);
+- eligibility: a death, an enrollment gap, and a beneficiary new in CY26
+  (S20-S21b);
+- Part B physician and DME related claims, including the IP 5.3.2 Table 6
+  example (S22-S25), and Part D related claims (S26-S29);
+- the `~` placeholder and the `1000-01-01`/`9999-12-31` date sentinels.
+
+Tests for known connector bugs carry the Linear issue key as a tag and fail
+until the bug is fixed; select them with `--select tag:tuva-94` or
+`--select tag:tuva-95`. Every fixture test carries the `fixture` tag.
 
 ## Local runs
 
