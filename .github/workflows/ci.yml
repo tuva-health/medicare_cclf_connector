@@ -18,9 +18,9 @@ name: CI
 #   CI / All Warehouses  every warehouse, posted by ci-all-warehouses.yml.
 
 on:
+  # Every base branch, not only main: stacked PRs (a PR whose base is another
+  # PR's branch) get the same checks. The check names do not depend on the base.
   pull_request:
-    branches:
-      - main
     types:
       - opened
       - reopened
