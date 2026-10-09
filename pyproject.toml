@@ -6,7 +6,16 @@ readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
     "dbt-core==1.10.20",
+]
+
+# One extra per warehouse that CI proves (ci.yml, ci-all-warehouses.yml).
+# CI installs only the extra for the warehouse it builds; local runs install
+# all of them (scripts/dbt-local).
+[project.optional-dependencies]
+duckdb = [
     "dbt-duckdb==1.10.1",
     "duckdb==1.4.3",
+]
+snowflake = [
     "dbt-snowflake==1.10.7",
 ]

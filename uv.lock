@@ -1023,18 +1023,25 @@ version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
     { name = "dbt-core" },
+]
+
+[package.optional-dependencies]
+duckdb = [
     { name = "dbt-duckdb" },
-    { name = "dbt-snowflake" },
     { name = "duckdb" },
+]
+snowflake = [
+    { name = "dbt-snowflake" },
 ]
 
 [package.metadata]
 requires-dist = [
     { name = "dbt-core", specifier = "==1.10.20" },
-    { name = "dbt-duckdb", specifier = "==1.10.1" },
-    { name = "dbt-snowflake", specifier = "==1.10.7" },
-    { name = "duckdb", specifier = "==1.4.3" },
+    { name = "dbt-duckdb", marker = "extra == 'duckdb'", specifier = "==1.10.1" },
+    { name = "dbt-snowflake", marker = "extra == 'snowflake'", specifier = "==1.10.7" },
+    { name = "duckdb", marker = "extra == 'duckdb'", specifier = "==1.4.3" },
 ]
+provides-extras = ["duckdb", "snowflake"]
 
 [[package]]
 name = "more-itertools"
