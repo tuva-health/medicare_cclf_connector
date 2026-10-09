@@ -12,17 +12,16 @@
     S05  two originals and nothing else (pattern 4): both are final.
     S07  original + cancellation, no replacement: no claim.
     S08  cancel + adjustment whose original predates the files: the adjustment
-         is final; a separate cancellation-only set yields no claim. The paid
-         amount is not checked here, because the related set's debit/credit
-         total (250.00) and the claim's own payment (6650.00) differ when the
-         original is missing.
+         is final and carries its own payment, 6650.00, not the debit/credit
+         net of the claims present (6650.00 - 6400.00 = 250.00); debit/credit
+         netting is for beneficiary-level spend (IP 5.3), not a claim's
+         paid_amount (TUVA-94). A separate cancellation-only set yields no
+         claim.
     S09  adjustment with no other related claims (pattern 2): it is final.
     S10  through date corrected (5.2.1): the cancellation keeps the old
          through date, so the old key nets to zero; the adjustment is final
          under the new key.
     S11  chain 0,1,2,1,2 over three deliveries: the last adjustment is final.
-
-    A null expected paid_amount means the amount is not checked.
 */
 
 with expected as (
@@ -36,7 +35,7 @@ with expected as (
     union all
     select '9TT0FK0XX05', '0000000001022', cast(1215.40 as decimal(18, 2))
     union all
-    select '9TT0FK0XX08', '0000000001029', cast(null as decimal(18, 2))
+    select '9TT0FK0XX08', '0000000001029', cast(6650.00 as decimal(18, 2))
     union all
     select '9TT0FK0XX09', '0000000001031', cast(2210.75 as decimal(18, 2))
     union all

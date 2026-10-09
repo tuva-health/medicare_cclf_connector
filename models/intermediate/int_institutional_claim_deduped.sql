@@ -27,8 +27,7 @@ with sort_adjusted_claims as (
         , clm_blg_prvdr_oscar_num
         , file_name
         , file_date
-        , adjustment_key
-        , row_num
+        , final_action_flag
     from {{ ref('int_institutional_claim_adr') }}
 
 )
@@ -52,72 +51,43 @@ with sort_adjusted_claims as (
 )
 
 /*
-    sum the adjusted header amounts
-
-    (CCLF docs ref: 5.3 Calculating Beneficiary-Level Expenditures)
-*/
-, header_totals as (
-
-    select
-          clm_blg_prvdr_oscar_num
-        , clm_from_dt
-        , clm_thru_dt
-        , current_bene_mbi_id
-        , adjustment_key
-        , sum(clm_pmt_amt) as sum_clm_pmt_amt
-        , sum(clm_mdcr_instnl_tot_chrg_amt) as sum_clm_mdcr_instnl_tot_chrg_amt
-    from sort_adjusted_claims
-    group by
-          clm_blg_prvdr_oscar_num
-        , clm_from_dt
-        , clm_thru_dt
-        , current_bene_mbi_id
-        , adjustment_key
-
-)
-
-/*
-    apply final adjustment logic by selecting latest version of claim,
-    removing any remaining claims with a canceled status, and adding header totals.
+    keep the final action claims of each related set (see int_institutional_claim_adr).
+    Each final action claim carries its own payment and charge amounts. For a complete
+    related set these equal the set's debit/credit total (CCLF IP 5.3.1); when the set's
+    original predates the loaded files they do not, and the claim's own payment is the
+    correct claim-level amount. Debit/credit netting is for beneficiary-level spend.
 */
 , filter_claims as (
 
     select
-          sort_adjusted_claims.cur_clm_uniq_id
-        , sort_adjusted_claims.bene_mbi_id
-        , sort_adjusted_claims.current_bene_mbi_id
-        , sort_adjusted_claims.clm_from_dt
-        , sort_adjusted_claims.clm_thru_dt
-        , sort_adjusted_claims.clm_bill_fac_type_cd
-        , sort_adjusted_claims.clm_bill_clsfctn_cd
-        , header_totals.sum_clm_pmt_amt as clm_pmt_amt
-        , sort_adjusted_claims.bene_ptnt_stus_cd
-        , sort_adjusted_claims.dgns_drg_cd
-        , sort_adjusted_claims.ccn
-        , sort_adjusted_claims.clm_type_cd        
-        , sort_adjusted_claims.fac_prvdr_npi_num
-        , sort_adjusted_claims.othr_prvdr_npi_num
-        , sort_adjusted_claims.atndg_prvdr_npi_num
-        , sort_adjusted_claims.oprtg_prvdr_npi_num 
-        , sort_adjusted_claims.clm_adjsmt_type_cd
-        , sort_adjusted_claims.clm_efctv_dt
-        , sort_adjusted_claims.clm_admsn_type_cd
-        , sort_adjusted_claims.clm_admsn_src_cd
-        , sort_adjusted_claims.clm_bill_freq_cd
-        , sort_adjusted_claims.dgns_prcdr_icd_ind
-        , header_totals.sum_clm_mdcr_instnl_tot_chrg_amt as clm_mdcr_instnl_tot_chrg_amt
-        , sort_adjusted_claims.clm_blg_prvdr_oscar_num
-        , sort_adjusted_claims.file_name
-        , sort_adjusted_claims.file_date
+          cur_clm_uniq_id
+        , bene_mbi_id
+        , current_bene_mbi_id
+        , clm_from_dt
+        , clm_thru_dt
+        , clm_bill_fac_type_cd
+        , clm_bill_clsfctn_cd
+        , clm_pmt_amt
+        , bene_ptnt_stus_cd
+        , dgns_drg_cd
+        , ccn
+        , clm_type_cd
+        , fac_prvdr_npi_num
+        , othr_prvdr_npi_num
+        , atndg_prvdr_npi_num
+        , oprtg_prvdr_npi_num
+        , clm_adjsmt_type_cd
+        , clm_efctv_dt
+        , clm_admsn_type_cd
+        , clm_admsn_src_cd
+        , clm_bill_freq_cd
+        , dgns_prcdr_icd_ind
+        , clm_mdcr_instnl_tot_chrg_amt
+        , clm_blg_prvdr_oscar_num
+        , file_name
+        , file_date
     from sort_adjusted_claims
-        left join header_totals
-            on sort_adjusted_claims.clm_blg_prvdr_oscar_num = header_totals.clm_blg_prvdr_oscar_num
-            and sort_adjusted_claims.clm_from_dt = header_totals.clm_from_dt
-            and sort_adjusted_claims.clm_thru_dt = header_totals.clm_thru_dt
-            and sort_adjusted_claims.current_bene_mbi_id = header_totals.current_bene_mbi_id
-            and sort_adjusted_claims.adjustment_key = header_totals.adjustment_key
-    where sort_adjusted_claims.row_num = 1
-    and sort_adjusted_claims.clm_adjsmt_type_cd <> '1'
+    where final_action_flag = 1
 
 )
 

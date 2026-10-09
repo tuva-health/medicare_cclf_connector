@@ -271,11 +271,11 @@ models:
 
   - name: int_institutional_claim_adr
     description: >
-      Applies related-claims adjustment logic for part A institutional claims (CCLF IP 5.1 to 5.3). Ranks claim versions within billing OSCAR, from date, thru date and most recent MBI; original-only related sets are kept as separate final action claims via adjustment_key.
+      Applies related-claims adjustment logic for part A institutional claims (CCLF IP 5.1 to 5.3). Within each related set (billing OSCAR, from date, thru date and most recent MBI), matches every cancellation with the oldest original or adjustment claim carrying the same payment amount and flags the claims left unmatched as final action claims (IP 5.2.1). A related set can hold more than one final action claim.
     columns:
-      - name: adjustment_key
+      - name: final_action_flag
         description: >
-          CUR_CLM_UNIQ_ID when the related set (natural-key group) holds only original claims, so each original resolves as its own final action claim; empty string when the set holds a cancellation or adjustment and resolves to one claim.
+          1 when the claim is a final action claim of its related set: an original or adjustment claim not matched by a cancellation. 0 for cancellations and for the claims they cancel.
     config:
       schema: |
         {%- if var('tuva_schema_prefix',None) != None -%}_{{var('tuva_schema_prefix')}}_int_input_layer{% else %}_int_input_layer{%- endif -%}

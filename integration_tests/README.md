@@ -51,6 +51,8 @@ behaviour. The scenarios cover:
   (S20-S21b);
 - Part B physician and DME related claims, including the IP 5.3.2 Table 6
   example (S22-S25), and Part D related claims (S26-S29);
+- a Part A cancellation and adjustment with equal amounts, issued together,
+  whose original predates the files (S30);
 - the `~` placeholder and the `1000-01-01`/`9999-12-31` date sentinels.
 
 Tests for known connector bugs carry the Linear issue key as a tag and fail
