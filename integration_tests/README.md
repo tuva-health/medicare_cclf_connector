@@ -107,11 +107,12 @@ concurrent PRs never share schemas. A new push cancels the PR's in-flight run.
 
 `ci.yml` is also a reusable workflow (`workflow_call`) with inputs `warehouse`
 (`duckdb`, `snowflake`, or `all`), `scope` (`full` or `connector`),
-`checkout_ref`, and `schema_prefix`. With `publish_status`, plus the PR number
-and its exact base, head and test-merge commits, it posts a commit status
-(`CI / Snowflake`, or `CI / All Warehouses` for `all`) on the PR head: pending
-when it starts, then the result. The status reports an error instead if the PR
-or `main` moves while CI runs, and a run never overwrites a newer run's status.
+`checkout_ref`, and `schema_prefix`. With `publish_status`, plus the PR number,
+its base branch and its exact base, head and test-merge commits, it posts a
+commit status (`CI / Snowflake`, or `CI / All Warehouses` for `all`) on the PR
+head: pending when it starts, then the result. The status reports an error instead if the PR
+or its base branch moves while CI runs, and a run never overwrites a newer
+run's status.
 
 ### Fork pull requests
 
