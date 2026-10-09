@@ -131,7 +131,7 @@ The `version:` in `dbt_project.yml` is the release version. Releases are tagged 
 (for example `v0.3.0`); the older tags `0.1.0`, `0.1.1` and `0.2.0` predate this process.
 There is no changelog: release notes are generated from the merged PRs, grouped by their
 release label (see `.github/release.yml`). Every PR carries exactly one of
-`breaking-change`, `enhancement`, `bug`, `documentation` or `ignore-for-release`; the
+`breaking-change`, `enhancement`, `bug`, `docs` or `ignore-for-release`; the
 `release label` check enforces it.
 
 To cut a release:

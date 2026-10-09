@@ -48,7 +48,7 @@ clean-targets:
   - "dbt_packages"
 
 on-run-start:
-  - "{{ ensure_target_schema_for_unit_tests() }}"
+  - "{{ ensure_unit_test_schemas() }}"
 
 models:
   # the_tuva_project places elementary's models in a prefixed schema, but that
