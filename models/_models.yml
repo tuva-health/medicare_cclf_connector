@@ -187,6 +187,13 @@ models:
         {%- if var('tuva_schema_prefix',None) != None -%}_{{var('tuva_schema_prefix')}}_int_input_layer{% else %}_int_input_layer{%- endif -%}
       alias: beneficiary_demographics_deduped
 
+  - name: int_beneficiary_demographics_normalized
+    description: Beneficiary demographics (CCLF8) with the most recent MBI from the beneficiary xref (current_bene_mbi_id).
+    config:
+      schema: |
+        {%- if var('tuva_schema_prefix',None) != None -%}_{{var('tuva_schema_prefix')}}_int_input_layer{% else %}_int_input_layer{%- endif -%}
+      alias: beneficiary_demographics_normalized
+
   - name: int_beneficiary_xref_deduped
     description: Dedupe beneficiary xref.
     config:
@@ -273,6 +280,62 @@ models:
       schema: |
         {%- if var('tuva_schema_prefix',None) != None -%}_{{var('tuva_schema_prefix')}}_int_input_layer{% else %}_int_input_layer{%- endif -%}
       alias: int_medical_claim
+
+  - name: int_medical_claim_winning_keys
+    description: Picks the winning row for each claim ID and line across the institutional, physician and DME deduped models; int_medical_claim joins on it.
+    config:
+      schema: |
+        {%- if var('tuva_schema_prefix',None) != None -%}_{{var('tuva_schema_prefix')}}_int_input_layer{% else %}_int_input_layer{%- endif -%}
+      alias: medical_claim_winning_keys
+
+  - name: int_parta_claims_header_normalized
+    description: Part A claim headers (CCLF1) with the most recent MBI from the beneficiary xref (current_bene_mbi_id).
+    config:
+      schema: |
+        {%- if var('tuva_schema_prefix',None) != None -%}_{{var('tuva_schema_prefix')}}_int_input_layer{% else %}_int_input_layer{%- endif -%}
+      alias: parta_claims_header_normalized
+
+  - name: int_parta_claims_revenue_center_detail_normalized
+    description: Part A revenue center detail (CCLF2) with the most recent MBI from the beneficiary xref (current_bene_mbi_id).
+    config:
+      schema: |
+        {%- if var('tuva_schema_prefix',None) != None -%}_{{var('tuva_schema_prefix')}}_int_input_layer{% else %}_int_input_layer{%- endif -%}
+      alias: parta_claims_revenue_center_detail_normalized
+
+  - name: int_parta_diagnosis_code_normalized
+    description: Part A diagnosis codes (CCLF4) with the most recent MBI from the beneficiary xref (current_bene_mbi_id).
+    config:
+      schema: |
+        {%- if var('tuva_schema_prefix',None) != None -%}_{{var('tuva_schema_prefix')}}_int_input_layer{% else %}_int_input_layer{%- endif -%}
+      alias: parta_diagnosis_code_normalized
+
+  - name: int_parta_procedure_code_normalized
+    description: Part A procedure codes (CCLF3) with the most recent MBI from the beneficiary xref (current_bene_mbi_id).
+    config:
+      schema: |
+        {%- if var('tuva_schema_prefix',None) != None -%}_{{var('tuva_schema_prefix')}}_int_input_layer{% else %}_int_input_layer{%- endif -%}
+      alias: parta_procedure_code_normalized
+
+  - name: int_partb_dme_normalized
+    description: Part B DME claim lines (CCLF6) with the most recent MBI from the beneficiary xref (current_bene_mbi_id).
+    config:
+      schema: |
+        {%- if var('tuva_schema_prefix',None) != None -%}_{{var('tuva_schema_prefix')}}_int_input_layer{% else %}_int_input_layer{%- endif -%}
+      alias: partb_dme_normalized
+
+  - name: int_partb_physicians_normalized
+    description: Part B physician claim lines (CCLF5) with the most recent MBI from the beneficiary xref (current_bene_mbi_id).
+    config:
+      schema: |
+        {%- if var('tuva_schema_prefix',None) != None -%}_{{var('tuva_schema_prefix')}}_int_input_layer{% else %}_int_input_layer{%- endif -%}
+      alias: partb_physicians_normalized
+
+  - name: int_partd_claims_normalized
+    description: Part D claims (CCLF7) with the most recent MBI from the beneficiary xref (current_bene_mbi_id).
+    config:
+      schema: |
+        {%- if var('tuva_schema_prefix',None) != None -%}_{{var('tuva_schema_prefix')}}_int_input_layer{% else %}_int_input_layer{%- endif -%}
+      alias: partd_claims_normalized
 
   - name: int_pharmacy_claim_adr
     description: Applying adjustment logic for part D claims.
