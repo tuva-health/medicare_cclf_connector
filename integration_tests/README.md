@@ -15,7 +15,8 @@ and local runs use `--project-dir integration_tests`.
   exactly as it reads a client's raw tables. Every column loads as a string.
 - `tests/`: integration-only singular tests, one per fixture scenario or group
   of scenarios.
-- `macros/`: CI helpers: schema naming, unit-test schema setup, and
+- `macros/`: CI helpers: schema naming, unit-test schema setup
+  (`ensure_unit_test_schemas`, an on-run-start hook), and
   `drop_ci_schemas` for per-run cleanup.
 - `profiles/`: CI warehouse profiles. `profiles/local_duckdb` is the default
   for local runs and the DuckDB CI job.
@@ -75,7 +76,8 @@ integration_tests/profiles/local_duckdb`.
 
 ## CI
 
-`.github/workflows/ci.yml` runs on every pull request to `main`:
+`.github/workflows/ci.yml` runs on every pull request, whatever its base
+branch, so stacked PRs get the same checks:
 
 | Check | What it runs |
 | --- | --- |
