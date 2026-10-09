@@ -33,9 +33,11 @@ These rules are covered by dbt unit tests in `models/intermediate/_unit_tests.ym
 
 ## 🔌 Database Support
 
-- BigQuery
-- Redshift
+- DuckDB
 - Snowflake
+
+These are the warehouses the release gate (`CI -- All Warehouses`) builds on before every
+release. Other warehouses may work but are not tested.
 <br/><br/>  
 
 ## ✅ Quickstart Guide
@@ -94,6 +96,39 @@ The connector always reads these tables through `source('medicare_cclf', ...)` a
 Finally, run the connector and the Tuva Project. For example, using dbt CLI you would `cd` to the project root folder in the command line and execute `dbt build`.  
 
 Now you're ready to do claims data analytics!
+<br/><br/>
+
+## 🚀 Releasing
+
+The `version:` in `dbt_project.yml` is the release version. Releases are tagged `v<version>`
+(for example `v0.3.0`); the older tags `0.1.0`, `0.1.1` and `0.2.0` predate this process.
+There is no changelog: release notes are generated from the merged PRs, grouped by their
+release label (see `.github/release.yml`). Every PR carries exactly one of
+`breaking-change`, `enhancement`, `bug`, `documentation` or `ignore-for-release`; the
+`release label` check enforces it.
+
+To cut a release:
+
+1. Open a PR from a branch in this repository that bumps `version:` in `dbt_project.yml`.
+   A version ending in `-rc` makes a prerelease.
+2. Run **Actions → CI -- All Warehouses → Run workflow** from `main` with the PR number.
+   It builds the PR's test merge on every supported warehouse and posts the
+   `CI / All Warehouses` status on the PR. Merge only once it passes for the PR's current
+   head; rerun it after any new push or a change to `main`.
+3. Merge. `create-release.yml` tags the merge commit `v<version>` and creates a **draft**
+   GitHub Release with generated notes.
+4. Review the draft's notes, then publish it (tick "Set as the latest release" unless it is a
+   prerelease).
+
+If the workflow fails after the merge, rerun it with **Actions → Create Release → Run
+workflow** from `main`; it reuses an existing tag only when the tag points to the current
+`main` commit. Projects install a release by tag:
+
+```yaml
+packages:
+  - git: https://github.com/tuva-health/medicare_cclf_connector.git
+    revision: v0.3.0
+```
 <br/><br/>
 
 ## 🙋🏻‍♀️ How do I contribute?
