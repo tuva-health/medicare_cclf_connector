@@ -1364,11 +1364,10 @@ unit_tests:
             , '76543' as clm_blg_prvdr_oscar_num
             , 'file_dec.csv' as file_name
             , cast('2025-12-20' as date) as file_date
-            , '12345' as adjustment_key
-            , 1 as row_num
+            , 1 as final_action_flag
           union all
           select
-              '98765', 'MBI-1', 'MBI-1', '2025-11-10', '2025-11-10', '1', '3', 100.00, '01', cast(null as varchar), '76543', '40', '1000000001', cast(null as varchar), '1000000002', cast(null as varchar), '0', '2026-07-28', '~', '~', '1', '0', 300.00, '76543', 'file_sep.csv', cast('2026-09-20' as date), '98765', 1
+              '98765', 'MBI-1', 'MBI-1', '2025-11-10', '2025-11-10', '1', '3', 100.00, '01', cast(null as varchar), '76543', '40', '1000000001', cast(null as varchar), '1000000002', cast(null as varchar), '0', '2026-07-28', '~', '~', '1', '0', 300.00, '76543', 'file_sep.csv', cast('2026-09-20' as date), 1
       - input: ref('int_revenue_center_deduped')
         format: sql
         rows: |
