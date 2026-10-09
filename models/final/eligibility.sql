@@ -212,7 +212,7 @@ select
     , cast('medicare' as {{ dbt.type_string() }}) as payer_type
     , cast('medicare' as {{ dbt.type_string() }}) as {{ quote_column('plan') }}
     , cast(latest_span_record.bene_orgnl_entlmt_rsn_cd as {{ dbt.type_string() }}) as original_reason_entitlement_code
-    , cast(coalesce(latest_span_record.bene_psnyrs_dual, latest_span_record.bene_dual_stus_cd) as {{ dbt.type_string() }}) as dual_status_code
+    , cast(coalesce(latest_span_record.bene_psnyrs_dual, nullif(trim(latest_span_record.bene_dual_stus_cd), 'NA')) as {{ dbt.type_string() }}) as dual_status_code
     , cast(latest_span_record.bene_mdcr_stus_cd as {{ dbt.type_string() }}) as medicare_status_code
     , cast(null as {{ dbt.type_string() }}) as enrollment_status
     , cast(null as {{ dbt.type_string() }}) as hospice_flag
@@ -238,7 +238,7 @@ select
         ]
       ) }} as address
     , cast(coalesce(latest_span_record.geo_zip_plc_name, latest_span_record.geo_ssa_cnty_cd_name) as {{ dbt.type_string() }}) as city
-    , cast(coalesce(latest_span_record.bene_fips_state_cd, latest_span_record.geo_ssa_state_name) as {{ dbt.type_string() }}) as state
+    , cast(coalesce(latest_span_record.geo_usps_state_cd, latest_span_record.geo_ssa_state_name) as {{ dbt.type_string() }}) as state
     , {{ dbt.concat(
         [
             "latest_span_record.geo_zip5_cd",
@@ -450,7 +450,8 @@ with demographics as (
         , 'medicare' as payer_type
         , 'medicare' as {{ quote_column('plan') }}
         , cast(demographics.bene_orgnl_entlmt_rsn_cd as {{ dbt.type_string() }} ) as original_reason_entitlement_code
-        , cast(demographics.bene_dual_stus_cd as {{ dbt.type_string() }} ) as dual_status_code
+        /* CCLF8 reports non-duals as 'NA', which Tuva does not accept; see README */
+        , cast(nullif(trim(demographics.bene_dual_stus_cd), 'NA') as {{ dbt.type_string() }} ) as dual_status_code
         , cast(demographics.bene_mdcr_stus_cd as {{ dbt.type_string() }} ) as medicare_status_code
         , cast(null as {{ dbt.type_string() }} ) as enrollment_status
         , cast(null as {{ dbt.type_string() }} ) as hospice_flag
@@ -476,7 +477,8 @@ with demographics as (
             ]
           ) }} as address
         , cast(demographics.geo_zip_plc_name as {{ dbt.type_string() }} ) as city
-        , cast(demographics.bene_fips_state_cd as {{ dbt.type_string() }} ) as state
+        /* GEO_USPS_STATE_CD (IP v43 Table 21), not the numeric BENE_FIPS_STATE_CD */
+        , cast(demographics.geo_usps_state_cd as {{ dbt.type_string() }} ) as state
         , {{ dbt.concat(
             [
                 "demographics.geo_zip5_cd",

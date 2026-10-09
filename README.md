@@ -55,6 +55,14 @@ rules for building `eligibility` from that source and the beneficiary demographi
   death date from the latest delivery that reports one and sets `death_date` and
   `death_flag` on every eligibility row for that person. This rule is our choice. The
   connector does not end coverage at the death date; coverage follows the enrollment source.
+- **State is the USPS abbreviation.** `state` comes from CCLF8 `GEO_USPS_STATE_CD`
+  (IP v43 Table 21), the two-letter code the Tuva input layer expects, not the numeric
+  `BENE_FIPS_STATE_CD`. This applies with or without `cms_alr_connector`.
+- **Non-dual beneficiaries get a null dual status.** CCLF8 reports beneficiaries with no
+  Medicaid as `BENE_DUAL_STUS_CD` `NA`. The Tuva input layer accepts only the numeric dual
+  codes, so the connector maps `NA` to null and passes every other value through. The CMS-HCC
+  mart treats a null dual status as non-dual, so risk scores are unchanged. This rule is our
+  choice. It applies with or without `cms_alr_connector`.
 
 ## 🔌 Database Support
 
