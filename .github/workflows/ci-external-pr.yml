@@ -26,6 +26,7 @@ jobs:
       pull-requests: read
     outputs:
       pr_number: ${{ steps.resolve.outputs.pr_number }}
+      base_ref: ${{ steps.resolve.outputs.base_ref }}
       base_sha: ${{ steps.resolve.outputs.base_sha }}
       head_sha: ${{ steps.resolve.outputs.head_sha }}
       merge_sha: ${{ steps.resolve.outputs.merge_sha }}
@@ -76,6 +77,7 @@ jobs:
           echo "Validating PR #$pr_number head $head_sha as test merge $merge_sha"
           {
             echo "pr_number=$pr_number"
+            echo "base_ref=$base_ref"
             echo "base_sha=$base_sha"
             echo "head_sha=$head_sha"
             echo "merge_sha=$merge_sha"
@@ -97,6 +99,7 @@ jobs:
       schema_prefix: ${{ needs.resolve.outputs.schema_prefix }}
       publish_status: true
       pr_number: ${{ needs.resolve.outputs.pr_number }}
+      base_ref: ${{ needs.resolve.outputs.base_ref }}
       base_sha: ${{ needs.resolve.outputs.base_sha }}
       head_sha: ${{ needs.resolve.outputs.head_sha }}
       merge_sha: ${{ needs.resolve.outputs.merge_sha }}

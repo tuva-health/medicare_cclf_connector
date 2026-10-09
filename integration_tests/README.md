@@ -15,7 +15,8 @@ and local runs use `--project-dir integration_tests`.
   exactly as it reads a client's raw tables. Every column loads as a string.
 - `tests/`: integration-only singular tests, one per fixture scenario or group
   of scenarios.
-- `macros/`: CI helpers: schema naming, unit-test schema setup, and
+- `macros/`: CI helpers: schema naming, unit-test schema setup
+  (`ensure_unit_test_schemas`, an on-run-start hook), and
   `drop_ci_schemas` for per-run cleanup.
 - `profiles/`: one profile per supported warehouse. `profiles/local_duckdb` is
   the default for local runs and the DuckDB CI job; `profiles/snowflake` is the
@@ -77,7 +78,8 @@ the wrapper: `uv run --extra duckdb dbt <cmd> --project-dir integration_tests
 
 ## CI
 
-Every pull request to `main` runs `.github/workflows/ci.yml` and
+Every pull request runs `.github/workflows/ci.yml`, whatever its base branch,
+so stacked PRs get the same checks. Pull requests to `main` also run
 `.github/workflows/release-label.yml`:
 
 | Check | What it runs |
@@ -105,11 +107,12 @@ concurrent PRs never share schemas. A new push cancels the PR's in-flight run.
 
 `ci.yml` is also a reusable workflow (`workflow_call`) with inputs `warehouse`
 (`duckdb`, `snowflake`, or `all`), `scope` (`full` or `connector`),
-`checkout_ref`, and `schema_prefix`. With `publish_status`, plus the PR number
-and its exact base, head and test-merge commits, it posts a commit status
-(`CI / Snowflake`, or `CI / All Warehouses` for `all`) on the PR head: pending
-when it starts, then the result. The status reports an error instead if the PR
-or `main` moves while CI runs, and a run never overwrites a newer run's status.
+`checkout_ref`, and `schema_prefix`. With `publish_status`, plus the PR number,
+its base branch and its exact base, head and test-merge commits, it posts a
+commit status (`CI / Snowflake`, or `CI / All Warehouses` for `all`) on the PR
+head: pending when it starts, then the result. The status reports an error instead if the PR
+or its base branch moves while CI runs, and a run never overwrites a newer
+run's status.
 
 ### Fork pull requests
 

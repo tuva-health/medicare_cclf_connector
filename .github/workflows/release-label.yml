@@ -35,7 +35,7 @@ jobs:
           PR_LABELS: ${{ toJson(github.event.pull_request.labels.*.name) }}
         run: |
           set -euo pipefail
-          release_labels=(breaking-change enhancement bug documentation ignore-for-release)
+          release_labels=(breaking-change enhancement bug docs ignore-for-release)
           found=()
           for label in "${release_labels[@]}"; do
             if jq -e --arg label "$label" 'index($label) != null' <<< "$PR_LABELS" > /dev/null; then
