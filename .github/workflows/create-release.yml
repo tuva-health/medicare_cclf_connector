@@ -1,0 +1,144 @@
+name: Create Release
+# creates a draft release after a version-changing push to main; workflow_dispatch
+# retries the current main version
+# user must manually publish the release and check the latest release option
+# versions ending in -rc or -RC are marked as prereleases
+# tags are v<version>; the pre-process tags 0.1.0, 0.1.1 and 0.2.0 are left as is
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'dbt_project.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: release-${{ github.repository }}
+  cancel-in-progress: false
+
+jobs:
+  create-draft:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+
+      - name: Verify release commit is current main
+        run: |
+          set -euo pipefail
+          [[ "$GITHUB_SHA" =~ ^[0-9a-f]{40}$ ]]
+          actual=$(git rev-parse HEAD)
+          main=$(git ls-remote origin refs/heads/main | awk '{print $1}')
+          test -n "$main"
+          test "$actual" = "$GITHUB_SHA"
+          test "$actual" = "$main"
+
+      - name: Check version change
+        id: check_version
+        env:
+          BEFORE_SHA: ${{ github.event.before }}
+        run: |
+          python3 - <<'PY'
+          import os
+          import re
+          import subprocess
+          from pathlib import Path
+
+          VERSION_PATTERN = re.compile(
+              r"^version:\s*(['\"]?)([0-9A-Za-z.+-]+)\1\s*(?:#.*)?$",
+              re.MULTILINE,
+          )
+
+
+          def project_version(text):
+              matches = VERSION_PATTERN.findall(text)
+              if len(matches) != 1:
+                  raise SystemExit(
+                      f"expected exactly one top-level version; found {len(matches)}"
+                  )
+              return matches[0][1]
+
+
+          new_version = project_version(
+              Path("dbt_project.yml").read_text(encoding="utf-8")
+          )
+          is_recovery = os.environ.get("GITHUB_EVENT_NAME") == "workflow_dispatch"
+          if is_recovery:
+              old_version = None
+              print("RECOVERY: validating the current package version")
+          else:
+              before_sha = os.environ.get("BEFORE_SHA", "")
+              if before_sha and set(before_sha) != {"0"}:
+                  old_version = project_version(
+                      subprocess.check_output(
+                          ["git", "show", f"{before_sha}:dbt_project.yml"],
+                          text=True,
+                      )
+                  )
+              else:
+                  old_version = None
+          print(f"NEW: {new_version}")
+          print(f"OLD: {old_version}")
+
+          with Path(os.environ["GITHUB_OUTPUT"]).open("a", encoding="utf-8") as output:
+              if not is_recovery and new_version == old_version:
+                  output.write("changed=false\n")
+              else:
+                  output.write("changed=true\n")
+                  output.write(f"version={new_version}\n")
+                  output.write(
+                      f"prerelease={str(new_version.lower().endswith('-rc')).lower()}\n"
+                  )
+          PY
+
+      - name: Reverify release commit is current main
+        if: steps.check_version.outputs.changed == 'true'
+        run: |
+          set -euo pipefail
+          actual=$(git rev-parse HEAD)
+          main=$(git ls-remote origin refs/heads/main | awk '{print $1}')
+          test -n "$main"
+          test "$actual" = "$GITHUB_SHA"
+          test "$actual" = "$main"
+
+      - name: Create Tag
+        if: steps.check_version.outputs.changed == 'true'
+        env:
+          PACKAGE_VERSION: ${{ steps.check_version.outputs.version }}
+        run: |
+          set -euo pipefail
+
+          tag="v${PACKAGE_VERSION}"
+          git fetch --force --tags origin \
+            "refs/heads/main:refs/remotes/origin/main"
+          main_commit=$(git rev-parse refs/remotes/origin/main)
+          if [[ "${GITHUB_SHA}" != "${main_commit}" ]]; then
+            echo "Main advanced to ${main_commit}; refusing to create ${tag}" >&2
+            exit 1
+          fi
+          if git show-ref --verify --quiet "refs/tags/${tag}"; then
+            tagged_commit=$(git rev-list -n 1 "${tag}")
+            if [[ "${tagged_commit}" != "${GITHUB_SHA}" ]]; then
+              echo "Tag ${tag} already points to ${tagged_commit}, not ${GITHUB_SHA}" >&2
+              exit 1
+            fi
+            echo "Tag ${tag} already points to this release commit"
+          else
+            git tag "${tag}"
+          fi
+          git push origin "refs/tags/${tag}"
+
+      - name: Create Draft Release
+        if: steps.check_version.outputs.changed == 'true'
+        uses: softprops/action-gh-release@3d0d9888cb7fd7b750713d6e236d1fcb99157228 # v3.0.2
+        with:
+          tag_name: v${{ steps.check_version.outputs.version }}
+          name: medicare_cclf_connector v${{ steps.check_version.outputs.version }}
+          draft: true
+          prerelease: ${{ steps.check_version.outputs.prerelease }}
+          generate_release_notes: true

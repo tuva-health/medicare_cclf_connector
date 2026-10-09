@@ -1,0 +1,49 @@
+name: Release Label
+
+# Every PR into main carries exactly one release-note label, which sorts it
+# into a section of the generated release notes (.github/release.yml). The
+# labels are read from the event payload, so this needs no token and runs the
+# same for fork PRs.
+
+on:
+  pull_request:
+    branches:
+      - main
+    types:
+      - opened
+      - reopened
+      - synchronize
+      - ready_for_review
+      - labeled
+      - unlabeled
+
+permissions: {}
+
+concurrency:
+  group: cclf-release-label-pr-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  release_label:
+    name: release label
+    runs-on: ubuntu-latest
+    permissions: {}
+    steps:
+      - name: Require exactly one release label
+        shell: bash
+        env:
+          PR_LABELS: ${{ toJson(github.event.pull_request.labels.*.name) }}
+        run: |
+          set -euo pipefail
+          release_labels=(breaking-change enhancement bug documentation ignore-for-release)
+          found=()
+          for label in "${release_labels[@]}"; do
+            if jq -e --arg label "$label" 'index($label) != null' <<< "$PR_LABELS" > /dev/null; then
+              found+=("$label")
+            fi
+          done
+          if [[ ${#found[@]} -ne 1 ]]; then
+            echo "::error::Apply exactly one release label (${release_labels[*]}); found ${#found[@]}: ${found[*]:-none}."
+            exit 1
+          fi
+          echo "Release label: ${found[0]}"
