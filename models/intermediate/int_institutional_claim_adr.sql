@@ -192,44 +192,83 @@ with staged_data as (
 )
 
 /*
-    flag related sets (natural-key groups) that contain a cancellation (1) or adjustment (2).
-    A related set made up only of original claims is a set of distinct final action claims
-    (CCLF IP 5.2: "it is possible that there is more than one final action claim among a
-    related set of claims"), so those must not be collapsed into one claim. The adjustment
-    key falls back to CUR_CLM_UNIQ_ID for original-only sets and is a constant otherwise.
+    identify the final action claim(s) in each related set of Part A claims.
+
+    A related set is every claim sharing the Part A natural key (CCLF IP v43 5.1.2):
+     - CLM_BLG_PRVDR_OSCAR_NUM
+     - CLM_FROM_DT
+     - CLM_THRU_DT
+     - Most Recent MBI
+
+    IP 5.2.1 defines the final action claims as what remains once each cancellation claim
+    (CLM_ADJSMT_TYPE_CD 1) is matched with an original (0) or adjustment (2) claim and every
+    matched pair is removed. A related set can hold more than one final action claim (two
+    originals, or the IP 5.3.2 Table 4 example), and a cancellation is never one. Neither
+    CLM_EFCTV_DT nor CUR_CLM_UNIQ_ID identifies the final claim: a cancellation and its
+    replacement adjustment are often processed together and share CLM_EFCTV_DT, and claim
+    IDs carry no ordering meaning. So the related set is not ranked to a single winner.
+
+    Matching rule. A cancellation is generated identical to the claim it cancels (IP 5.2.1),
+    so cancellations are matched on CLM_PMT_AMT. Within a related set, the n cancellations
+    carrying a given payment amount cancel the n oldest original/adjustment claims carrying
+    that amount. Oldest is ordered by:
+     1. CLM_EFCTV_DT ascending. A missing date (1000-01-01 / 9999-12-31, IP 3.6, cast to
+        null) ranks first, as the oldest. A separate is-null sort key places it, because
+        DuckDB and Snowflake put nulls at opposite ends of a sort by default;
+     2. the delivering file's date ascending, a missing file date first;
+     3. CUR_CLM_UNIQ_ID ascending. This key only orders claims that agree on payment,
+        effective date and delivery, which the IP treats as interchangeable ("you will
+        simply need to pick one", 5.3.2); it keeps that pick stable from run to run.
+
+    A cancellation with no same-amount claim in its related set removes nothing and is
+    itself dropped. That happens when the claim it cancels predates the loaded files, or
+    when a corrected through date moved the replacement adjustment to another natural key
+    (IP 5.2.1). Cancellation amounts are made negative for beneficiary-level debit/credit
+    totals (IP 5.3.1); a final action claim keeps its own payment.
 */
-, flag_adjusted_groups as (
+, matching_input as (
 
     select
           *
-        , max(case when clm_adjsmt_type_cd in ('1', '2') then 1 else 0 end) over (
-            partition by
-                  clm_blg_prvdr_oscar_num
-                , clm_from_dt
-                , clm_thru_dt
-                , current_bene_mbi_id
-          ) as group_has_adjustment
+        , {{ try_to_cast_numeric('clm_pmt_amt') }} as match_pmt_amt
+        , case when clm_adjsmt_type_cd = '1' then 1 else 0 end as is_cancellation
+        , {{ try_to_cast_date('clm_efctv_dt') }} as match_efctv_dt
     from normalized_data
     where normalized_row_num = 1
 
 )
 
-/*
-    1) apply adjustment logic by grouping part A claims by their natural keys:
-     - CLM_BLG_PRVDR_OSCAR_NUM
-     - CLM_FROM_DT
-     - CLM_THRU_DT
-     - Most Recent MBI
-     - adjustment_key (CUR_CLM_UNIQ_ID when the related set holds only original claims,
-       so each original stays its own claim; constant otherwise)
+, cancellation_matching as (
 
-    2) sort grouped claims by the latest CLM_EFCTV_DT and CUR_CLM_UNIQ_ID since CLM_ADJSMT_TYPE_CD
-    is not used consistently to indicate the latest final version of an adjusted claim.
+    select
+          *
+        , sum(is_cancellation) over (
+            partition by
+                  clm_blg_prvdr_oscar_num
+                , clm_from_dt
+                , clm_thru_dt
+                , current_bene_mbi_id
+                , match_pmt_amt
+          ) as cancellations_at_amount
+        , row_number() over (
+            partition by
+                  clm_blg_prvdr_oscar_num
+                , clm_from_dt
+                , clm_thru_dt
+                , current_bene_mbi_id
+                , match_pmt_amt
+                , is_cancellation
+            order by
+                  case when match_efctv_dt is null then 0 else 1 end
+                , match_efctv_dt
+                , case when file_date is null then 0 else 1 end
+                , file_date
+                , cur_clm_uniq_id
+          ) as amount_match_seq
+    from matching_input
 
-    3) change paid amounts to negative for canceled claims
+)
 
-    (CCLF docs ref: 5.3 Calculating Beneficiary-Level Expenditures)
-*/
 , sort_adjusted_claims as (
 
     select
@@ -247,11 +286,11 @@ with staged_data as (
         , bene_ptnt_stus_cd
         , dgns_drg_cd
         , ccn
-        , clm_type_cd        
+        , clm_type_cd
         , fac_prvdr_npi_num
         , othr_prvdr_npi_num
         , atndg_prvdr_npi_num
-        , oprtg_prvdr_npi_num     
+        , oprtg_prvdr_npi_num
         , clm_adjsmt_type_cd
         , clm_efctv_dt
         , clm_admsn_type_cd
@@ -266,24 +305,10 @@ with staged_data as (
         , file_name
         , file_date
         , case
-            when group_has_adjustment = 1 then cast('' as {{ dbt.type_string() }})
-            else cur_clm_uniq_id
-          end as adjustment_key
-        , row_number() over (
-            partition by
-                  clm_blg_prvdr_oscar_num
-                , clm_from_dt
-                , clm_thru_dt
-                , current_bene_mbi_id
-                , case
-                    when group_has_adjustment = 1 then cast('' as {{ dbt.type_string() }})
-                    else cur_clm_uniq_id
-                  end
-            order by
-                  clm_efctv_dt desc
-                , cur_clm_uniq_id desc
-        ) as row_num
-    from flag_adjusted_groups
+            when is_cancellation = 0 and amount_match_seq > cancellations_at_amount then 1
+            else 0
+          end as final_action_flag
+    from cancellation_matching
 
 )
 
@@ -299,11 +324,11 @@ select
     , bene_ptnt_stus_cd
     , dgns_drg_cd
     , ccn
-    , clm_type_cd    
+    , clm_type_cd
     , fac_prvdr_npi_num
     , othr_prvdr_npi_num
     , atndg_prvdr_npi_num
-    , oprtg_prvdr_npi_num  
+    , oprtg_prvdr_npi_num
     , clm_adjsmt_type_cd
     , clm_efctv_dt
     , clm_admsn_type_cd
@@ -314,6 +339,5 @@ select
     , clm_blg_prvdr_oscar_num
     , file_name
     , file_date
-    , adjustment_key
-    , row_num
+    , final_action_flag
 from sort_adjusted_claims

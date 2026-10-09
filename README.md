@@ -14,20 +14,53 @@ The Medicare CCLF Connector is a dbt project that maps raw Medicare CCLF claims 
 ## 🔁 Related claims and adjustments
 
 CMS delivers every version of a claim (original, cancellation, adjustment). The connector
-resolves them following the CCLF Information Packet, sections 5.1 to 5.3:
+resolves them following the CCLF Information Packet (IP) v43, sections 3.3 and 5.1 to 5.3.
+Where the IP leaves a choice open, the rule below is marked as our choice.
 
-- Related claims are grouped by the CMS natural key: billing OSCAR, from date, thru date and
-  most recent MBI for Part A; claim control number and most recent MBI (plus line number)
-  for Part B physician and DME.
+- Related claims are grouped by the CMS natural key (IP 5.1.2): billing OSCAR, from date,
+  thru date and most recent MBI for Part A; claim control number and most recent MBI (plus
+  line number) for Part B physician and DME; fill date, service provider, dispensing status,
+  Rx reference number and fill number for Part D.
 - Re-delivered copies of the same claim version (same claim ID, line, adjustment type and
   effective date) are collapsed to the most recently delivered file first.
-- Within a related set that contains a cancellation or adjustment, the latest version by
-  effective date wins and carries the signed (debit/credit) sum of the set. A winning
-  cancellation is dropped.
+- **Part A.** The IP defines the final action claims as what remains once each cancellation
+  is matched with an original or adjustment claim and the matched pairs are removed (IP
+  5.2.1). A related set can keep more than one final action claim, and a cancellation is
+  never one, even when it shares its effective date with the adjustment that replaces the
+  claim it cancels. Claim IDs carry no ordering meaning and never decide a winner. *Our
+  choice*, where the IP leaves the match open: a cancellation is matched on payment amount
+  (a cancellation copies the claim it cancels), and the n cancellations of a given amount
+  cancel the n oldest claims of that amount, oldest by effective date (missing dates first),
+  then delivery date, then claim ID. The claim ID only orders claims that agree on all of
+  those, which the IP calls interchangeable ("you will simply need to pick one", 5.3.2).
+- **Part B physician and DME.** Within a related set that contains a cancellation or
+  adjustment, one version wins, ranked by effective date (latest first, missing dates last),
+  then *our choice* on a tie: adjustment, then original, then cancellation, as a
+  cancellation is always paired with an earlier claim (IP 5.3.2 Table 6). Claim ID is the
+  last key, for claims that tie on both. A winning cancellation is dropped, and the winner
+  still carries the signed (debit/credit) sum of its set's lines.
+- **Part D.** The file holds final action claims, so the most recent claim in a related set
+  wins (IP 3.3). *Our choice* of what "most recent" means: latest delivery file, then latest
+  effective date and IDR load date (missing dates last), then adjustment, cancellation,
+  original, then claim ID. A winning cancellation is dropped.
 - A related set made up only of original claims is a set of distinct final action claims
   (IP 5.2.1), so each original is kept as its own claim with its own amounts. The
-  `adjustment_key` column on the `int_*_claim_adr` models is the claim ID for those sets and
-  a constant otherwise.
+  `adjustment_key` column on the Part B `int_*_claim_adr` models is the claim ID for those
+  sets and a constant otherwise.
+- **Part A paid amount.** A final action claim carries its own payment and charges, not the
+  debit/credit net of its related set. Debit/credit netting is the IP's method for
+  beneficiary-level spend (IP 5.3); for a single claim it only gives the change since the
+  versions present. The two agree when the set is complete. They differ when the original
+  is not in the loaded files: in fixture scenario S08 a cancellation ($6,400) and its
+  adjustment ($6,650) arrive without the original, and the adjustment's own $6,650 is the
+  claim's payment, where netting gives $250. A cancellation that matches no claim adds no
+  claim.
+- **Limitation: missing originals.** The connector can tell that a natural-key group has no
+  original claim, or holds a cancellation that matches nothing, but not that the original is
+  missing from the files altogether. A corrected thru date moves the adjustment to a new
+  natural key while the original and its cancellation stay on the old one (IP 5.2.1), and an
+  old MBI absent from the loaded CCLF9 files leaves earlier versions under a different key.
+  In both cases the original is loaded, under another key. Claims are not flagged for this.
 
 These rules are covered by dbt unit tests in `models/intermediate/_unit_tests.yml`.
 
