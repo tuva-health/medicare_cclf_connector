@@ -622,7 +622,9 @@ jobs:
                 currentMerge.sha === process.env.EXPECTED_MERGE_SHA;
 
               if (!requestIsCurrent) {
-                description = "PR changed while CI was running; rerun required";
+                // "Re-run" replays the old event (with the old base) and fails the
+                // same way; a push or reopen starts a fresh run.
+                description = "PR changed during CI; push or reopen the PR to retest";
               } else if (process.env.PENDING_RESULT !== "success") {
                 description = "CI could not publish its pending status";
               } else if (buildResult === "success") {

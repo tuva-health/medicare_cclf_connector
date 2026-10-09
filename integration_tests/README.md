@@ -114,7 +114,10 @@ its base branch and its exact base, head and test-merge commits, it posts a
 commit status (`CI / Snowflake`, or `CI / All Warehouses` for `all`) on the PR
 head: pending when it starts, then the result. The status reports an error instead if the PR
 or its base branch moves while CI runs, and a run never overwrites a newer
-run's status.
+run's status. **Re-run** cannot clear that error: it replays the old event,
+with the old base. Push a commit, or close and reopen the PR. Retargeting a PR
+(by hand, or when a stacked PR's parent merges) starts no run on its own, so
+retarget between runs, not during one.
 
 ### Fork pull requests
 
