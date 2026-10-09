@@ -28,11 +28,19 @@ Where the IP leaves a choice open, the rule below is marked as our choice.
   5.2.1). A related set can keep more than one final action claim, and a cancellation is
   never one, even when it shares its effective date with the adjustment that replaces the
   claim it cancels. Claim IDs carry no ordering meaning and never decide a winner. *Our
-  choice*, where the IP leaves the match open: a cancellation is matched on payment amount
-  (a cancellation copies the claim it cancels), and the n cancellations of a given amount
-  cancel the n oldest claims of that amount, oldest by effective date (missing dates first),
-  then delivery date, then claim ID. The claim ID only orders claims that agree on all of
-  those, which the IP calls interchangeable ("you will simply need to pick one", 5.3.2).
+  choice*, where the IP leaves the pairing open: a cancellation pairs only with a claim of
+  equal payment amount. An original of that amount is always eligible. An adjustment of
+  that amount is eligible only if it strictly precedes the cancellation (an earlier
+  effective date, or, when the effective dates are equal or missing, an earlier file
+  date). Each cancellation takes the oldest eligible original, else the oldest eligible
+  adjustment, oldest by effective date (missing dates first), then delivery date, then
+  claim ID. Why: a cancellation copies the claim it cancels, and an original always comes
+  before its cancellation, but an adjustment issued in the same action as a cancellation
+  is its replacement, not its target. Without that test, a cancel and adjustment of equal
+  amount whose original predates the files cancel each other and the final claim is lost
+  (fixture S30). Known residual: in a client profile, about 0.2% of Part A related sets
+  that contain a cancellation (15 of 7,194) can't be resolved by any exact-amount rule, for
+  example when an original was re-priced, so its cancellation no longer matches it.
 - **Part B physician and DME.** Within a related set that contains a cancellation or
   adjustment, one version wins, ranked by effective date (latest first, missing dates last),
   then *our choice* on a tie: adjustment, then original, then cancellation, as a
@@ -47,13 +55,13 @@ Where the IP leaves a choice open, the rule below is marked as our choice.
   (IP 5.2.1), so each original is kept as its own claim with its own amounts. The
   `adjustment_key` column on the Part B `int_*_claim_adr` models is the claim ID for those
   sets and a constant otherwise.
-- **Part A paid amount.** A final action claim carries its own payment and charges, not the
-  debit/credit net of its related set. Debit/credit netting is the IP's method for
-  beneficiary-level spend (IP 5.3); for a single claim it only gives the change since the
-  versions present. The two agree when the set is complete. They differ when the original
-  is not in the loaded files: in fixture scenario S08 a cancellation ($6,400) and its
-  adjustment ($6,650) arrive without the original, and the adjustment's own $6,650 is the
-  claim's payment, where netting gives $250. A cancellation that matches no claim adds no
+- **Part A paid amount.** A final action claim carries its own payment and charges. When the
+  related set's full history is in the loaded files, the survivors' own payments add up to
+  the set's signed debit/credit sum (IP 5.3), so totals are unchanged. The two differ only
+  when a cancellation's partner is missing from the files: netting then gives only the
+  change since the versions present. In fixture scenario S08 a cancellation ($6,400) and
+  its adjustment ($6,650) arrive without the original. The adjustment keeps its own
+  $6,650, where netting would give $250. A cancellation that matches no claim adds no
   claim.
 - **Limitation: missing originals.** The connector can tell that a natural-key group has no
   original claim, or holds a cancellation that matches nothing, but not that the original is

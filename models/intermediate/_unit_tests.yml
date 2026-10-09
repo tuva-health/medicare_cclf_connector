@@ -448,8 +448,8 @@ unit_tests:
   - name: int_institutional_claim_adr_matches_cancellations_by_payment
     description: >
       Final action claims are what remains once each cancellation is matched with an original or
-      adjustment claim carrying the same payment and the pairs are removed (CCLF IP 5.2.1), not the
-      top of a sort. T: a cancellation sharing its effective date with the adjustment and carrying the
+      preceding adjustment carrying the same payment and the pairs are removed (CCLF IP 5.2.1), not
+      the top of a sort. T: a cancellation sharing its effective date with the adjustment and carrying the
       higher claim ID, cancels the original, so the adjustment is final. Y: the IP 5.3.2 Table 4
       set, whose final claims are #4 and one of #2/#5; the $0 cancellation (#6) cancels the older $0
       adjustment (#5). Z: cancellation + adjustment whose original predates the files; the
@@ -541,6 +541,97 @@ unit_tests:
         - {cur_clm_uniq_id: Y6, clm_pmt_amt: -0.00, final_action_flag: 0}
         - {cur_clm_uniq_id: Z-CNCL, clm_pmt_amt: -6400.00, final_action_flag: 0}
         - {cur_clm_uniq_id: Z-ADJ, clm_pmt_amt: 6650.00, final_action_flag: 1}
+
+  - name: int_institutional_claim_adr_pairs_cancellations_only_with_preceding_adjustments
+    description: >
+      An equal-amount original is always a cancellation's partner; an equal-amount adjustment only
+      when it strictly precedes the cancellation (earlier effective date, else earlier file date).
+      E (1,2, equal amounts, same date and file): the original is missing, so the adjustment issued
+      with the cancellation survives. F (0,1,2, all equal and on one date and file): the original is
+      cancelled and the adjustment survives. G (0,1, same date and file): no survivor. H (1,2, equal
+      amounts, same effective date, adjustment in an earlier file): the adjustment precedes the
+      cancellation and is cancelled.
+    model: int_institutional_claim_adr
+    given:
+      - input: ref('int_parta_claims_header_normalized')
+        format: sql
+        rows: |
+          select
+              'E-CNCL' as cur_clm_uniq_id
+            , '444444' as prvdr_oscar_num
+            , 'MBI-1' as bene_mbi_id
+            , null as bene_hic_num
+            , '60' as clm_type_cd
+            , '2024-02-01' as clm_from_dt
+            , '2024-02-01' as clm_thru_dt
+            , '1' as clm_bill_fac_type_cd
+            , '1' as clm_bill_clsfctn_cd
+            , null as prncpl_dgns_cd
+            , null as admtg_dgns_cd
+            , cast(null as varchar) as clm_mdcr_npmt_rsn_cd
+            , '300.00' as clm_pmt_amt
+            , null as clm_nch_prmry_pyr_cd
+            , null as prvdr_fac_fips_st_cd
+            , '01' as bene_ptnt_stus_cd
+            , null as dgns_drg_cd
+            , null as clm_op_srvc_type_cd
+            , null as fac_prvdr_npi_num
+            , null as oprtg_prvdr_npi_num
+            , null as atndg_prvdr_npi_num
+            , null as othr_prvdr_npi_num
+            , '1' as clm_adjsmt_type_cd
+            , '2024-03-10' as clm_efctv_dt
+            , null as clm_idr_ld_dt
+            , null as bene_eqtbl_bic_hicn_num
+            , null as clm_admsn_type_cd
+            , null as clm_admsn_src_cd
+            , '1' as clm_bill_freq_cd
+            , null as clm_query_cd
+            , '0' as dgns_prcdr_icd_ind
+            , '100.00' as clm_mdcr_instnl_tot_chrg_amt
+            , null as clm_mdcr_ip_pps_cptl_ime_amt
+            , null as clm_oprtnl_ime_amt
+            , null as clm_mdcr_ip_pps_dsprprtnt_amt
+            , null as clm_hipps_uncompd_care_amt
+            , null as clm_oprtnl_dsprprtnt_amt
+            , '444444' as clm_blg_prvdr_oscar_num
+            , null as clm_blg_prvdr_npi_num
+            , null as clm_oprtg_prvdr_npi_num
+            , null as clm_atndg_prvdr_npi_num
+            , null as clm_othr_prvdr_npi_num
+            , null as clm_cntl_num
+            , null as clm_org_cntl_num
+            , null as clm_cntrctr_num
+            , 'MBI-1' as current_bene_mbi_id
+            , 'file_b.csv' as file_name
+            , cast('2024-04-12' as date) as file_date
+          union all
+          select 'E-ADJ', '444444', 'MBI-1', null, '60', '2024-02-01', '2024-02-01', '1', '1', null, null, cast(null as varchar), '300.00', null, null, '01', null, null, null, null, null, null, '2', '2024-03-10', null, null, null, null, '1', null, '0', '100.00', null, null, null, null, null, '444444', null, null, null, null, null, null, null, 'MBI-1', 'file_b.csv', cast('2024-04-12' as date)
+          union all
+          select 'F-ORIG', '555555', 'MBI-1', null, '60', '2024-04-01', '2024-04-01', '1', '1', null, null, cast(null as varchar), '150.00', null, null, '01', null, null, null, null, null, null, '0', '2024-05-10', null, null, null, null, '1', null, '0', '100.00', null, null, null, null, null, '555555', null, null, null, null, null, null, null, 'MBI-1', 'file_c.csv', cast('2024-06-12' as date)
+          union all
+          select 'F-CNCL', '555555', 'MBI-1', null, '60', '2024-04-01', '2024-04-01', '1', '1', null, null, cast(null as varchar), '150.00', null, null, '01', null, null, null, null, null, null, '1', '2024-05-10', null, null, null, null, '1', null, '0', '100.00', null, null, null, null, null, '555555', null, null, null, null, null, null, null, 'MBI-1', 'file_c.csv', cast('2024-06-12' as date)
+          union all
+          select 'F-ADJ', '555555', 'MBI-1', null, '60', '2024-04-01', '2024-04-01', '1', '1', null, null, cast(null as varchar), '150.00', null, null, '01', null, null, null, null, null, null, '2', '2024-05-10', null, null, null, null, '1', null, '0', '100.00', null, null, null, null, null, '555555', null, null, null, null, null, null, null, 'MBI-1', 'file_c.csv', cast('2024-06-12' as date)
+          union all
+          select 'G-ORIG', '666666', 'MBI-1', null, '60', '2024-06-03', '2024-06-03', '1', '1', null, null, cast(null as varchar), '80.00', null, null, '01', null, null, null, null, null, null, '0', '2024-06-20', null, null, null, null, '1', null, '0', '100.00', null, null, null, null, null, '666666', null, null, null, null, null, null, null, 'MBI-1', 'file_d.csv', cast('2024-07-12' as date)
+          union all
+          select 'G-CNCL', '666666', 'MBI-1', null, '60', '2024-06-03', '2024-06-03', '1', '1', null, null, cast(null as varchar), '80.00', null, null, '01', null, null, null, null, null, null, '1', '2024-06-20', null, null, null, null, '1', null, '0', '100.00', null, null, null, null, null, '666666', null, null, null, null, null, null, null, 'MBI-1', 'file_d.csv', cast('2024-07-12' as date)
+          union all
+          select 'H-ADJ', '777777', 'MBI-1', null, '60', '2024-07-01', '2024-07-01', '1', '1', null, null, cast(null as varchar), '60.00', null, null, '01', null, null, null, null, null, null, '2', '2024-08-05', null, null, null, null, '1', null, '0', '100.00', null, null, null, null, null, '777777', null, null, null, null, null, null, null, 'MBI-1', 'file_d.csv', cast('2024-08-12' as date)
+          union all
+          select 'H-CNCL', '777777', 'MBI-1', null, '60', '2024-07-01', '2024-07-01', '1', '1', null, null, cast(null as varchar), '60.00', null, null, '01', null, null, null, null, null, null, '1', '2024-08-05', null, null, null, null, '1', null, '0', '100.00', null, null, null, null, null, '777777', null, null, null, null, null, null, null, 'MBI-1', 'file_e.csv', cast('2024-09-12' as date)
+    expect:
+      rows:
+        - {cur_clm_uniq_id: E-CNCL, clm_pmt_amt: -300.00, final_action_flag: 0}
+        - {cur_clm_uniq_id: E-ADJ, clm_pmt_amt: 300.00, final_action_flag: 1}
+        - {cur_clm_uniq_id: F-ORIG, clm_pmt_amt: 150.00, final_action_flag: 0}
+        - {cur_clm_uniq_id: F-CNCL, clm_pmt_amt: -150.00, final_action_flag: 0}
+        - {cur_clm_uniq_id: F-ADJ, clm_pmt_amt: 150.00, final_action_flag: 1}
+        - {cur_clm_uniq_id: G-ORIG, clm_pmt_amt: 80.00, final_action_flag: 0}
+        - {cur_clm_uniq_id: G-CNCL, clm_pmt_amt: -80.00, final_action_flag: 0}
+        - {cur_clm_uniq_id: H-ADJ, clm_pmt_amt: 60.00, final_action_flag: 0}
+        - {cur_clm_uniq_id: H-CNCL, clm_pmt_amt: -60.00, final_action_flag: 0}
 
   - name: int_dme_claim_adr_keeps_original_only_related_sets_separate
     description: >
