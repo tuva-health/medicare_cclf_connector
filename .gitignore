@@ -12,5 +12,4 @@ package-lock.yml
 .envrc
 requirements.txt
 .direnv/
-.python-version
 .pyproject.toml
