@@ -11,10 +11,11 @@ models:
         {%- if var('tuva_schema_prefix',None) != None -%}{{var('tuva_schema_prefix')}}_input_layer{% else %}input_layer{%- endif -%}
     tests:
       - dbt_utils.unique_combination_of_columns:
-          combination_of_columns:
-            - member_id
-            - enrollment_start_date
-            - enrollment_end_date
+          arguments:
+            combination_of_columns:
+              - member_id
+              - enrollment_start_date
+              - enrollment_end_date
     columns:
       - name: person_id
         tests:
@@ -46,9 +47,10 @@ models:
         {%- if var('tuva_schema_prefix',None) != None -%}{{var('tuva_schema_prefix')}}_input_layer{% else %}input_layer{%- endif -%}
     tests:
       - dbt_utils.unique_combination_of_columns:
-          combination_of_columns:
-            - claim_id
-            - claim_line_number
+          arguments:
+            combination_of_columns:
+              - claim_id
+              - claim_line_number
     columns:
       - name: claim_id
         tests:
@@ -65,43 +67,50 @@ models:
       - name: paid_amount
         tests:
           - dbt_utils.accepted_range:
-              min_value: 0
+              arguments:
+                min_value: 0
               config:
                 severity: warn
       - name: allowed_amount
         tests:
           - dbt_utils.accepted_range:
-              min_value: 0
+              arguments:
+                min_value: 0
               config:
                 severity: warn
       - name: charge_amount
         tests:
           - dbt_utils.accepted_range:
-              min_value: 0
+              arguments:
+                min_value: 0
               config:
                 severity: warn
       - name: coinsurance_amount
         tests:
           - dbt_utils.accepted_range:
-              min_value: 0
+              arguments:
+                min_value: 0
               config:
                 severity: warn
       - name: copayment_amount
         tests:
           - dbt_utils.accepted_range:
-              min_value: 0
+              arguments:
+                min_value: 0
               config:
                 severity: warn
       - name: deductible_amount
         tests:
           - dbt_utils.accepted_range:
-              min_value: 0
+              arguments:
+                min_value: 0
               config:
                 severity: warn
       - name: total_cost_amount
         tests:
           - dbt_utils.accepted_range:
-              min_value: 0
+              arguments:
+                min_value: 0
               config:
                 severity: warn
       - name: paid_reduced_by
@@ -121,9 +130,10 @@ models:
         {%- if var('tuva_schema_prefix',None) != None -%}{{var('tuva_schema_prefix')}}_input_layer{% else %}input_layer{%- endif -%}
     tests:
       - dbt_utils.unique_combination_of_columns:
-          combination_of_columns:
-            - claim_id
-            - claim_line_number
+          arguments:
+            combination_of_columns:
+              - claim_id
+              - claim_line_number
     columns:
       - name: claim_id
         tests:
@@ -145,37 +155,43 @@ models:
       - name: paid_amount
         tests:
           - dbt_utils.accepted_range:
-              min_value: 0
+              arguments:
+                min_value: 0
               config:
                 severity: warn
       - name: allowed_amount
         tests:
           - dbt_utils.accepted_range:
-              min_value: 0
+              arguments:
+                min_value: 0
               config:
                 severity: warn
       - name: charge_amount
         tests:
           - dbt_utils.accepted_range:
-              min_value: 0
+              arguments:
+                min_value: 0
               config:
                 severity: warn
       - name: coinsurance_amount
         tests:
           - dbt_utils.accepted_range:
-              min_value: 0
+              arguments:
+                min_value: 0
               config:
                 severity: warn
       - name: copayment_amount
         tests:
           - dbt_utils.accepted_range:
-              min_value: 0
+              arguments:
+                min_value: 0
               config:
                 severity: warn
       - name: deductible_amount
         tests:
           - dbt_utils.accepted_range:
-              min_value: 0
+              arguments:
+                min_value: 0
               config:
                 severity: warn
 
