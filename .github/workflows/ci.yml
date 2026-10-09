@@ -5,11 +5,17 @@ name: CI
 # this connector as a local package. See integration_tests/README.md.
 #
 # Check names are stable so they can be made required:
-#   uv lock check       uv.lock matches pyproject.toml
-#   dbt build / duckdb  connector only, no secrets, every PR (forks included)
-#   dbt build / <wh>    connector + the_tuva_project on a remote warehouse;
-#                       same-repo PRs run Snowflake automatically, fork PRs
-#                       run it through ci-external-pr.yml after review.
+#   uv lock check        uv.lock matches pyproject.toml
+#   dbt build / duckdb   connector only, no secrets, every PR (forks included)
+#   dbt build / <wh>     connector + the_tuva_project on a remote warehouse
+#
+# Commit statuses (posted on the PR head by this workflow):
+#   CI / Snowflake       the Snowflake build. Same-repo PRs post it
+#                        automatically; fork PRs get it only when a maintainer
+#                        runs ci-external-pr.yml after review. Require this
+#                        status, not the dbt build / snowflake job, which shows
+#                        as skipped (and so passing) on fork PRs.
+#   CI / All Warehouses  every warehouse, posted by ci-all-warehouses.yml.
 
 on:
   pull_request:
@@ -43,6 +49,36 @@ on:
           are appended so reruns never share schemas.
         required: true
         type: string
+      publish_status:
+        description: Publish a commit status for the tested pull request
+        required: false
+        type: boolean
+        default: false
+      pr_number:
+        description: Pull request number associated with the status
+        required: false
+        type: string
+        default: ""
+      base_sha:
+        description: Exact pull request base commit
+        required: false
+        type: string
+        default: ""
+      head_sha:
+        description: Exact pull request head commit
+        required: false
+        type: string
+        default: ""
+      merge_sha:
+        description: Exact pull request test-merge commit
+        required: false
+        type: string
+        default: ""
+      status_target:
+        description: Pull request revision to receive the CI status (head or merge)
+        required: false
+        type: string
+        default: head
     secrets:
       DBT_SNOWFLAKE_CI_ACCOUNT:
         required: false
@@ -94,6 +130,14 @@ jobs:
       scope: ${{ steps.resolve.outputs.scope }}
       checkout_ref: ${{ steps.resolve.outputs.checkout_ref }}
       schema_prefix: ${{ steps.resolve.outputs.schema_prefix }}
+      publish_status: ${{ steps.resolve.outputs.publish_status }}
+      status_context: ${{ steps.resolve.outputs.status_context }}
+      status_scope: ${{ steps.resolve.outputs.status_scope }}
+      pr_number: ${{ steps.resolve.outputs.pr_number }}
+      base_sha: ${{ steps.resolve.outputs.base_sha }}
+      head_sha: ${{ steps.resolve.outputs.head_sha }}
+      merge_sha: ${{ steps.resolve.outputs.merge_sha }}
+      status_sha: ${{ steps.resolve.outputs.status_sha }}
     steps:
       - name: Normalize request
         id: resolve
@@ -104,7 +148,14 @@ jobs:
           IN_SCOPE: ${{ inputs.scope || '' }}
           IN_CHECKOUT_REF: ${{ inputs.checkout_ref || '' }}
           IN_SCHEMA_PREFIX: ${{ inputs.schema_prefix || '' }}
+          IN_PUBLISH_STATUS: ${{ inputs.publish_status && 'true' || 'false' }}
+          IN_PR_NUMBER: ${{ inputs.pr_number || '' }}
+          IN_BASE_SHA: ${{ inputs.base_sha || '' }}
+          IN_HEAD_SHA: ${{ inputs.head_sha || '' }}
+          IN_MERGE_SHA: ${{ inputs.merge_sha || '' }}
+          IN_STATUS_TARGET: ${{ inputs.status_target || 'head' }}
           PR_NUMBER: ${{ github.event.pull_request.number || '' }}
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha || '' }}
           PR_HEAD_SHA: ${{ github.event.pull_request.head.sha || '' }}
           PR_HEAD_REPO: ${{ github.event.pull_request.head.repo.full_name || '' }}
           BASE_REPO: ${{ github.repository }}
@@ -115,15 +166,27 @@ jobs:
           set -euo pipefail
           fail() { echo "::error::$1"; exit 1; }
 
+          publish_status=false
+          pr_number="" base_sha="" head_sha="" merge_sha="" status_sha=""
+          status_target="head"
           if [[ -n "$IN_WAREHOUSE" ]]; then
-            # workflow_call (e.g. ci-external-pr.yml)
+            # workflow_call (ci-external-pr.yml, ci-all-warehouses.yml)
             warehouse="$IN_WAREHOUSE"
             scope="$IN_SCOPE"
             checkout_ref="$IN_CHECKOUT_REF"
             schema_base="$IN_SCHEMA_PREFIX"
+            publish_status="$IN_PUBLISH_STATUS"
+            pr_number="$IN_PR_NUMBER"
+            base_sha="$IN_BASE_SHA"
+            head_sha="$IN_HEAD_SHA"
+            merge_sha="$IN_MERGE_SHA"
+            status_target="$IN_STATUS_TARGET"
+            # The status covers every job the request runs.
+            status_scope="$warehouse"
           elif [[ "$EVENT_NAME" == "pull_request" ]]; then
             if [[ "${PR_HEAD_REPO,,}" == "${BASE_REPO,,}" ]]; then
               warehouse=all
+              publish_status=true
             else
               warehouse=duckdb
               echo "::notice::Fork PR: remote-warehouse CI does not run fork code with repository secrets. After review, a maintainer can run 'External PR CI' from the Actions tab."
@@ -131,10 +194,19 @@ jobs:
             scope=full
             checkout_ref="$MERGE_SHA"
             schema_base="ci_pr_${PR_NUMBER}_${PR_HEAD_SHA:0:8}"
+            pr_number="$PR_NUMBER"
+            base_sha="$PR_BASE_SHA"
+            head_sha="$PR_HEAD_SHA"
+            merge_sha="$MERGE_SHA"
+            # DuckDB has its own check; the status reports Snowflake only.
+            status_scope=snowflake
           else
             fail "Unsupported event: $EVENT_NAME"
           fi
 
+          # "all" is every warehouse the README lists as supported. To add
+          # one: a pyproject extra, an integration_tests/profiles/ profile, a
+          # case below and in the warehouse job, and the README list.
           case "$warehouse" in
             duckdb)    run_duckdb=true;  warehouses='[]' ;;
             snowflake) run_duckdb=false; warehouses='["snowflake"]' ;;
@@ -145,13 +217,120 @@ jobs:
           [[ "$checkout_ref" =~ ^[0-9a-f]{40}$ ]] || fail "checkout_ref must be an exact 40-character commit SHA."
           [[ "$schema_base" =~ ^ci_[a-z0-9_]+$ ]] || fail "Invalid schema prefix base: $schema_base"
 
+          status_context=""
+          if [[ "$publish_status" == true ]]; then
+            case "$status_scope" in
+              all)       status_context="CI / All Warehouses" ;;
+              snowflake) status_context="CI / Snowflake" ;;
+              *) fail "A commit status can only be published for snowflake or all, not $status_scope." ;;
+            esac
+            [[ "$pr_number" =~ ^[0-9]+$ ]] || fail "A published status needs the PR number."
+            for sha in "$base_sha" "$head_sha" "$merge_sha"; do
+              [[ "$sha" =~ ^[0-9a-f]{40}$ ]] || fail "A published status needs the exact base, head, and merge commits."
+            done
+            [[ "$checkout_ref" == "$merge_sha" ]] || fail "CI with a published status must build the exact test-merge commit."
+            case "$status_target" in
+              head)  status_sha="$head_sha" ;;
+              merge) status_sha="$merge_sha" ;;
+              *) fail "status_target must be head or merge." ;;
+            esac
+          fi
+
           {
             echo "run_duckdb=$run_duckdb"
             echo "warehouses=$warehouses"
             echo "scope=$scope"
             echo "checkout_ref=$checkout_ref"
             echo "schema_prefix=${schema_base}_r${RUN_ID}_a${RUN_ATTEMPT}"
+            echo "publish_status=$publish_status"
+            echo "status_context=$status_context"
+            echo "status_scope=$status_scope"
+            echo "pr_number=$pr_number"
+            echo "base_sha=$base_sha"
+            echo "head_sha=$head_sha"
+            echo "merge_sha=$merge_sha"
+            echo "status_sha=$status_sha"
           } >> "$GITHUB_OUTPUT"
+
+  mark_pending:
+    name: Report CI started
+    needs: resolve
+    if: needs.resolve.outputs.publish_status == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+      statuses: write
+    steps:
+      - name: Mark the tested pull request revision as pending
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        env:
+          PR_NUMBER: ${{ needs.resolve.outputs.pr_number }}
+          EXPECTED_BASE_SHA: ${{ needs.resolve.outputs.base_sha }}
+          HEAD_SHA: ${{ needs.resolve.outputs.head_sha }}
+          MERGE_SHA: ${{ needs.resolve.outputs.merge_sha }}
+          STATUS_SHA: ${{ needs.resolve.outputs.status_sha }}
+          STATUS_SCOPE: ${{ needs.resolve.outputs.status_scope }}
+          STATUS_CONTEXT: ${{ needs.resolve.outputs.status_context }}
+        with:
+          script: |
+            const targetUrl =
+              `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            const prNumber = Number(process.env.PR_NUMBER);
+            const { data: pr } = await github.rest.pulls.get({
+              ...context.repo,
+              pull_number: prNumber
+            });
+            const { data: currentMerge } = await github.rest.repos.getCommit({
+              ...context.repo,
+              ref: `refs/pull/${prNumber}/merge`
+            });
+            const requestIsCurrent =
+              pr.state === "open" &&
+              pr.base.ref === "main" &&
+              pr.base.sha === process.env.EXPECTED_BASE_SHA &&
+              pr.head.sha === process.env.HEAD_SHA &&
+              currentMerge.sha === process.env.MERGE_SHA;
+            if (!requestIsCurrent) {
+              core.setFailed(
+                `PR #${prNumber} changed before CI could publish pending status.`
+              );
+              return;
+            }
+
+            const statusSha = process.env.STATUS_SHA;
+            const { data: statuses } =
+              await github.rest.repos.listCommitStatusesForRef({
+                ...context.repo,
+                ref: statusSha,
+                per_page: 100
+              });
+            const latestStatus = statuses.find(
+              (status) => status.context === process.env.STATUS_CONTEXT
+            );
+            const newerRunOwnsStatus = (() => {
+              if (!latestStatus || latestStatus.target_url === targetUrl) {
+                return false;
+              }
+              const match = latestStatus.target_url?.match(/\/actions\/runs\/(\d+)/);
+              return match && BigInt(match[1]) > BigInt(context.runId);
+            })();
+            if (newerRunOwnsStatus) {
+              core.setFailed("A newer CI run already owns this status context.");
+              return;
+            }
+
+            const description = process.env.STATUS_SCOPE === "all"
+              ? "Running dbt builds on all warehouses"
+              : "Running Snowflake dbt build";
+            await github.rest.repos.createCommitStatus({
+              ...context.repo,
+              sha: statusSha,
+              state: "pending",
+              context: process.env.STATUS_CONTEXT,
+              description,
+              target_url: targetUrl
+            });
 
   lock:
     name: uv lock check
@@ -173,6 +352,8 @@ jobs:
 
   duckdb:
     name: dbt build / duckdb
+    # Not gated on mark_pending: dbt build / duckdb is a required check, and a
+    # skipped job would count as passing.
     needs: resolve
     if: needs.resolve.outputs.run_duckdb == 'true'
     runs-on: ubuntu-latest
@@ -199,7 +380,7 @@ jobs:
           cache-dependency-glob: uv.lock
 
       - name: Install locked toolchain
-        run: uv sync --locked
+        run: uv sync --locked --extra duckdb
 
       - name: Install dbt packages
         run: uv run --locked dbt deps --project-dir "$DBT_PROJECT_DIR"
@@ -227,8 +408,14 @@ jobs:
 
   warehouse:
     name: dbt build / ${{ matrix.warehouse }}
-    needs: resolve
-    if: needs.resolve.outputs.warehouses != '[]'
+    needs:
+      - resolve
+      - mark_pending
+    if: >-
+      !cancelled() &&
+      needs.resolve.result == 'success' &&
+      needs.resolve.outputs.warehouses != '[]' &&
+      (needs.mark_pending.result == 'success' || needs.mark_pending.result == 'skipped')
     runs-on: ubuntu-latest
     timeout-minutes: 60
     permissions:
@@ -292,7 +479,7 @@ jobs:
           cache-dependency-glob: uv.lock
 
       - name: Install locked toolchain
-        run: uv sync --locked
+        run: uv sync --locked --extra "${{ matrix.warehouse }}"
 
       - name: Resolve run vars
         shell: bash
@@ -348,3 +535,122 @@ jobs:
           uv run --locked dbt run-operation drop_ci_schemas
           --project-dir "$DBT_PROJECT_DIR" --vars "$CI_DBT_VARS"
           --args "{prefix: $TUVA_CI_SCHEMA_PREFIX}"
+
+  finalize_status:
+    name: Report CI result
+    needs:
+      - resolve
+      - mark_pending
+      - duckdb
+      - warehouse
+    if: >-
+      always() &&
+      needs.resolve.result == 'success' &&
+      needs.resolve.outputs.publish_status == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+      statuses: write
+    steps:
+      - name: Publish result for the tested pull request revision
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        env:
+          PR_NUMBER: ${{ needs.resolve.outputs.pr_number }}
+          EXPECTED_BASE_SHA: ${{ needs.resolve.outputs.base_sha }}
+          EXPECTED_HEAD_SHA: ${{ needs.resolve.outputs.head_sha }}
+          EXPECTED_MERGE_SHA: ${{ needs.resolve.outputs.merge_sha }}
+          STATUS_SHA: ${{ needs.resolve.outputs.status_sha }}
+          STATUS_SCOPE: ${{ needs.resolve.outputs.status_scope }}
+          STATUS_CONTEXT: ${{ needs.resolve.outputs.status_context }}
+          PENDING_RESULT: ${{ needs.mark_pending.result }}
+          DUCKDB_RESULT: ${{ needs.duckdb.result }}
+          WAREHOUSE_RESULT: ${{ needs.warehouse.result }}
+        with:
+          script: |
+            const prNumber = Number(process.env.PR_NUMBER);
+            const statusSha = process.env.STATUS_SHA;
+            const statusContext = process.env.STATUS_CONTEXT;
+            const allWarehouses = process.env.STATUS_SCOPE === "all";
+            const runUrl =
+              `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+
+            // The status covers every build job the request ran: both for
+            // all warehouses, the remote-warehouse job alone for Snowflake.
+            const results = allWarehouses
+              ? [process.env.DUCKDB_RESULT, process.env.WAREHOUSE_RESULT]
+              : [process.env.WAREHOUSE_RESULT];
+            const buildResult = results.every((result) => result === "success")
+              ? "success"
+              : results.includes("failure")
+                ? "failure"
+                : results.find((result) => result !== "success");
+
+            let state = "error";
+            let description = `CI ended with ${buildResult}`;
+
+            try {
+              const { data: pr } = await github.rest.pulls.get({
+                ...context.repo,
+                pull_number: prNumber
+              });
+              const { data: currentMerge } = await github.rest.repos.getCommit({
+                ...context.repo,
+                ref: `refs/pull/${prNumber}/merge`
+              });
+
+              const requestIsCurrent =
+                pr.state === "open" &&
+                pr.base.ref === "main" &&
+                pr.base.sha === process.env.EXPECTED_BASE_SHA &&
+                pr.head.sha === process.env.EXPECTED_HEAD_SHA &&
+                currentMerge.sha === process.env.EXPECTED_MERGE_SHA;
+
+              if (!requestIsCurrent) {
+                description = "PR changed while CI was running; rerun required";
+              } else if (process.env.PENDING_RESULT !== "success") {
+                description = "CI could not publish its pending status";
+              } else if (buildResult === "success") {
+                state = "success";
+                description = allWarehouses
+                  ? "dbt builds passed on all warehouses"
+                  : "Snowflake dbt build passed";
+              } else if (buildResult === "failure") {
+                state = "failure";
+                description = allWarehouses
+                  ? "A warehouse dbt build failed"
+                  : "Snowflake dbt build failed";
+              }
+            } catch (error) {
+              core.warning(`Could not revalidate PR #${prNumber}: ${error.message}`);
+              description = "CI could not revalidate the pull request";
+            }
+
+            const { data: statuses } =
+              await github.rest.repos.listCommitStatusesForRef({
+                ...context.repo,
+                ref: statusSha,
+                per_page: 100
+              });
+            const latestStatus = statuses.find(
+              (status) => status.context === statusContext
+            );
+            if (latestStatus && latestStatus.target_url !== runUrl) {
+              core.notice(
+                "A newer CI run owns the published status; " +
+                "this run will not overwrite it."
+              );
+              return;
+            }
+
+            await github.rest.repos.createCommitStatus({
+              ...context.repo,
+              sha: statusSha,
+              state,
+              context: statusContext,
+              description,
+              target_url: runUrl
+            });
+            if (state === "error") {
+              core.setFailed(description);
+            }
