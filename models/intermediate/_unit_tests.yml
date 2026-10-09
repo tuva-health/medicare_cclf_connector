@@ -521,6 +521,91 @@ unit_tests:
               'E0200', 30.00, '2000000001', '2000000002', '0', '2024-02-10', 'CTRL-DME-9', 50.00, 'dme_b.csv',
               cast('2024-02-12' as date), 'DME-B', 1
 
+  - name: int_dme_claim_adr_excludes_denied_claims
+    description: >
+      DME ADR logic drops denied claims (CLM_CARR_PMT_DNL_CD = '0') and denied line items
+      (CLM_PRCSG_IND_CD not A, O, S or R), as the physician ADR logic does. A missing
+      CLM_CARR_PMT_DNL_CD is not a denial, so that line is kept.
+    model: int_dme_claim_adr
+    given:
+      - input: ref('int_partb_dme_normalized')
+        format: sql
+        rows: |
+          select
+              'DME-PAID' as cur_clm_uniq_id
+            , '1' as clm_line_num
+            , 'MBI-1' as bene_mbi_id
+            , 'HIC-1' as bene_hic_num
+            , '71' as clm_type_cd
+            , '2024-01-01' as clm_from_dt
+            , '2024-01-05' as clm_thru_dt
+            , 'D' as clm_fed_type_srvc_cd
+            , '12' as clm_pos_cd
+            , '2024-01-01' as clm_line_from_dt
+            , '2024-01-05' as clm_line_thru_dt
+            , 'E0100' as clm_line_hcpcs_cd
+            , '80.00' as clm_line_cvrd_pd_amt
+            , null as clm_prmry_pyr_cd
+            , '2000000001' as payto_prvdr_npi_num
+            , '2000000002' as ordrg_prvdr_npi_num
+            , '1' as clm_carr_pmt_dnl_cd
+            , 'A' as clm_prcsg_ind_cd
+            , '0' as clm_adjsmt_type_cd
+            , '2024-01-10' as clm_efctv_dt
+            , '2024-01-11' as clm_idr_ld_dt
+            , 'CTRL-DME-20' as clm_cntl_num
+            , null as bene_eqtbl_bic_hicn_num
+            , '120.00' as clm_line_alowd_chrg_amt
+            , null as clm_disp_cd
+            , 'MBI-1' as current_bene_mbi_id
+            , 'dme_a.csv' as file_name
+            , cast('2024-01-12' as date) as file_date
+          union all
+          select
+              'DME-NO-DNL-CD', '1', 'MBI-1', 'HIC-1', '71', '2024-01-01', '2024-01-05', 'D', '12', '2024-01-01', '2024-01-05',
+              'E0200', '30.00', null, '2000000001', '2000000002', null, 'O', '0', '2024-01-10', '2024-01-11', 'CTRL-DME-21',
+              null, '50.00', null, 'MBI-1', 'dme_a.csv', cast('2024-01-12' as date)
+          union all
+          select
+              'DME-DENIED-CLAIM', '1', 'MBI-1', 'HIC-1', '71', '2024-01-01', '2024-01-05', 'D', '12', '2024-01-01', '2024-01-05',
+              'E0300', '40.00', null, '2000000001', '2000000002', '0', 'A', '0', '2024-01-10', '2024-01-11', 'CTRL-DME-22',
+              null, '60.00', null, 'MBI-1', 'dme_a.csv', cast('2024-01-12' as date)
+          union all
+          select
+              'DME-DENIED-LINE', '1', 'MBI-1', 'HIC-1', '71', '2024-01-01', '2024-01-05', 'D', '12', '2024-01-01', '2024-01-05',
+              'E0400', '20.00', null, '2000000001', '2000000002', '1', ' n ', '0', '2024-01-10', '2024-01-11', 'CTRL-DME-23',
+              null, '25.00', null, 'MBI-1', 'dme_a.csv', cast('2024-01-12' as date)
+    expect:
+      format: sql
+      rows: |
+        select
+              'DME-PAID' as cur_clm_uniq_id
+            , '1' as clm_line_num
+            , 'MBI-1' as bene_mbi_id
+            , 'MBI-1' as current_bene_mbi_id
+            , '2024-01-01' as clm_from_dt
+            , '2024-01-05' as clm_thru_dt
+            , '12' as clm_pos_cd
+            , '2024-01-01' as clm_line_from_dt
+            , '2024-01-05' as clm_line_thru_dt
+            , 'E0100' as clm_line_hcpcs_cd
+            , 80.00 as clm_line_cvrd_pd_amt
+            , '2000000001' as payto_prvdr_npi_num
+            , '2000000002' as ordrg_prvdr_npi_num
+            , '0' as clm_adjsmt_type_cd
+            , '2024-01-10' as clm_efctv_dt
+            , 'CTRL-DME-20' as clm_cntl_num
+            , 120.00 as clm_line_alowd_chrg_amt
+            , 'dme_a.csv' as file_name
+            , cast('2024-01-12' as date) as file_date
+            , 'DME-PAID' as adjustment_key
+            , 1 as row_num
+        union all
+        select
+              'DME-NO-DNL-CD', '1', 'MBI-1', 'MBI-1', '2024-01-01', '2024-01-05', '12', '2024-01-01', '2024-01-05',
+              'E0200', 30.00, '2000000001', '2000000002', '0', '2024-01-10', 'CTRL-DME-21', 50.00, 'dme_a.csv',
+              cast('2024-01-12' as date), 'DME-NO-DNL-CD', 1
+
   - name: int_physician_claim_adr_keeps_original_only_related_sets_separate
     description: >
       Two original physician lines on one claim control number and line with no cancellation
