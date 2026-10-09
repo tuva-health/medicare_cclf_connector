@@ -14,4 +14,3 @@ requirements.txt
 .direnv/
 .python-version
 .pyproject.toml
-uv.lock
