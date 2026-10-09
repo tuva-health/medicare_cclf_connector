@@ -33,11 +33,6 @@ vars:
   # (ci_pr_<n>_<sha8>_r<run>_a<attempt>) so concurrent runs never share schemas.
   # tuva_schema_prefix: dev_mike
 
-  ## Demo data (deprecated)
-  # True makes the connector read its bundled header-only root seeds instead
-  # of source(). Integration tests always exercise the source() path.
-  demo_data_only: false
-
   ## cms_alr_connector
   # Set true by the cms_alr_connector project, which consumes this connector:
   # enrollment and eligibility then come from ALR member months (its

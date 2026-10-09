@@ -1,9 +1,8 @@
--- CTE that selects from either the source table or the demo data seed based on the 'demo_data_only' variable
 with beneficiary_demographics as (
   SELECT 
     * 
   FROM
-  {% if var('demo_data_only', false) %} {{ ref('beneficiary_demographics') }} {% else %} {{ source('medicare_cclf','beneficiary_demographics') }}{% endif %}
+  {{ source('medicare_cclf','beneficiary_demographics') }}
 )
 
 select
