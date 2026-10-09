@@ -16,7 +16,7 @@ changelog:
         - bug
     - title: Documentation
       labels:
-        - documentation
+        - docs
     - title: Other Changes
       labels:
         - "*"
