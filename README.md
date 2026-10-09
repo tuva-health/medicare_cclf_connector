@@ -113,6 +113,33 @@ Finally, run the connector and the Tuva Project. For example, using dbt CLI you 
 Now you're ready to do claims data analytics!
 <br/><br/>
 
+## 🕳️ Placeholders and missing dates
+
+CMS fills fields that have no value with placeholders. The connector maps them to null
+before they reach the Tuva Input Layer:
+
+- **`1000-01-01` and `9999-12-31` in date fields → null.** The CCLF Information Packet
+  (v43, section 3.6) says these dates fill fields that are not required or not available,
+  and that they "should be treated as 'missing' or 'null' values". Every CCLF date column
+  is converted in the staging models, so neither date reaches an output column. For
+  example, Part D claims whose `CLM_EFCTV_DT` is `1000-01-01` get a null `paid_date`, and
+  a CCLF9 `PRVS_ID_OBSLT_DT` of `9999-12-31` is null.
+- **`~` in code and identifier fields → null (our choice).** The CCLF files use `~` in
+  fields that do not apply to a claim: admission type and source on non-inpatient claims,
+  operating and other NPI, unused diagnosis slots, present-on-admission indicators,
+  `HCPCS_5_MDFR_CD`, Part D dispensing status, and others. The Information Packet does not
+  define `~`; it only says that fields with no data are left blank (Appendix B). We treat
+  `~` the same way:
+  - Code and identifier columns of `medical_claim` and `pharmacy_claim` are null where
+    the source value is `~`. `ccn` is null where `PRVDR_OSCAR_NUM` is `~` and on claims
+    with no CCN (professional and DME), rather than the `000000` DuckDB used to produce.
+  - A claim whose `CLM_ADMSN_TYPE_CD` is `~` has no admission, so it gets no
+    `admission_date` or `discharge_date`.
+  - The staging and intermediate models keep `~` as delivered. The related-claims logic
+    groups and joins on raw source values (`PRVDR_OSCAR_NUM` joins the Part A files),
+    and nulls would not match in those joins.
+<br/><br/>
+
 ## 🚀 Releasing
 
 The `version:` in `dbt_project.yml` is the release version. Releases are tagged `v<version>`

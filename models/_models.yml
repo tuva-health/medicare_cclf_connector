@@ -989,8 +989,6 @@ models:
         description: "{{ doc('cclf_clm_line_days_suply_qty') }}"
       - name: PRVDR_PRSBNG_ID_QLFYR_CD
         description: "{{ doc('cclf_prvdr_prsbng_id_qlfyr_cd') }}"
-      - name: CLM_PRSBNG_PRVDR_GNRC_ID_NUM
-        description: "{{ doc('cclf_clm_prsbng_prvdr_gnrc_id_num') }}"
       - name: CLM_LINE_BENE_PMT_AMT
         description: "{{ doc('cclf_clm_line_bene_pmt_amt') }}"
       - name: CLM_ADJSMT_TYPE_CD
@@ -1005,6 +1003,8 @@ models:
         description: "{{ doc('cclf_clm_line_rx_fill_num') }}"
       - name: CLM_PHRMCY_SRVC_TYPE_CD
         description: "{{ doc('cclf_clm_phrmcy_srvc_type_cd') }}"
+      - name: CLM_PRSBNG_PRVDR_GNRC_ID_NUM
+        description: "{{ doc('cclf_clm_prsbng_prvdr_gnrc_id_num') }}"
       - name: FILE_NAME
         description: "{{ doc('cclf_file_name') }}"
       - name: FILE_DATE

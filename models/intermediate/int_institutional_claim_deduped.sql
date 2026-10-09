@@ -387,12 +387,13 @@ with sort_adjusted_claims as (
             when clm_line_thru_dt in ('1000-01-01', '9999-12-31') then null
             else clm_line_thru_dt
           end as claim_line_end_date
+          /* CMS sends '~' as the admission type on claims with no admission */
         , case
-            when clm_admsn_type_cd is not null then cast(clm_from_dt as date)
+            when {{ cclf_placeholder_to_null('clm_admsn_type_cd') }} is not null then cast(clm_from_dt as date)
             else cast(null as date)
           end as admission_date
         , case
-            when clm_admsn_type_cd is not null then cast(clm_thru_dt as date)
+            when {{ cclf_placeholder_to_null('clm_admsn_type_cd') }} is not null then cast(clm_thru_dt as date)
             else cast(null as date)
           end as discharge_date
         , clm_admsn_src_cd as admit_source_code
