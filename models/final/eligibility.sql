@@ -346,6 +346,69 @@ with demographics as (
 
 )
 
+/*
+    Pick one CCLF8 snapshot for each enrollment row. CCLF8 is delivered
+    monthly and coverage_month is the month of its file date, so a snapshot
+    rarely exists for every enrollment month. Use the snapshot for the
+    enrollment row's last month when there is one, otherwise the latest
+    earlier snapshot, otherwise the earliest later one.
+*/
+, enrollment_demographics as (
+
+    select
+          enrollment.current_bene_mbi_id
+        , enrollment.enrollment_start_date
+        , enrollment.enrollment_end_date
+        , demographics.coverage_month as demographics_coverage_month
+        , row_number() over (
+            partition by
+                  enrollment.current_bene_mbi_id
+                , enrollment.enrollment_start_date
+                , enrollment.enrollment_end_date
+            order by
+                  case
+                    when demographics.coverage_month <= {{ date_from_parts('year(enrollment.enrollment_end_date)', 'month(enrollment.enrollment_end_date)', 1) }}
+                    then 0
+                    else 1
+                  end
+                , case
+                    when demographics.coverage_month <= {{ date_from_parts('year(enrollment.enrollment_end_date)', 'month(enrollment.enrollment_end_date)', 1) }}
+                    then demographics.coverage_month
+                  end desc
+                , demographics.coverage_month asc
+          ) as snapshot_rank
+    from enrollment
+    left join demographics
+        on enrollment.current_bene_mbi_id = demographics.current_bene_mbi_id
+
+)
+
+/*
+    A death is a fact about the person, not the month: CCLF8 reports
+    BENE_DEATH_DT from the first delivery after the death, often after the
+    last enrollment month. Carry the date from the latest file that reports
+    one to every eligibility row for the beneficiary.
+*/
+, death_dates as (
+
+    select
+          current_bene_mbi_id
+        , bene_death_dt
+    from (
+        select
+              current_bene_mbi_id
+            , bene_death_dt
+            , row_number() over (
+                partition by current_bene_mbi_id
+                order by file_date desc
+              ) as death_rank
+        from demographics
+        where bene_death_dt is not null
+    ) ranked_deaths
+    where death_rank = 1
+
+)
+
 , joined as (
 
     select
@@ -368,9 +431,9 @@ with demographics as (
             when '6' then 'north american native'
           end as race
         , {{ try_to_cast_date('demographics.bene_dob', 'YYYY-MM-DD') }} as birth_date
-        , {{ try_to_cast_date('demographics.bene_death_dt', 'YYYY-MM-DD') }} as death_date
+        , {{ try_to_cast_date('death_dates.bene_death_dt', 'YYYY-MM-DD') }} as death_date
         , cast(case
-               when demographics.bene_death_dt is null then 0
+               when death_dates.bene_death_dt is null then 0
                else 1
           end as integer) as death_flag
         , cast(enrollment.enrollment_start_date as date) as enrollment_start_date
@@ -427,10 +490,13 @@ with demographics as (
         , cast(demographics.file_name as {{ dbt.type_string() }} ) as file_name
         , cast(demographics.file_date as date ) as file_date
         , cast(demographics.file_date as {{ dbt.type_timestamp() }} ) as ingest_datetime
-    from enrollment
+    from enrollment_demographics as enrollment
     left join demographics
         on demographics.current_bene_mbi_id = enrollment.current_bene_mbi_id
-        and demographics.coverage_month = {{ date_from_parts('year(enrollment.enrollment_end_date)', 'month(enrollment.enrollment_end_date)', 1) }}
+        and demographics.coverage_month = enrollment.demographics_coverage_month
+    left join death_dates
+        on death_dates.current_bene_mbi_id = enrollment.current_bene_mbi_id
+    where enrollment.snapshot_rank = 1
 )
 
 select

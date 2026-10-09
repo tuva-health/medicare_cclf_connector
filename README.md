@@ -31,6 +31,31 @@ resolves them following the CCLF Information Packet, sections 5.1 to 5.3:
 
 These rules are covered by dbt unit tests in `models/intermediate/_unit_tests.yml`.
 
+## 🪪 Eligibility (without `cms_alr_connector`)
+
+The CCLF Information Packet does not define an eligibility model, and enrollment comes from
+the `enrollment` source you supply, not from a CCLF file. These are the connector's own
+rules for building `eligibility` from that source and the beneficiary demographics file
+(CCLF8). The `cms_alr_connector` path builds eligibility differently and is not covered here.
+
+- **One person per beneficiary across MBI changes.** Each enrollment row's MBI is replaced
+  with the most recent MBI from the beneficiary XREF file (CCLF9) before member months are
+  rolled into spans, so months delivered under a previous MBI belong to the same
+  `person_id` and span. IP v43 5.1.1 requires this mapping for the claims natural key;
+  extending it to the enrollment source is our choice, made so that claims and eligibility
+  agree on `person_id`.
+- **Demographics come from the nearest CCLF8 delivery.** CCLF8 arrives monthly, so a
+  delivery rarely exists for every enrollment month. Each eligibility row takes its
+  demographics (name, address, dual status and so on) from the CCLF8 delivered in the
+  row's last month. If there is none, it uses the latest earlier delivery, and if there is
+  no earlier one, the earliest later delivery. This rule is our choice.
+- **A death date applies to the whole person.** CCLF8 reports `BENE_DEATH_DT` "if a
+  decedent" (IP v43 2.4.1), typically from the first delivery
+  after the death, which is often after the last enrollment month. The connector takes the
+  death date from the latest delivery that reports one and sets `death_date` and
+  `death_flag` on every eligibility row for that person. This rule is our choice. The
+  connector does not end coverage at the death date; coverage follows the enrollment source.
+
 ## 🔌 Database Support
 
 - DuckDB

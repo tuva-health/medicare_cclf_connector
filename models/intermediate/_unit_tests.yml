@@ -16,12 +16,72 @@ unit_tests:
           union all select 'MBI-A', cast(null as date), cast(null as date), cast('2024-02-01' as date)
           union all select 'MBI-A', cast(null as date), cast(null as date), cast('2024-04-01' as date)
           union all select 'MBI-B', cast(null as date), cast(null as date), cast('2024-03-01' as date)
+      - input: ref('int_beneficiary_xref_deduped')
+        format: sql
+        rows: |
+          select 'MBI-UNUSED-OLD' as prvs_num, 'MBI-UNUSED' as crnt_num
     expect:
       format: sql
       rows: |
         select 'MBI-A' as current_bene_mbi_id, cast('2024-01-01' as date) as enrollment_start_date, cast('2024-02-29' as date) as enrollment_end_date
         union all select 'MBI-A', cast('2024-04-01' as date), cast('2024-04-30' as date)
         union all select 'MBI-B', cast('2024-03-01' as date), cast('2024-03-31' as date)
+
+  - name: int_enrollment_member_months_follow_mbi_change
+    description: >
+      Member months delivered under a previous MBI are mapped to the current
+      MBI through CCLF9 (IP v43 5.1.1) before the roll-up, so an MBI change
+      mid-span yields one person and one contiguous span.
+    model: int_enrollment
+    overrides:
+      vars:
+        member_months_enrollment: true
+        cms_alr_connector: false
+    given:
+      - input: ref('stg_enrollment')
+        format: sql
+        rows: |
+          select 'MBI-OLD' as current_bene_mbi_id, cast(null as date) as enrollment_start_date, cast(null as date) as enrollment_end_date, cast('2024-01-01' as date) as bene_member_month
+          union all select 'MBI-OLD', cast(null as date), cast(null as date), cast('2024-02-01' as date)
+          union all select 'MBI-NEW', cast(null as date), cast(null as date), cast('2024-03-01' as date)
+          union all select 'MBI-NEW', cast(null as date), cast(null as date), cast('2024-04-01' as date)
+          union all select 'MBI-B', cast(null as date), cast(null as date), cast('2024-03-01' as date)
+      - input: ref('int_beneficiary_xref_deduped')
+        format: sql
+        rows: |
+          select 'MBI-OLD' as prvs_num, 'MBI-NEW' as crnt_num
+    expect:
+      format: sql
+      rows: |
+        select 'MBI-NEW' as current_bene_mbi_id, cast('2024-01-01' as date) as enrollment_start_date, cast('2024-04-30' as date) as enrollment_end_date
+        union all select 'MBI-B', cast('2024-03-01' as date), cast('2024-03-31' as date)
+
+  - name: int_enrollment_spans_follow_mbi_change
+    description: >
+      Enrollment spans delivered under a previous MBI are reported under the
+      current MBI from CCLF9 (IP v43 5.1.1); unmapped MBIs pass through.
+    model: int_enrollment
+    overrides:
+      vars:
+        member_months_enrollment: false
+        cms_alr_connector: false
+    given:
+      - input: ref('stg_enrollment')
+        format: sql
+        rows: |
+          select 'MBI-OLD' as current_bene_mbi_id, cast('2024-01-01' as date) as enrollment_start_date, cast('2024-06-30' as date) as enrollment_end_date, cast(null as date) as bene_member_month
+          union all select 'MBI-NEW', cast('2024-07-01' as date), cast('2024-12-31' as date), cast(null as date)
+          union all select 'MBI-B', cast('2024-01-01' as date), cast('2024-12-31' as date), cast(null as date)
+      - input: ref('int_beneficiary_xref_deduped')
+        format: sql
+        rows: |
+          select 'MBI-OLD' as prvs_num, 'MBI-NEW' as crnt_num
+    expect:
+      format: sql
+      rows: |
+        select 'MBI-NEW' as current_bene_mbi_id, cast('2024-01-01' as date) as enrollment_start_date, cast('2024-06-30' as date) as enrollment_end_date
+        union all select 'MBI-NEW', cast('2024-07-01' as date), cast('2024-12-31' as date)
+        union all select 'MBI-B', cast('2024-01-01' as date), cast('2024-12-31' as date)
 
   - name: int_institutional_claim_adr_ranks_adjusted_claim_versions
     description: Institutional ADR logic keeps paid claims, negates canceled amounts, and ranks adjusted versions by effective date.
