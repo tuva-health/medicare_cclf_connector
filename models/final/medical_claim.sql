@@ -12,32 +12,35 @@ select
     , claim_line_end_date
     , admission_date
     , discharge_date
-    , admit_source_code
-    , admit_type_code
-    , discharge_disposition_code
-    , place_of_service_code
-    , bill_type_code
+    , {{ cclf_placeholder_to_null('admit_source_code') }} as admit_source_code
+    , {{ cclf_placeholder_to_null('admit_type_code') }} as admit_type_code
+    , {{ cclf_placeholder_to_null('discharge_disposition_code') }} as discharge_disposition_code
+    , {{ cclf_placeholder_to_null('place_of_service_code') }} as place_of_service_code
+    , {{ cclf_placeholder_to_null('bill_type_code') }} as bill_type_code
     , drg_code_type
-    , drg_code
-    , revenue_center_code
+    , {{ cclf_placeholder_to_null('drg_code') }} as drg_code
+    , {{ cclf_placeholder_to_null('revenue_center_code') }} as revenue_center_code
     , service_unit_quantity
-    , claim_provider_specialty_code
-    , hcpcs_code
-    , hcpcs_modifier_1
-    , hcpcs_modifier_2
-    , hcpcs_modifier_3
-    , hcpcs_modifier_4
-    , hcpcs_modifier_5
-    , RIGHT(CONCAT('000000', ccn), 6) AS ccn
+    , {{ cclf_placeholder_to_null('claim_provider_specialty_code') }} as claim_provider_specialty_code
+    , {{ cclf_placeholder_to_null('hcpcs_code') }} as hcpcs_code
+    , {{ cclf_placeholder_to_null('hcpcs_modifier_1') }} as hcpcs_modifier_1
+    , {{ cclf_placeholder_to_null('hcpcs_modifier_2') }} as hcpcs_modifier_2
+    , {{ cclf_placeholder_to_null('hcpcs_modifier_3') }} as hcpcs_modifier_3
+    , {{ cclf_placeholder_to_null('hcpcs_modifier_4') }} as hcpcs_modifier_4
+    , {{ cclf_placeholder_to_null('hcpcs_modifier_5') }} as hcpcs_modifier_5
+    , case
+        when {{ cclf_placeholder_to_null('ccn') }} is not null
+        then right(concat('000000', ccn), 6)
+      end as ccn
     , claim_type_code
-    , nullif(other_npi,'~') as other_npi
-    , nullif(attending_npi,'~') as attending_npi
-    , nullif(operating_npi,'~') as operating_npi    
-    , rendering_npi
-    , rendering_tin
-    , billing_npi
-    , billing_tin
-    , facility_npi
+    , {{ cclf_placeholder_to_null('other_npi') }} as other_npi
+    , {{ cclf_placeholder_to_null('attending_npi') }} as attending_npi
+    , {{ cclf_placeholder_to_null('operating_npi') }} as operating_npi
+    , {{ cclf_placeholder_to_null('rendering_npi') }} as rendering_npi
+    , {{ cclf_placeholder_to_null('rendering_tin') }} as rendering_tin
+    , {{ cclf_placeholder_to_null('billing_npi') }} as billing_npi
+    , {{ cclf_placeholder_to_null('billing_tin') }} as billing_tin
+    , {{ cclf_placeholder_to_null('facility_npi') }} as facility_npi
     , paid_date
     , paid_amount
     , allowed_amount
@@ -48,82 +51,16 @@ select
     , total_cost_amount
     , paid_reduced_by
     , diagnosis_code_type
-    , diagnosis_code_1
-    , diagnosis_code_2
-    , diagnosis_code_3
-    , diagnosis_code_4
-    , diagnosis_code_5
-    , diagnosis_code_6
-    , diagnosis_code_7
-    , diagnosis_code_8
-    , diagnosis_code_9
-    , diagnosis_code_10
-    , diagnosis_code_11
-    , diagnosis_code_12
-    , diagnosis_code_13
-    , diagnosis_code_14
-    , diagnosis_code_15
-    , diagnosis_code_16
-    , diagnosis_code_17
-    , diagnosis_code_18
-    , diagnosis_code_19
-    , diagnosis_code_20
-    , diagnosis_code_21
-    , diagnosis_code_22
-    , diagnosis_code_23
-    , diagnosis_code_24
-    , diagnosis_code_25
-    , diagnosis_poa_1
-    , diagnosis_poa_2
-    , diagnosis_poa_3
-    , diagnosis_poa_4
-    , diagnosis_poa_5
-    , diagnosis_poa_6
-    , diagnosis_poa_7
-    , diagnosis_poa_8
-    , diagnosis_poa_9
-    , diagnosis_poa_10
-    , diagnosis_poa_11
-    , diagnosis_poa_12
-    , diagnosis_poa_13
-    , diagnosis_poa_14
-    , diagnosis_poa_15
-    , diagnosis_poa_16
-    , diagnosis_poa_17
-    , diagnosis_poa_18
-    , diagnosis_poa_19
-    , diagnosis_poa_20
-    , diagnosis_poa_21
-    , diagnosis_poa_22
-    , diagnosis_poa_23
-    , diagnosis_poa_24
-    , diagnosis_poa_25
+    {%- for i in range(1, 26) %}
+    , {{ cclf_placeholder_to_null('diagnosis_code_' ~ i) }} as diagnosis_code_{{ i }}
+    {%- endfor %}
+    {%- for i in range(1, 26) %}
+    , {{ cclf_placeholder_to_null('diagnosis_poa_' ~ i) }} as diagnosis_poa_{{ i }}
+    {%- endfor %}
     , procedure_code_type
-    , procedure_code_1
-    , procedure_code_2
-    , procedure_code_3
-    , procedure_code_4
-    , procedure_code_5
-    , procedure_code_6
-    , procedure_code_7
-    , procedure_code_8
-    , procedure_code_9
-    , procedure_code_10
-    , procedure_code_11
-    , procedure_code_12
-    , procedure_code_13
-    , procedure_code_14
-    , procedure_code_15
-    , procedure_code_16
-    , procedure_code_17
-    , procedure_code_18
-    , procedure_code_19
-    , procedure_code_20
-    , procedure_code_21
-    , procedure_code_22
-    , procedure_code_23
-    , procedure_code_24
-    , procedure_code_25
+    {%- for i in range(1, 26) %}
+    , {{ cclf_placeholder_to_null('procedure_code_' ~ i) }} as procedure_code_{{ i }}
+    {%- endfor %}
     , procedure_date_1
     , procedure_date_2
     , procedure_date_3
