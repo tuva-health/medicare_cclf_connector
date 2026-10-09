@@ -29,6 +29,7 @@ jobs:
       pull-requests: read
     outputs:
       pr_number: ${{ steps.resolve.outputs.pr_number }}
+      base_ref: ${{ steps.resolve.outputs.base_ref }}
       base_sha: ${{ steps.resolve.outputs.base_sha }}
       head_sha: ${{ steps.resolve.outputs.head_sha }}
       merge_sha: ${{ steps.resolve.outputs.merge_sha }}
@@ -116,6 +117,7 @@ jobs:
               const mergeCommit = await getTestMerge(pr);
 
               core.setOutput("pr_number", String(prNumber));
+              core.setOutput("base_ref", pr.base.ref);
               core.setOutput("base_sha", pr.base.sha);
               core.setOutput("head_sha", pr.head.sha);
               core.setOutput("merge_sha", mergeCommit.sha);
@@ -143,6 +145,7 @@ jobs:
       schema_prefix: ${{ needs.resolve.outputs.schema_prefix }}
       publish_status: true
       pr_number: ${{ needs.resolve.outputs.pr_number }}
+      base_ref: ${{ needs.resolve.outputs.base_ref }}
       base_sha: ${{ needs.resolve.outputs.base_sha }}
       head_sha: ${{ needs.resolve.outputs.head_sha }}
       merge_sha: ${{ needs.resolve.outputs.merge_sha }}

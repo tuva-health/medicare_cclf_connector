@@ -18,9 +18,9 @@ name: CI
 #   CI / All Warehouses  every warehouse, posted by ci-all-warehouses.yml.
 
 on:
+  # Every base branch, not only main: stacked PRs (a PR whose base is another
+  # PR's branch) get the same checks. The check names do not depend on the base.
   pull_request:
-    branches:
-      - main
     types:
       - opened
       - reopened
@@ -56,6 +56,11 @@ on:
         default: false
       pr_number:
         description: Pull request number associated with the status
+        required: false
+        type: string
+        default: ""
+      base_ref:
+        description: Pull request base branch (e.g. main, or another PR's branch)
         required: false
         type: string
         default: ""
@@ -134,6 +139,7 @@ jobs:
       status_context: ${{ steps.resolve.outputs.status_context }}
       status_scope: ${{ steps.resolve.outputs.status_scope }}
       pr_number: ${{ steps.resolve.outputs.pr_number }}
+      base_ref: ${{ steps.resolve.outputs.base_ref }}
       base_sha: ${{ steps.resolve.outputs.base_sha }}
       head_sha: ${{ steps.resolve.outputs.head_sha }}
       merge_sha: ${{ steps.resolve.outputs.merge_sha }}
@@ -150,11 +156,13 @@ jobs:
           IN_SCHEMA_PREFIX: ${{ inputs.schema_prefix || '' }}
           IN_PUBLISH_STATUS: ${{ inputs.publish_status && 'true' || 'false' }}
           IN_PR_NUMBER: ${{ inputs.pr_number || '' }}
+          IN_BASE_REF: ${{ inputs.base_ref || '' }}
           IN_BASE_SHA: ${{ inputs.base_sha || '' }}
           IN_HEAD_SHA: ${{ inputs.head_sha || '' }}
           IN_MERGE_SHA: ${{ inputs.merge_sha || '' }}
           IN_STATUS_TARGET: ${{ inputs.status_target || 'head' }}
           PR_NUMBER: ${{ github.event.pull_request.number || '' }}
+          PR_BASE_REF: ${{ github.event.pull_request.base.ref || '' }}
           PR_BASE_SHA: ${{ github.event.pull_request.base.sha || '' }}
           PR_HEAD_SHA: ${{ github.event.pull_request.head.sha || '' }}
           PR_HEAD_REPO: ${{ github.event.pull_request.head.repo.full_name || '' }}
@@ -167,7 +175,7 @@ jobs:
           fail() { echo "::error::$1"; exit 1; }
 
           publish_status=false
-          pr_number="" base_sha="" head_sha="" merge_sha="" status_sha=""
+          pr_number="" base_ref="" base_sha="" head_sha="" merge_sha="" status_sha=""
           status_target="head"
           if [[ -n "$IN_WAREHOUSE" ]]; then
             # workflow_call (ci-external-pr.yml, ci-all-warehouses.yml)
@@ -177,6 +185,7 @@ jobs:
             schema_base="$IN_SCHEMA_PREFIX"
             publish_status="$IN_PUBLISH_STATUS"
             pr_number="$IN_PR_NUMBER"
+            base_ref="$IN_BASE_REF"
             base_sha="$IN_BASE_SHA"
             head_sha="$IN_HEAD_SHA"
             merge_sha="$IN_MERGE_SHA"
@@ -195,6 +204,7 @@ jobs:
             checkout_ref="$MERGE_SHA"
             schema_base="ci_pr_${PR_NUMBER}_${PR_HEAD_SHA:0:8}"
             pr_number="$PR_NUMBER"
+            base_ref="$PR_BASE_REF"
             base_sha="$PR_BASE_SHA"
             head_sha="$PR_HEAD_SHA"
             merge_sha="$MERGE_SHA"
@@ -225,6 +235,8 @@ jobs:
               *) fail "A commit status can only be published for snowflake or all, not $status_scope." ;;
             esac
             [[ "$pr_number" =~ ^[0-9]+$ ]] || fail "A published status needs the PR number."
+            # Any base branch: stacked PRs publish statuses too.
+            [[ -n "$base_ref" ]] || fail "A published status needs the PR's base branch."
             for sha in "$base_sha" "$head_sha" "$merge_sha"; do
               [[ "$sha" =~ ^[0-9a-f]{40}$ ]] || fail "A published status needs the exact base, head, and merge commits."
             done
@@ -246,6 +258,7 @@ jobs:
             echo "status_context=$status_context"
             echo "status_scope=$status_scope"
             echo "pr_number=$pr_number"
+            echo "base_ref=$base_ref"
             echo "base_sha=$base_sha"
             echo "head_sha=$head_sha"
             echo "merge_sha=$merge_sha"
@@ -266,6 +279,7 @@ jobs:
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         env:
           PR_NUMBER: ${{ needs.resolve.outputs.pr_number }}
+          EXPECTED_BASE_REF: ${{ needs.resolve.outputs.base_ref }}
           EXPECTED_BASE_SHA: ${{ needs.resolve.outputs.base_sha }}
           HEAD_SHA: ${{ needs.resolve.outputs.head_sha }}
           MERGE_SHA: ${{ needs.resolve.outputs.merge_sha }}
@@ -287,7 +301,7 @@ jobs:
             });
             const requestIsCurrent =
               pr.state === "open" &&
-              pr.base.ref === "main" &&
+              pr.base.ref === process.env.EXPECTED_BASE_REF &&
               pr.base.sha === process.env.EXPECTED_BASE_SHA &&
               pr.head.sha === process.env.HEAD_SHA &&
               currentMerge.sha === process.env.MERGE_SHA;
@@ -557,6 +571,7 @@ jobs:
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         env:
           PR_NUMBER: ${{ needs.resolve.outputs.pr_number }}
+          EXPECTED_BASE_REF: ${{ needs.resolve.outputs.base_ref }}
           EXPECTED_BASE_SHA: ${{ needs.resolve.outputs.base_sha }}
           EXPECTED_HEAD_SHA: ${{ needs.resolve.outputs.head_sha }}
           EXPECTED_MERGE_SHA: ${{ needs.resolve.outputs.merge_sha }}
@@ -601,7 +616,7 @@ jobs:
 
               const requestIsCurrent =
                 pr.state === "open" &&
-                pr.base.ref === "main" &&
+                pr.base.ref === process.env.EXPECTED_BASE_REF &&
                 pr.base.sha === process.env.EXPECTED_BASE_SHA &&
                 pr.head.sha === process.env.EXPECTED_HEAD_SHA &&
                 currentMerge.sha === process.env.EXPECTED_MERGE_SHA;
