@@ -2,8 +2,6 @@ version: 2
 
 sources:
   - name: medicare_cclf
-    config:
-      enabled: "{{ var('demo_data_only', false) == false }}"
     database: "{{ var('input_database') }}"
     schema:  "{{ var('input_schema') }}"
     tables:
