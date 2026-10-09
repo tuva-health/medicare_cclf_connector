@@ -31,6 +31,21 @@ resolves them following the CCLF Information Packet, sections 5.1 to 5.3:
 
 These rules are covered by dbt unit tests in `models/intermediate/_unit_tests.yml`.
 
+## 🚫 Denied claims
+
+The connector drops denied claims before they reach `medical_claim`, for every claim type:
+
+- Part A institutional: claims with a Medicare non-payment reason (`CLM_MDCR_NPMT_RSN_CD`).
+  Part A claims are accepted or denied in their entirety.
+- Part B physician and DME: claims denied on `CLM_CARR_PMT_DNL_CD`, and individual line
+  items denied on `CLM_PRCSG_IND_CD`. A missing `CLM_CARR_PMT_DNL_CD` is not a denial.
+
+CCLF IP section 3.2 leaves this to the use case ("depending on your use of the data for
+analysis, you may want to drop denied … claims"). The connector drops them because the Tuva
+Project uses `medical_claim` for spend, utilization and measures, where a denied, unpaid
+service would inflate counts. Denied claims are therefore not available downstream; analyses
+of denials (prior authorization, medical necessity, coding) need the raw CCLF tables.
+
 ## 🔌 Database Support
 
 - DuckDB

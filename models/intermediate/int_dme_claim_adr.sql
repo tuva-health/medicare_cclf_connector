@@ -104,10 +104,12 @@ with staged_data as (
     from add_row_num
     where row_num = 1
         /*
-            Exclude denied claims, as int_physician_claim_adr does (CCLF IP 3.2: Part B
-            physician/DME claims are dropped on CLM_CARR_PMT_DNL_CD and their line items
-            on CLM_PRCSG_IND_CD). A missing CLM_CARR_PMT_DNL_CD is not a denial code, so
-            it does not drop the claim.
+            Exclude denied claims, as int_physician_claim_adr does. CCLF IP 3.2 makes
+            dropping denied claims optional ("depending on your use of the data"); the
+            connector drops them for every claim type so medical_claim is consistent (see
+            README, "Denied claims"). Part B physician/DME claims are dropped on
+            CLM_CARR_PMT_DNL_CD and their line items on CLM_PRCSG_IND_CD. A missing
+            CLM_CARR_PMT_DNL_CD is not a denial code, so it does not drop the claim.
         */
         and not ((upper(trim(clm_prcsg_ind_cd)) not in ('A','O','S','R')) or coalesce(clm_carr_pmt_dnl_cd, '') = '0')
 
