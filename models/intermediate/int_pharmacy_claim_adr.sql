@@ -82,6 +82,8 @@ with staged_data as (
         , clm_prsbng_prvdr_gnrc_id_num
         , clm_line_bene_pmt_amt
         , clm_adjsmt_type_cd
+        , clm_efctv_dt
+        , clm_idr_ld_dt
         , clm_line_rx_srvc_rfrnc_num
         , clm_line_rx_fill_num
         , file_name
@@ -119,7 +121,7 @@ with staged_data as (
 )
 
 /*
-    apply adjustment logic by grouping part D claims by their natural keys:
+    apply adjustment logic by grouping part D claims by their natural keys (CCLF IP v43 5.1.2):
      - CLM_LINE_FROM_DT
      - PRVDR_SRVC_ID_QLFYR_CD
      - CLM_SRVC_PRVDR_GNRC_ID_NUM
@@ -127,12 +129,30 @@ with staged_data as (
      - CLM_LINE_RX_SRVC_RFRNC_NUM
      - CLM_LINE_RX_FILL_NUM
 
-    then sorting them by the CLM_ADJSMT_TYPE_CD code
-    0 = Original Claim
-    1 = Cancellation Claim
-    2 = Adjustment claim
+    Part D files hold only final action claims, so when monthly files are combined the
+    most recent claim in a related set is its final action claim and the earlier ones are
+    ignored (IP 3.3). row_num = 1 marks the most recent claim, ordered by:
+     1. the delivering file's date, latest first, a missing file date last: a later delivery
+        supersedes an earlier one;
+     2. CLM_EFCTV_DT, latest first. A missing date (1000-01-01 / 9999-12-31, IP 3.6, cast
+        to null) ranks last: a claim with no known date is never taken as more recent than
+        one with a date. Most Part D rows carry 1000-01-01;
+     3. CLM_IDR_LD_DT, latest first, missing last for the same reason;
+     4. CLM_ADJSMT_TYPE_CD: adjustment (2), then cancellation (1), then original (0). An
+        original is always processed before its cancellation and adjustment (IP 5.2.1).
+        When a cancellation and an adjustment tie on every date, the cancellation is the
+        one paired with the earlier version and the adjustment replaces it, so the
+        adjustment is final (the same rule as Part A, IP 5.2.1);
+     5. CUR_CLM_UNIQ_ID, latest first. Claim IDs carry no ordering meaning; this key only
+        orders claims that tie on every key above, and keeps that pick stable.
 
-    final filtering takes place in dedupe model
+    Each date key, the file date included, has its own is-null sort key in front of it, so
+    nulls rank last on every warehouse: DuckDB and Snowflake put nulls at opposite ends of
+    a descending sort by default, which would otherwise pick a different winner per
+    warehouse.
+
+    final filtering (row_num = 1, dropping a winning cancellation) takes place in the
+    dedupe model
 */
 , sort_adjusted_claims as (
 
@@ -164,7 +184,20 @@ with staged_data as (
                 , clm_dspnsng_stus_cd
                 , clm_line_rx_srvc_rfrnc_num
                 , clm_line_rx_fill_num
-            order by clm_adjsmt_type_cd desc
+            order by
+                  case when file_date is null then 1 else 0 end
+                , file_date desc
+                , case when {{ try_to_cast_date('clm_efctv_dt') }} is null then 1 else 0 end
+                , {{ try_to_cast_date('clm_efctv_dt') }} desc
+                , case when {{ try_to_cast_date('clm_idr_ld_dt') }} is null then 1 else 0 end
+                , {{ try_to_cast_date('clm_idr_ld_dt') }} desc
+                , case clm_adjsmt_type_cd
+                    when '2' then 1
+                    when '1' then 2
+                    when '0' then 3
+                    else 4
+                  end
+                , cur_clm_uniq_id desc
         ) as row_num
     from normalized_data
     where normalized_row_num = 1

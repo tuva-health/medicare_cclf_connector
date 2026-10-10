@@ -6,7 +6,7 @@ sources:
     schema:  "{{ var('input_schema') }}"
     tables:
       - name: beneficiary_demographics #CCLF8d
-        description: CCLF8 beneficiary demographics feed aligned to the v41.0 specification.
+        description: CCLF8 beneficiary demographics feed aligned to the v43 specification.
         columns:
           - name: bene_mbi_id
             data_type: string
@@ -108,7 +108,7 @@ sources:
             data_type: date
             description: "{{ doc('cclf_file_date') }}"
       - name: beneficiary_xref #CCLF9
-        description: CCLF9 beneficiary cross-reference feed aligned to the v41.0 specification.
+        description: CCLF9 beneficiary cross-reference feed aligned to the v43 specification.
         columns:
           - name: hicn_mbi_xref_ind
             data_type: string
@@ -156,7 +156,7 @@ sources:
             data_type: date
             description: "{{ doc('cclf_file_date') }}"
       - name: parta_claims_header #CCLF1
-        description: CCLF1 Part A claims header feed aligned to the v41.0 specification.
+        description: CCLF1 Part A claims header feed aligned to the v43 specification.
         columns:
           - name: cur_clm_uniq_id
             data_type: string
@@ -300,7 +300,7 @@ sources:
             data_type: date
             description: "{{ doc('cclf_file_date') }}"
       - name: parta_claims_revenue_center_detail #CCLF2
-        description: CCLF2 Part A revenue center detail feed aligned to the v41.0 specification.
+        description: CCLF2 Part A revenue center detail feed aligned to the v43 specification.
         columns:
           - name: cur_clm_uniq_id
             data_type: string
@@ -378,7 +378,7 @@ sources:
             data_type: date
             description: "{{ doc('cclf_file_date') }}"
       - name: parta_diagnosis_code #CCLF4
-        description: CCLF4 Part A diagnosis feed aligned to the v41.0 specification.
+        description: CCLF4 Part A diagnosis feed aligned to the v43 specification.
         columns:
           - name: cur_clm_uniq_id
             data_type: string
@@ -429,7 +429,7 @@ sources:
             data_type: date
             description: "{{ doc('cclf_file_date') }}"
       - name: parta_procedure_code #CCLF3
-        description: CCLF3 Part A procedure feed aligned to the v41.0 specification.
+        description: CCLF3 Part A procedure feed aligned to the v43 specification.
         columns:
           - name: cur_clm_uniq_id
             data_type: string
@@ -477,7 +477,7 @@ sources:
             data_type: date
             description: "{{ doc('cclf_file_date') }}"
       - name: partb_dme #CCLF6
-        description: CCLF6 Part B DME feed aligned to the v41.0 specification.
+        description: CCLF6 Part B DME feed aligned to the v43 specification.
         columns:
           - name: cur_clm_uniq_id
             data_type: string
@@ -567,7 +567,7 @@ sources:
             data_type: date
             description: "{{ doc('cclf_file_date') }}"
       - name: partb_physicians #CCLF5
-        description: CCLF5 Part B physician feed aligned to the v41.0 specification.
+        description: CCLF5 Part B physician feed aligned to the v43 specification.
         columns:
           - name: cur_clm_uniq_id
             data_type: string
@@ -732,7 +732,11 @@ sources:
             data_type: date
             description: "{{ doc('cclf_file_date') }}"
       - name: partd_claims #CCLF7
-        description: CCLF7 Part D feed aligned to the v41.0 specification, including the 35-character prescriber ID field.
+        description: >
+          CCLF7 Part D feed aligned to the v43 specification. The 35-character
+          prescriber ID (CLM_PRSBNG_PRVDR_GNRC_ID_NUM) is the last field of the
+          record (positions 196-230); positions 118-137, where it used to be, are a
+          20-character BLANK filler that the connector does not read.
         columns:
           - name: cur_clm_uniq_id
             data_type: string
@@ -773,9 +777,6 @@ sources:
           - name: prvdr_prsbng_id_qlfyr_cd
             data_type: string
             description: "{{ doc('cclf_prvdr_prsbng_id_qlfyr_cd') }}"
-          - name: clm_prsbng_prvdr_gnrc_id_num
-            data_type: string
-            description: "{{ doc('cclf_clm_prsbng_prvdr_gnrc_id_num') }}"
           - name: clm_line_bene_pmt_amt
             data_type: numeric
             description: "{{ doc('cclf_clm_line_bene_pmt_amt') }}"
@@ -797,6 +798,9 @@ sources:
           - name: clm_phrmcy_srvc_type_cd
             data_type: string
             description: "{{ doc('cclf_clm_phrmcy_srvc_type_cd') }}"
+          - name: clm_prsbng_prvdr_gnrc_id_num
+            data_type: string
+            description: "{{ doc('cclf_clm_prsbng_prvdr_gnrc_id_num') }}"
           - name: file_name
             data_type: string
             description: "{{ doc('cclf_file_name') }}"

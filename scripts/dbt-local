@@ -7,6 +7,7 @@
 #   scripts/dbt-local build
 #
 # Set DBT_PROFILES_DIR (and optionally DBT_PROFILE) to use another warehouse.
+# Every warehouse adapter extra in pyproject.toml is installed.
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -20,7 +21,7 @@ if [[ ! -f "${PROFILES_DIR}/profiles.yml" ]]; then
   exit 1
 fi
 
-dbt=(uv run --project "${REPO_ROOT}" --locked dbt)
+dbt=(uv run --project "${REPO_ROOT}" --locked --all-extras dbt)
 
 if [[ $# -eq 0 || "${1}" == -* ]]; then
   exec "${dbt[@]}" "$@"

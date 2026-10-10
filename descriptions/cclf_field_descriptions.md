@@ -579,7 +579,7 @@ Qualifier code showing the type of identifier used for the prescribing provider.
 {% enddocs %}
 
 {% docs cclf_clm_prsbng_prvdr_gnrc_id_num %}
-Generic prescribing provider identifier associated with the prescribing qualifier code.
+Generic prescribing provider identifier associated with the prescribing qualifier code. X(35), the last field of the CCLF7 record (positions 196-230) in CCLF IP v43; the 20-character `BLANK` field at positions 118-137 marks its former location.
 {% enddocs %}
 
 {% docs cclf_clm_line_bene_pmt_amt %}

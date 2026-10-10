@@ -1,0 +1,164 @@
+name: CI -- All Warehouses
+
+# Release gate. Before a release PR (one that bumps version: in
+# dbt_project.yml) merges, a maintainer runs this workflow from main with the
+# PR number. It pins the PR's current test-merge commit, runs ci.yml on every
+# warehouse the README lists as supported, and posts the "CI / All Warehouses"
+# commit status on the PR head.
+
+on:
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: Internal pull request number to validate
+        required: true
+        type: string
+
+permissions: {}
+
+concurrency:
+  group: cclf-ci-all-dispatch-pr-${{ inputs.pr_number }}
+  cancel-in-progress: true
+
+jobs:
+  resolve:
+    name: Resolve release PR
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      pr_number: ${{ steps.resolve.outputs.pr_number }}
+      base_ref: ${{ steps.resolve.outputs.base_ref }}
+      base_sha: ${{ steps.resolve.outputs.base_sha }}
+      head_sha: ${{ steps.resolve.outputs.head_sha }}
+      merge_sha: ${{ steps.resolve.outputs.merge_sha }}
+      schema_prefix: ${{ steps.resolve.outputs.schema_prefix }}
+    steps:
+      - name: Pin the pull request revision
+        id: resolve
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        env:
+          PR_NUMBER: ${{ inputs.pr_number }}
+        with:
+          script: |
+            if (context.ref !== "refs/heads/main") {
+              core.setFailed("CI -- All Warehouses must be dispatched from main.");
+              return;
+            }
+
+            const rawPrNumber = process.env.PR_NUMBER.trim();
+            if (!/^\d+$/.test(rawPrNumber)) {
+              core.setFailed(`Invalid pull request number: ${rawPrNumber}`);
+              return;
+            }
+
+            const prNumber = Number(rawPrNumber);
+            const baseRepository =
+              `${context.repo.owner}/${context.repo.repo}`.toLowerCase();
+
+            async function getPullRequest() {
+              let pr;
+              for (let attempt = 0; attempt < 5; attempt += 1) {
+                ({ data: pr } = await github.rest.pulls.get({
+                  ...context.repo,
+                  pull_number: prNumber
+                }));
+                if (pr.mergeable !== null) {
+                  break;
+                }
+                await new Promise((resolve) => setTimeout(resolve, 2000));
+              }
+              return pr;
+            }
+
+            function validatePullRequest(pr) {
+              if (pr.state !== "open") {
+                throw new Error(`PR #${prNumber} is not open.`);
+              }
+              if (pr.base.ref !== "main") {
+                throw new Error(
+                  `PR #${prNumber} targets ${pr.base.ref}, not main.`
+                );
+              }
+              const headRepository =
+                String(pr.head.repo?.full_name || "").toLowerCase();
+              if (headRepository !== baseRepository) {
+                throw new Error(
+                  `PR #${prNumber} must use a branch in ${baseRepository}.`
+                );
+              }
+              if (pr.mergeable !== true) {
+                throw new Error(`PR #${prNumber} is not currently mergeable.`);
+              }
+            }
+
+            async function getTestMerge(pr) {
+              const { data: mergeCommit } = await github.rest.repos.getCommit({
+                ...context.repo,
+                ref: `refs/pull/${prNumber}/merge`
+              });
+              const parentShas = mergeCommit.parents.map((parent) => parent.sha);
+              if (
+                parentShas.length !== 2 ||
+                parentShas[0] !== pr.base.sha ||
+                parentShas[1] !== pr.head.sha
+              ) {
+                throw new Error(
+                  `PR #${prNumber} changed while its test merge was being resolved.`
+                );
+              }
+              return mergeCommit;
+            }
+
+            try {
+              const pr = await getPullRequest();
+              validatePullRequest(pr);
+              const mergeCommit = await getTestMerge(pr);
+
+              core.setOutput("pr_number", String(prNumber));
+              core.setOutput("base_ref", pr.base.ref);
+              core.setOutput("base_sha", pr.base.sha);
+              core.setOutput("head_sha", pr.head.sha);
+              core.setOutput("merge_sha", mergeCommit.sha);
+              core.setOutput(
+                "schema_prefix",
+                `ci_all_pr_${prNumber}_${pr.head.sha.slice(0, 8)}`
+              );
+              core.notice(`Pinned all-warehouse CI at ${mergeCommit.sha}.`);
+            } catch (error) {
+              core.setFailed(`Could not resolve all-warehouse CI: ${error.message}`);
+            }
+
+  run_all_warehouses:
+    name: Run dbt builds on all warehouses
+    needs: resolve
+    permissions:
+      contents: read
+      pull-requests: read
+      statuses: write
+    uses: ./.github/workflows/ci.yml
+    with:
+      warehouse: all
+      scope: full
+      checkout_ref: ${{ needs.resolve.outputs.merge_sha }}
+      schema_prefix: ${{ needs.resolve.outputs.schema_prefix }}
+      publish_status: true
+      pr_number: ${{ needs.resolve.outputs.pr_number }}
+      base_ref: ${{ needs.resolve.outputs.base_ref }}
+      base_sha: ${{ needs.resolve.outputs.base_sha }}
+      head_sha: ${{ needs.resolve.outputs.head_sha }}
+      merge_sha: ${{ needs.resolve.outputs.merge_sha }}
+      # tuva-core posts this status on the test-merge commit. GitHub shows a
+      # PR only the statuses on its head, so it is posted there instead, where
+      # the release PR's reviewer sees it.
+      status_target: head
+    secrets:
+      DBT_SNOWFLAKE_CI_ACCOUNT: ${{ secrets.DBT_SNOWFLAKE_CI_ACCOUNT }}
+      DBT_SNOWFLAKE_CI_WAREHOUSE: ${{ secrets.DBT_SNOWFLAKE_CI_WAREHOUSE }}
+      DBT_SNOWFLAKE_CI_DATABASE: ${{ secrets.DBT_SNOWFLAKE_CI_DATABASE }}
+      DBT_SNOWFLAKE_CI_ROLE: ${{ secrets.DBT_SNOWFLAKE_CI_ROLE }}
+      DBT_SNOWFLAKE_CI_SCHEMA: ${{ secrets.DBT_SNOWFLAKE_CI_SCHEMA }}
+      DBT_SNOWFLAKE_CI_USER: ${{ secrets.DBT_SNOWFLAKE_CI_USER }}
+      DBT_SNOWFLAKE_CI_PRIVATE_KEY: ${{ secrets.DBT_SNOWFLAKE_CI_PRIVATE_KEY }}
+      DBT_SNOWFLAKE_CI_PRIVATE_KEY_PASSPHRASE: ${{ secrets.DBT_SNOWFLAKE_CI_PRIVATE_KEY_PASSPHRASE }}

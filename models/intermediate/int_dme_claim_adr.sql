@@ -103,6 +103,15 @@ with staged_data as (
         , file_date
     from add_row_num
     where row_num = 1
+        /*
+            Exclude denied claims, as int_physician_claim_adr does. CCLF IP 3.2 makes
+            dropping denied claims optional ("depending on your use of the data"); the
+            connector drops them for every claim type so medical_claim is consistent (see
+            README, "Denied claims"). Part B physician/DME claims are dropped on
+            CLM_CARR_PMT_DNL_CD and their line items on CLM_PRCSG_IND_CD. A missing
+            CLM_CARR_PMT_DNL_CD is not a denial code, so it does not drop the claim.
+        */
+        and not ((upper(trim(clm_prcsg_ind_cd)) not in ('A','O','S','R')) or coalesce(clm_carr_pmt_dnl_cd, '') = '0')
 
 )
 
@@ -156,8 +165,17 @@ with staged_data as (
      - adjustment_key (CUR_CLM_UNIQ_ID when the related set holds only original claims,
        so each original stays its own claim; constant otherwise)
 
-    2) sort grouped claims by the latest CLM_EFCTV_DT and CUR_CLM_UNIQ_ID since CLM_ADJSMT_TYPE_CD
-    is not used consistently to indciate the latest final version of an adjusted claim.
+    2) rank each related set's claims, row_num = 1 being the final version, by:
+       a. CLM_EFCTV_DT, latest first. A missing date (1000-01-01 / 9999-12-31, IP 3.6, cast
+          to null) ranks last, never as the most recent version. An is-null sort key places
+          it, because DuckDB and Snowflake put nulls at opposite ends of a descending sort;
+       b. CLM_ADJSMT_TYPE_CD on a tie: adjustment (2), then original (0), then cancellation (1).
+          A cancellation is never a final action claim: it is matched with an earlier claim
+          and the pair removed (IP 5.2.1-5.2.3). In the IP 5.3.2 Table 6 example the
+          cancellation (#1) shares its effective date with the surviving original (#2) and
+          cancels the older original (#3);
+       c. CUR_CLM_UNIQ_ID, latest first. Claim IDs carry no ordering meaning; this key only
+          orders claims that tie on both keys above, and keeps that pick stable.
 
     3) change paid amounts to negative for canceled claims
 
@@ -205,7 +223,14 @@ with staged_data as (
                     else cur_clm_uniq_id
                   end
             order by
-                  clm_efctv_dt desc
+                  case when {{ try_to_cast_date('clm_efctv_dt') }} is null then 1 else 0 end
+                , {{ try_to_cast_date('clm_efctv_dt') }} desc
+                , case clm_adjsmt_type_cd
+                    when '2' then 1
+                    when '0' then 2
+                    when '1' then 3
+                    else 4
+                  end
                 , cur_clm_uniq_id desc
         ) as row_num
     from flag_adjusted_groups

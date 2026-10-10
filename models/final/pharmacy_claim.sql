@@ -13,10 +13,10 @@ with deduped_claims as (
         , cast(member_id as {{ dbt.type_string() }}) as member_id
         , cast(payer as {{ dbt.type_string() }}) as payer
         , cast({{ quote_column('plan') }} as {{ dbt.type_string() }}) as {{ quote_column('plan') }}
-        , cast(prescribing_provider_npi as {{ dbt.type_string() }}) as prescribing_provider_npi
-        , cast(dispensing_provider_npi as {{ dbt.type_string() }}) as dispensing_provider_npi
+        , cast({{ cclf_placeholder_to_null('prescribing_provider_npi') }} as {{ dbt.type_string() }}) as prescribing_provider_npi
+        , cast({{ cclf_placeholder_to_null('dispensing_provider_npi') }} as {{ dbt.type_string() }}) as dispensing_provider_npi
         , cast(dispensing_date as date) as dispensing_date
-        , cast(ndc_code as {{ dbt.type_string() }}) as ndc_code
+        , cast({{ cclf_placeholder_to_null('ndc_code') }} as {{ dbt.type_string() }}) as ndc_code
         , cast(quantity as integer) as quantity
         , cast(days_supply as integer) as days_supply
         , cast(refills as integer) as refills
