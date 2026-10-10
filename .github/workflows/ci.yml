@@ -118,9 +118,9 @@ env:
   DBT_PROJECT_DIR: integration_tests
   # connector: the connector's models and tests plus integration_tests' own
   # tests; --indirect-selection cautious keeps downstream Tuva tests out.
-  # full: every installed package, as a client project builds it. The Tuva
-  # data-quality models need elementary's tables, so it cannot be narrowed to
-  # package:the_tuva_project.
+  # full: every installed package, as a client project builds it. Tuva Core
+  # reads the connector's input layer models, so the selector stays fqn:*
+  # rather than package:the_tuva_project alone.
   CONNECTOR_SELECTOR: package:medicare_cclf_connector package:integration_tests
   FULL_SELECTOR: fqn:*
 

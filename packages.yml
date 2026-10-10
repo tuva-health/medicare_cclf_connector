@@ -1,8 +1,10 @@
 packages:
   - package: dbt-labs/dbt_utils
     version: [">=0.9.2"]
-  # Installed from GitHub rather than the dbt hub: the hub's index for the_tuva_project
-  # carries a require-dbt-version string (">=1.10.5,<3.0.0") that dbt 1.10's semver parser
-  # rejects, which breaks `dbt deps` for every version pin. Bump `revision` to upgrade.
-  - git: https://github.com/tuva-health/the_tuva_project.git
-    revision: v0.17.2
+  # Tuva Core. The dbt package name remains the_tuva_project. Install the
+  # published GitHub release tag, as the tuva-core README and v1.0.0 release
+  # notes specify. dbt Hub lists tuva-health/the_tuva_project 1.0.0, but that
+  # index entry still points at the_tuva_project rather than tuva-core.
+  # cms_mssp_connector and cms_alr_connector do not pin Tuva Core.
+  - git: "https://github.com/tuva-health/tuva-core.git"
+    revision: "v1.0.0"
