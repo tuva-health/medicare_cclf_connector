@@ -86,6 +86,8 @@ following columns:
 
 ### Step 4: Configure Input Database and Schema
 Next you need to tell dbt where your Medicare CCLF source data is located.  Do this using the variables `input_database` and `input_schema` in the `dbt_project.yml` file.  You also need to configure your `profile` in the `dbt_project.yml`.
+
+The connector always reads these tables through `source('medicare_cclf', ...)` and ships no demo data. Releases before v0.3.0 had a `demo_data_only` var that switched to bundled, header-only seeds; that var and the seeds are gone, and setting it now has no effect. Development and CI runs use the `integration_tests` project, which loads fixture seeds where `source()` expects the raw tables (see [integration_tests/README.md](integration_tests/README.md)).
 <br/><br/> 
 
 ### Step 5: Run
