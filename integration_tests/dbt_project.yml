@@ -1,0 +1,64 @@
+name: 'integration_tests'
+version: '1.0.0'
+config-version: 2
+
+profile: default
+
+vars:
+  # This is the canonical commented inventory of medicare_cclf_connector vars.
+  # Keep every var the connector reads documented here when its lookup is
+  # added or changed. CI overrides the run-specific values with --vars.
+
+  ## Source location
+  # Where the raw CCLF tables live. The connector reads them through
+  # source('medicare_cclf', ...). In this project the fixture seeds in seeds/
+  # are loaded there, so these must name the seeds' database and schema.
+  # The defaults match the local DuckDB profile (profiles/local_duckdb) without
+  # a schema prefix; CI sets them per run.
+  input_database: medicare_cclf_connector_ci
+  input_schema: raw
+
+  ## Domain enablement
+  # Enables the_tuva_project's claims models downstream of the connector.
+  claims_enabled: true
+
+  ## Enrollment
+  # Set true when the enrollment source holds member months
+  # (bene_member_month) instead of enrollment spans.
+  # member_months_enrollment: false
+
+  ## Schema naming
+  # Optional prefix for output schemas, shared with the_tuva_project, e.g.
+  # dev_mike_input_layer, _dev_mike_stg_input_layer. CI sets a per-run prefix
+  # (ci_pr_<n>_<sha8>_r<run>_a<attempt>) so concurrent runs never share schemas.
+  # tuva_schema_prefix: dev_mike
+
+  ## Demo data (deprecated)
+  # True makes the connector read its bundled header-only root seeds instead
+  # of source(). Integration tests always exercise the source() path.
+  demo_data_only: false
+
+  ## cms_alr_connector
+  # Set true by the cms_alr_connector project, which consumes this connector:
+  # enrollment and eligibility then come from ALR member months (its
+  # `enrollment` model) instead of the CCLF enrollment source. Leave unset here.
+  # cms_alr_connector: false
+
+model-paths: ["models"]
+seed-paths: ["seeds"]
+test-paths: ["tests"]
+macro-paths: ["macros"]
+clean-targets:
+  - "target"
+  - "dbt_packages"
+
+on-run-start:
+  - "{{ ensure_unit_test_schemas() }}"
+
+models:
+  # the_tuva_project places elementary's models in a prefixed schema, but that
+  # config only applies when the_tuva_project is the root project. Repeat it
+  # here so a CI run's elementary tables stay inside the run's schemas.
+  elementary:
+    +schema: |
+      {%- if var('tuva_schema_prefix', None) != None -%}{{ var('tuva_schema_prefix') }}_elementary{% else %}elementary{%- endif -%}

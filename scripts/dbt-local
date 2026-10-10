@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+# Run dbt against the integration_tests project with the repo's uv-locked
+# toolchain. Defaults to the local DuckDB profile, so a plain checkout works
+# with no warehouse credentials:
+#
+#   scripts/dbt-local deps
+#   scripts/dbt-local build
+#
+# Set DBT_PROFILES_DIR (and optionally DBT_PROFILE) to use another warehouse.
+set -euo pipefail
+
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+PROJECT_DIR="${REPO_ROOT}/integration_tests"
+PROFILES_DIR="${DBT_PROFILES_DIR:-${PROJECT_DIR}/profiles/local_duckdb}"
+PROFILE="${DBT_PROFILE:-default}"
+
+if [[ ! -f "${PROFILES_DIR}/profiles.yml" ]]; then
+  echo "No dbt profiles.yml found at ${PROFILES_DIR}/profiles.yml" >&2
+  echo "Set DBT_PROFILES_DIR to a directory containing profiles.yml." >&2
+  exit 1
+fi
+
+dbt=(uv run --project "${REPO_ROOT}" --locked dbt)
+
+if [[ $# -eq 0 || "${1}" == -* ]]; then
+  exec "${dbt[@]}" "$@"
+fi
+
+CMD="$1"
+shift
+
+exec "${dbt[@]}" "${CMD}" \
+  --project-dir "${PROJECT_DIR}" \
+  --profiles-dir "${PROFILES_DIR}" \
+  --profile "${PROFILE}" \
+  "$@"

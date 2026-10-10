@@ -1,0 +1,95 @@
+name: External PR CI
+
+# Fork PRs never run remote-warehouse CI automatically: that would hand fork
+# code the repository's warehouse secrets. After reviewing a fork PR's code, a
+# maintainer runs this workflow from main with the PR number. It pins the PR's
+# current test-merge commit and runs the same Snowflake build as same-repo PRs.
+
+on:
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: Fork pull request number to validate (review its code first)
+        required: true
+        type: string
+
+permissions: {}
+
+jobs:
+  resolve:
+    name: Resolve reviewed external PR
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: read
+    outputs:
+      merge_sha: ${{ steps.resolve.outputs.merge_sha }}
+      schema_prefix: ${{ steps.resolve.outputs.schema_prefix }}
+    steps:
+      - name: Pin the reviewed pull request revision
+        id: resolve
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ inputs.pr_number }}
+          REPO: ${{ github.repository }}
+          DISPATCH_REF: ${{ github.ref }}
+        run: |
+          set -euo pipefail
+          fail() { echo "::error::$1"; exit 1; }
+
+          [[ "$DISPATCH_REF" == refs/heads/main ]] || fail "External PR CI must be dispatched from main."
+          pr_number="$(echo "$PR_NUMBER" | tr -d '[:space:]')"
+          [[ "$pr_number" =~ ^[0-9]+$ ]] || fail "Invalid pull request number: $PR_NUMBER"
+
+          # GitHub computes mergeability asynchronously; poll briefly.
+          for _ in 1 2 3 4 5; do
+            pr="$(gh api "repos/$REPO/pulls/$pr_number")"
+            [[ "$(jq -r '.mergeable' <<< "$pr")" != null ]] && break
+            sleep 2
+          done
+
+          state="$(jq -r '.state' <<< "$pr")"
+          base_ref="$(jq -r '.base.ref' <<< "$pr")"
+          base_sha="$(jq -r '.base.sha' <<< "$pr")"
+          head_sha="$(jq -r '.head.sha' <<< "$pr")"
+          head_repo="$(jq -r '.head.repo.full_name // ""' <<< "$pr")"
+          mergeable="$(jq -r '.mergeable' <<< "$pr")"
+
+          [[ "$state" == open ]] || fail "PR #$pr_number is not open."
+          [[ "$base_ref" == main ]] || fail "PR #$pr_number targets $base_ref, not main."
+          [[ -n "$head_repo" && "${head_repo,,}" != "${REPO,,}" ]] || fail "PR #$pr_number is not a fork pull request; same-repo PRs run CI automatically."
+          [[ "$mergeable" == true ]] || fail "PR #$pr_number is not currently mergeable."
+
+          merge="$(gh api "repos/$REPO/commits/refs/pull/$pr_number/merge")" \
+            || fail "Could not resolve PR #$pr_number's test merge."
+          merge_sha="$(jq -r '.sha' <<< "$merge")"
+          parents="$(jq -r '[.parents[].sha] | join(" ")' <<< "$merge")"
+          [[ "$parents" == "$base_sha $head_sha" ]] \
+            || fail "PR #$pr_number changed while its test merge was being resolved; rerun."
+
+          echo "Validating PR #$pr_number head $head_sha as test merge $merge_sha"
+          {
+            echo "merge_sha=$merge_sha"
+            echo "schema_prefix=ci_pr_${pr_number}_${head_sha:0:8}"
+          } >> "$GITHUB_OUTPUT"
+
+  ci:
+    name: CI
+    needs: resolve
+    permissions:
+      contents: read
+    uses: ./.github/workflows/ci.yml
+    with:
+      warehouse: snowflake
+      scope: full
+      checkout_ref: ${{ needs.resolve.outputs.merge_sha }}
+      schema_prefix: ${{ needs.resolve.outputs.schema_prefix }}
+    secrets:
+      DBT_SNOWFLAKE_CI_ACCOUNT: ${{ secrets.DBT_SNOWFLAKE_CI_ACCOUNT }}
+      DBT_SNOWFLAKE_CI_WAREHOUSE: ${{ secrets.DBT_SNOWFLAKE_CI_WAREHOUSE }}
+      DBT_SNOWFLAKE_CI_DATABASE: ${{ secrets.DBT_SNOWFLAKE_CI_DATABASE }}
+      DBT_SNOWFLAKE_CI_ROLE: ${{ secrets.DBT_SNOWFLAKE_CI_ROLE }}
+      DBT_SNOWFLAKE_CI_SCHEMA: ${{ secrets.DBT_SNOWFLAKE_CI_SCHEMA }}
+      DBT_SNOWFLAKE_CI_USER: ${{ secrets.DBT_SNOWFLAKE_CI_USER }}
+      DBT_SNOWFLAKE_CI_PRIVATE_KEY: ${{ secrets.DBT_SNOWFLAKE_CI_PRIVATE_KEY }}
+      DBT_SNOWFLAKE_CI_PRIVATE_KEY_PASSPHRASE: ${{ secrets.DBT_SNOWFLAKE_CI_PRIVATE_KEY_PASSPHRASE }}
