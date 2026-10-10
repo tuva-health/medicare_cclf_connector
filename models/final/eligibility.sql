@@ -268,8 +268,8 @@ select
         when latest_span_record.eligibility_flag = 1 then 'cms alr connector'
         else 'medicare cclf'
       end as {{ dbt.type_string() }}) as x_file_type
-    , cast(latest_span_record.eligibility_flag as integer) as x_eligibility_flag
-    , cast(latest_span_record.data_sharing_flag as integer) as x_data_sharing_flag
+    , cast(latest_span_record.eligibility_flag as integer) as x_eligibility_indicator
+    , cast(latest_span_record.data_sharing_flag as integer) as x_data_sharing_indicator
     , cast(case
         when latest_span_record.inferred_eligibility_flag = 1 then 'cclf_extended_from_alr'
         when latest_span_record.eligibility_flag = 1 and latest_span_record.data_sharing_flag = 1 then 'alr_and_cclf'
@@ -562,8 +562,8 @@ select
     , eligibility_flag
     , data_sharing_flag
     , data_source as x_file_type
-    , eligibility_flag as x_eligibility_flag
-    , data_sharing_flag as x_data_sharing_flag
+    , eligibility_flag as x_eligibility_indicator
+    , data_sharing_flag as x_data_sharing_indicator
     , eligibility_source as x_eligibility_source
 from joined
 WHERE row_num = 1

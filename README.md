@@ -151,7 +151,11 @@ rules for building `eligibility` from that source and the beneficiary demographi
   `low_income_subsidy_indicator`, `metal_level`, `csr_indicator`,
   `enrollment_duration_months`, `esrd_status`, `transplant_duration_months`) are null.
   `hospice_flag`, `institutional_snp_flag`, and `long_term_institutional_flag` are
-  integers, with null meaning unknown.
+  integers, with null meaning unknown. The connector still publishes
+  `eligibility_flag` and `data_sharing_flag` on its own `eligibility` model.
+  The copies that pass through to Tuva Core are `x_eligibility_indicator` and
+  `x_data_sharing_indicator`, because Tuva Core 1.0 reserves the `_flag` suffix
+  for its own public binary flags.
 
 ## 🔌 Database Support
 
