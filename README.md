@@ -128,9 +128,11 @@ rules for building `eligibility` from that source and the beneficiary demographi
   agree on `person_id`.
 - **Demographics come from the nearest CCLF8 delivery.** CCLF8 arrives monthly, so a
   delivery rarely exists for every enrollment month. Each eligibility row takes its
-  demographics (name, address, dual status and so on) from the CCLF8 delivered in the
+  demographics (name, address and so on) from the CCLF8 delivered in the
   row's last month. If there is none, it uses the latest earlier delivery, and if there is
-  no earlier one, the earliest later delivery. This rule is our choice.
+  no earlier one, the earliest later delivery. This rule is our choice. Dual status follows
+  the same rule but skips deliveries with a blank code; see
+  [Dual status](#-dual-status-with-or-without-cms_alr_connector).
 - **A death date applies to the whole person.** CCLF8 reports `BENE_DEATH_DT` "if a
   decedent" (IP v43 2.4.1), typically from the first delivery
   after the death, which is often after the last enrollment month. The connector takes the
@@ -140,11 +142,8 @@ rules for building `eligibility` from that source and the beneficiary demographi
 - **State is the USPS abbreviation.** `state` comes from CCLF8 `GEO_USPS_STATE_CD`
   (IP v43 Table 21), the two-letter code the Tuva input layer expects, not the numeric
   `BENE_FIPS_STATE_CD`. This applies with or without `cms_alr_connector`.
-- **Non-dual beneficiaries get a null dual status.** CCLF8 reports beneficiaries with no
-  Medicaid as `BENE_DUAL_STUS_CD` `NA`. The Tuva input layer accepts only the numeric dual
-  codes, so the connector maps `NA` to null and passes every other value through. The CMS-HCC
-  mart treats a null dual status as non-dual, so risk scores are unchanged. This rule is our
-  choice. It applies with or without `cms_alr_connector`.
+- **Dual status comes from CCLF8.** See
+  [Dual status](#-dual-status-with-or-without-cms_alr_connector).
 - **Sex is the Tuva Core 1.0 column.** `BENE_SEX_CD` is published as `sex` (`male`,
   `female`, or `unknown`), the name and values the Tuva Core 1.0 eligibility contract
   requires. Columns the CCLF files do not supply (`medicaid_indicator`, `part_d_raf_type`,
@@ -156,6 +155,39 @@ rules for building `eligibility` from that source and the beneficiary demographi
   The copies that pass through to Tuva Core are `x_eligibility_indicator` and
   `x_data_sharing_indicator`, because Tuva Core 1.0 reserves the `_flag` suffix
   for its own public binary flags.
+
+## 🧬 Dual status (with or without `cms_alr_connector`)
+
+`dual_status_code` comes only from CCLF8 `BENE_DUAL_STUS_CD` (IP v43 Table 21), on both
+eligibility paths. The rules below are our choice; the Information Packet does not say how
+to pick one code for an eligibility span.
+
+- **The delivery is chosen on the raw code.** Each eligibility row takes the code from the
+  latest CCLF8 delivery on or before the row's last month whose `BENE_DUAL_STUS_CD` is not
+  blank (null, empty or spaces). If there is none, it takes the earliest later delivery. A
+  row with no end date takes the latest delivery. A beneficiary who is in no CCLF8
+  delivery, or only in deliveries with a blank code, gets null.
+- **`NA` and blank map to null, after the delivery is chosen.** CCLF8 reports beneficiaries
+  with no Medicaid as `NA`. The Tuva input layer accepts only the numeric dual codes, so the
+  connector maps `NA` to null and passes every other value through. The mapping comes
+  second on purpose: when a beneficiary goes from `02` to `NA`, the row takes the later
+  `NA` (null), rather than skipping it and reviving the earlier `02`. The CMS-HCC mart
+  treats a null dual status as non-dual, as it treated `NA`, so this mapping does not
+  change risk scores. Any null, whether from `NA`, a blank code or no CCLF8 at all, scores
+  as non-dual, and the CMS-HCC mart marks it as defaulted (`medicaid_dual_status_default`).
+- **ALR person-years are not a dual status.** With `cms_alr_connector`, the ALR's
+  `BENE_PSNYRS_DUAL` is "Dual Person Years": the months the beneficiary was dually
+  eligible in the 12-month window divided by 12, from 0 to 1 (ALR data dictionary,
+  Table 1-1). It is not a dual status code, so it never feeds `dual_status_code`. The
+  connector publishes it, from the ALR row for the eligibility row's last month, as the
+  extension column `x_dual_person_years` (numeric, with the ten decimals CMS delivers),
+  which passes through to Tuva Core's `eligibility`. It is null on the CCLF-only path and on rows whose last month has no ALR
+  row.
+
+Through v1.0.0, the `cms_alr_connector` path put `BENE_PSNYRS_DUAL` (for example
+`1.0000000000` or `0.0000000000`) in `dual_status_code` whenever the ALR row had one, so
+full and partial duals scored as non-dual and their risk scores were understated. The
+fix raises those scores; it never lowers one.
 
 ## 🔌 Database Support
 

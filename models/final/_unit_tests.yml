@@ -1,0 +1,521 @@
+version: 2
+
+unit_tests:
+  # Unit tests on the cms_alr_connector branch of eligibility.sql (TUVA-119).
+  # int_eligibility_member_months_combined is disabled unless the var is set
+  # when the project is parsed, so these tests are enabled only then and CI
+  # runs them in a second step with --vars '{"cms_alr_connector": true}'
+  # (select tag:cms_alr_connector). The override repeats the var so each test
+  # states which branch it covers. The member-month input lists every column
+  # the branch reads; the values() row holds the ones a test varies, and the
+  # rest are null.
+  - name: eligibility_alr_dual_status_from_cclf8_not_person_years
+    description: >
+      ALR BENE_PSNYRS_DUAL is dual person-years (months dually eligible / 12,
+      0 to 1; ALR data dictionary Table 1-1), not a dual status code. Whatever
+      its value (1, 0 or a fraction), dual_status_code comes from CCLF8
+      BENE_DUAL_STUS_CD ('02' stays '02', 'NA' becomes null), and person-years
+      is published as x_dual_person_years.
+    model: eligibility
+    config:
+      enabled: "{{ var('cms_alr_connector', false) }}"
+      tags: ['cms_alr_connector']
+    overrides:
+      vars:
+        cms_alr_connector: true
+    given:
+      - input: ref('int_eligibility_member_months_combined')
+        format: sql
+        rows: |
+          select
+                m.current_bene_mbi_id
+              , m.current_bene_mbi_id as bene_mbi_id
+              , m.coverage_month
+              , m.eligibility_flag
+              , m.data_sharing_flag
+              , 0 as inferred_eligibility_flag
+              , cast(null as date) as enrollment_start_date
+              , cast(null as date) as enrollment_end_date
+              , cast(null as varchar) as bene_first_name
+              , cast(null as varchar) as bene_last_name
+              , cast(null as varchar) as enrollment_bene_sex_cd
+              , cast(null as varchar) as enrollment_bene_race_cd
+              , cast(null as date) as bene_birth_date
+              , cast(null as date) as bene_death_date
+              , m.bene_psnyrs_dual
+              , cast(null as varchar) as lti_status
+              , cast(null as varchar) as geo_ssa_cnty_cd_name
+              , cast(null as varchar) as geo_ssa_state_name
+              , cast(null as varchar) as enrollment_file_name
+              , cast(null as date) as enrollment_file_date
+              , cast(null as varchar) as bene_hic_num
+              , cast(null as varchar) as bene_fips_state_cd
+              , cast(null as varchar) as bene_fips_cnty_cd
+              , cast(null as varchar) as bene_zip_cd
+              , cast(null as date) as bene_dob
+              , cast(null as varchar) as demographics_bene_sex_cd
+              , cast(null as varchar) as demographics_bene_race_cd
+              , cast(null as varchar) as bene_mdcr_stus_cd
+              , m.bene_dual_stus_cd
+              , cast(null as date) as bene_death_dt
+              , cast(null as date) as bene_rng_bgn_dt
+              , cast(null as date) as bene_rng_end_dt
+              , cast(null as varchar) as bene_1st_name
+              , cast(null as varchar) as bene_midl_name
+              , cast(null as varchar) as demographics_bene_last_name
+              , cast(null as varchar) as bene_orgnl_entlmt_rsn_cd
+              , cast(null as varchar) as bene_entlmt_buyin_ind
+              , cast(null as date) as bene_part_a_enrlmt_bgn_dt
+              , cast(null as date) as bene_part_b_enrlmt_bgn_dt
+              , cast(null as varchar) as bene_line_1_adr
+              , cast(null as varchar) as bene_line_2_adr
+              , cast(null as varchar) as bene_line_3_adr
+              , cast(null as varchar) as bene_line_4_adr
+              , cast(null as varchar) as bene_line_5_adr
+              , cast(null as varchar) as bene_line_6_adr
+              , cast(null as varchar) as geo_zip_plc_name
+              , cast(null as varchar) as geo_usps_state_cd
+              , cast(null as varchar) as geo_zip5_cd
+              , cast(null as varchar) as geo_zip4_cd
+              , cast(null as varchar) as demographics_file_name
+              , cast(null as date) as demographics_file_date
+          from (values
+                ('MBI-PY1', cast('2025-01-01' as date), 1, 1, '1.0000000000', '02')
+              , ('MBI-PY1', cast('2025-02-01' as date), 1, 1, '1.0000000000', '02')
+              , ('MBI-PY1', cast('2025-03-01' as date), 1, 1, '1.0000000000', '02')
+              , ('MBI-PY0', cast('2025-01-01' as date), 1, 1, '0.0000000000', '02')
+              , ('MBI-PY0', cast('2025-02-01' as date), 1, 1, '0.0000000000', '02')
+              , ('MBI-PY0', cast('2025-03-01' as date), 1, 1, '0.0000000000', '02')
+              , ('MBI-PYF', cast('2025-01-01' as date), 1, 1, '0.5833333333', '02')
+              , ('MBI-PYF', cast('2025-02-01' as date), 1, 1, '0.5833333333', '02')
+              , ('MBI-PYF', cast('2025-03-01' as date), 1, 1, '0.5833333333', '02')
+              , ('MBI-NA', cast('2025-01-01' as date), 1, 1, '0.0000000000', 'NA')
+              , ('MBI-NA', cast('2025-02-01' as date), 1, 1, '0.0000000000', 'NA')
+              , ('MBI-NA', cast('2025-03-01' as date), 1, 1, '0.0000000000', 'NA')
+          ) as m (current_bene_mbi_id, coverage_month, eligibility_flag, data_sharing_flag, bene_psnyrs_dual, bene_dual_stus_cd)
+      - input: ref('int_beneficiary_demographics_deduped')
+        format: sql
+        rows: |
+          select
+                m.current_bene_mbi_id
+              , cast(null as varchar) as bene_hic_num
+              , cast(null as varchar) as bene_fips_state_cd
+              , cast(null as varchar) as bene_fips_cnty_cd
+              , cast(null as varchar) as bene_zip_cd
+              , cast(null as date) as bene_dob
+              , cast(null as varchar) as bene_sex_cd
+              , cast(null as varchar) as bene_race_cd
+              , cast(null as varchar) as bene_mdcr_stus_cd
+              , m.bene_dual_stus_cd
+              , cast(null as date) as bene_death_dt
+              , cast(null as date) as bene_rng_bgn_dt
+              , cast(null as date) as bene_rng_end_dt
+              , cast(null as varchar) as bene_1st_name
+              , cast(null as varchar) as bene_midl_name
+              , cast(null as varchar) as bene_last_name
+              , cast(null as varchar) as bene_orgnl_entlmt_rsn_cd
+              , cast(null as varchar) as bene_entlmt_buyin_ind
+              , cast(null as date) as bene_part_a_enrlmt_bgn_dt
+              , cast(null as date) as bene_part_b_enrlmt_bgn_dt
+              , cast(null as varchar) as bene_line_1_adr
+              , cast(null as varchar) as bene_line_2_adr
+              , cast(null as varchar) as bene_line_3_adr
+              , cast(null as varchar) as bene_line_4_adr
+              , cast(null as varchar) as bene_line_5_adr
+              , cast(null as varchar) as bene_line_6_adr
+              , cast(null as varchar) as geo_zip_plc_name
+              , cast(null as varchar) as geo_usps_state_cd
+              , cast(null as varchar) as geo_zip5_cd
+              , cast(null as varchar) as geo_zip4_cd
+              , m.coverage_month
+              , m.file_name
+              , m.file_date
+          from (values
+                ('MBI-PY1', cast('2025-01-01' as date), '02', 'cclf8_2025-01.txt', cast('2025-01-10' as date))
+              , ('MBI-PY1', cast('2025-02-01' as date), '02', 'cclf8_2025-02.txt', cast('2025-02-10' as date))
+              , ('MBI-PY1', cast('2025-03-01' as date), '02', 'cclf8_2025-03.txt', cast('2025-03-10' as date))
+              , ('MBI-PY0', cast('2025-01-01' as date), '02', 'cclf8_2025-01.txt', cast('2025-01-10' as date))
+              , ('MBI-PY0', cast('2025-02-01' as date), '02', 'cclf8_2025-02.txt', cast('2025-02-10' as date))
+              , ('MBI-PY0', cast('2025-03-01' as date), '02', 'cclf8_2025-03.txt', cast('2025-03-10' as date))
+              , ('MBI-PYF', cast('2025-01-01' as date), '02', 'cclf8_2025-01.txt', cast('2025-01-10' as date))
+              , ('MBI-PYF', cast('2025-02-01' as date), '02', 'cclf8_2025-02.txt', cast('2025-02-10' as date))
+              , ('MBI-PYF', cast('2025-03-01' as date), '02', 'cclf8_2025-03.txt', cast('2025-03-10' as date))
+              , ('MBI-NA', cast('2025-01-01' as date), 'NA', 'cclf8_2025-01.txt', cast('2025-01-10' as date))
+              , ('MBI-NA', cast('2025-02-01' as date), 'NA', 'cclf8_2025-02.txt', cast('2025-02-10' as date))
+              , ('MBI-NA', cast('2025-03-01' as date), 'NA', 'cclf8_2025-03.txt', cast('2025-03-10' as date))
+          ) as m (current_bene_mbi_id, coverage_month, bene_dual_stus_cd, file_name, file_date)
+    expect:
+      rows:
+        - {person_id: MBI-PY1, enrollment_start_date: 2025-01-01, enrollment_end_date: 2025-03-31, dual_status_code: '02', x_dual_person_years: 1}
+        - {person_id: MBI-PY0, enrollment_start_date: 2025-01-01, enrollment_end_date: 2025-03-31, dual_status_code: '02', x_dual_person_years: 0}
+        - {person_id: MBI-PYF, enrollment_start_date: 2025-01-01, enrollment_end_date: 2025-03-31, dual_status_code: '02', x_dual_person_years: 0.5833333333}
+        - {person_id: MBI-NA, enrollment_start_date: 2025-01-01, enrollment_end_date: 2025-03-31, dual_status_code: null, x_dual_person_years: 0}
+
+  - name: eligibility_alr_dual_status_uses_nearest_cclf8_delivery
+    description: >
+      A span whose last month has no CCLF8 delivery takes the code from the
+      latest earlier delivery, else the earliest later one, the same rule as
+      the CCLF-only path. A beneficiary never seen in CCLF8 gets null, which
+      Tuva flags as a defaulted dual status.
+    model: eligibility
+    config:
+      enabled: "{{ var('cms_alr_connector', false) }}"
+      tags: ['cms_alr_connector']
+    overrides:
+      vars:
+        cms_alr_connector: true
+    given:
+      - input: ref('int_eligibility_member_months_combined')
+        format: sql
+        rows: |
+          select
+                m.current_bene_mbi_id
+              , m.current_bene_mbi_id as bene_mbi_id
+              , m.coverage_month
+              , m.eligibility_flag
+              , m.data_sharing_flag
+              , 0 as inferred_eligibility_flag
+              , cast(null as date) as enrollment_start_date
+              , cast(null as date) as enrollment_end_date
+              , cast(null as varchar) as bene_first_name
+              , cast(null as varchar) as bene_last_name
+              , cast(null as varchar) as enrollment_bene_sex_cd
+              , cast(null as varchar) as enrollment_bene_race_cd
+              , cast(null as date) as bene_birth_date
+              , cast(null as date) as bene_death_date
+              , m.bene_psnyrs_dual
+              , cast(null as varchar) as lti_status
+              , cast(null as varchar) as geo_ssa_cnty_cd_name
+              , cast(null as varchar) as geo_ssa_state_name
+              , cast(null as varchar) as enrollment_file_name
+              , cast(null as date) as enrollment_file_date
+              , cast(null as varchar) as bene_hic_num
+              , cast(null as varchar) as bene_fips_state_cd
+              , cast(null as varchar) as bene_fips_cnty_cd
+              , cast(null as varchar) as bene_zip_cd
+              , cast(null as date) as bene_dob
+              , cast(null as varchar) as demographics_bene_sex_cd
+              , cast(null as varchar) as demographics_bene_race_cd
+              , cast(null as varchar) as bene_mdcr_stus_cd
+              , m.bene_dual_stus_cd
+              , cast(null as date) as bene_death_dt
+              , cast(null as date) as bene_rng_bgn_dt
+              , cast(null as date) as bene_rng_end_dt
+              , cast(null as varchar) as bene_1st_name
+              , cast(null as varchar) as bene_midl_name
+              , cast(null as varchar) as demographics_bene_last_name
+              , cast(null as varchar) as bene_orgnl_entlmt_rsn_cd
+              , cast(null as varchar) as bene_entlmt_buyin_ind
+              , cast(null as date) as bene_part_a_enrlmt_bgn_dt
+              , cast(null as date) as bene_part_b_enrlmt_bgn_dt
+              , cast(null as varchar) as bene_line_1_adr
+              , cast(null as varchar) as bene_line_2_adr
+              , cast(null as varchar) as bene_line_3_adr
+              , cast(null as varchar) as bene_line_4_adr
+              , cast(null as varchar) as bene_line_5_adr
+              , cast(null as varchar) as bene_line_6_adr
+              , cast(null as varchar) as geo_zip_plc_name
+              , cast(null as varchar) as geo_usps_state_cd
+              , cast(null as varchar) as geo_zip5_cd
+              , cast(null as varchar) as geo_zip4_cd
+              , cast(null as varchar) as demographics_file_name
+              , cast(null as date) as demographics_file_date
+          from (values
+                ('MBI-GAP', cast('2024-11-01' as date), 0, 1, cast(null as varchar), '02')
+              , ('MBI-GAP', cast('2024-12-01' as date), 0, 1, cast(null as varchar), '02')
+              , ('MBI-GAP', cast('2025-01-01' as date), 1, 0, '1.0000000000', cast(null as varchar))
+              , ('MBI-GAP', cast('2025-02-01' as date), 1, 0, '1.0000000000', cast(null as varchar))
+              , ('MBI-GAP', cast('2025-03-01' as date), 1, 0, '1.0000000000', cast(null as varchar))
+              , ('MBI-GAP', cast('2025-04-01' as date), 1, 0, '1.0000000000', cast(null as varchar))
+              , ('MBI-GAP', cast('2025-05-01' as date), 1, 0, '1.0000000000', cast(null as varchar))
+              , ('MBI-GAP', cast('2025-06-01' as date), 1, 0, '1.0000000000', cast(null as varchar))
+              , ('MBI-LATER', cast('2025-01-01' as date), 1, 0, '0.2500000000', cast(null as varchar))
+              , ('MBI-LATER', cast('2025-02-01' as date), 1, 0, '0.2500000000', cast(null as varchar))
+              , ('MBI-LATER', cast('2025-03-01' as date), 1, 0, '0.2500000000', cast(null as varchar))
+              , ('MBI-LATER', cast('2025-05-01' as date), 0, 1, cast(null as varchar), '04')
+              , ('MBI-NONE', cast('2025-01-01' as date), 1, 0, '1.0000000000', cast(null as varchar))
+              , ('MBI-NONE', cast('2025-02-01' as date), 1, 0, '1.0000000000', cast(null as varchar))
+              , ('MBI-NONE', cast('2025-03-01' as date), 1, 0, '1.0000000000', cast(null as varchar))
+          ) as m (current_bene_mbi_id, coverage_month, eligibility_flag, data_sharing_flag, bene_psnyrs_dual, bene_dual_stus_cd)
+      - input: ref('int_beneficiary_demographics_deduped')
+        format: sql
+        rows: |
+          select
+                m.current_bene_mbi_id
+              , cast(null as varchar) as bene_hic_num
+              , cast(null as varchar) as bene_fips_state_cd
+              , cast(null as varchar) as bene_fips_cnty_cd
+              , cast(null as varchar) as bene_zip_cd
+              , cast(null as date) as bene_dob
+              , cast(null as varchar) as bene_sex_cd
+              , cast(null as varchar) as bene_race_cd
+              , cast(null as varchar) as bene_mdcr_stus_cd
+              , m.bene_dual_stus_cd
+              , cast(null as date) as bene_death_dt
+              , cast(null as date) as bene_rng_bgn_dt
+              , cast(null as date) as bene_rng_end_dt
+              , cast(null as varchar) as bene_1st_name
+              , cast(null as varchar) as bene_midl_name
+              , cast(null as varchar) as bene_last_name
+              , cast(null as varchar) as bene_orgnl_entlmt_rsn_cd
+              , cast(null as varchar) as bene_entlmt_buyin_ind
+              , cast(null as date) as bene_part_a_enrlmt_bgn_dt
+              , cast(null as date) as bene_part_b_enrlmt_bgn_dt
+              , cast(null as varchar) as bene_line_1_adr
+              , cast(null as varchar) as bene_line_2_adr
+              , cast(null as varchar) as bene_line_3_adr
+              , cast(null as varchar) as bene_line_4_adr
+              , cast(null as varchar) as bene_line_5_adr
+              , cast(null as varchar) as bene_line_6_adr
+              , cast(null as varchar) as geo_zip_plc_name
+              , cast(null as varchar) as geo_usps_state_cd
+              , cast(null as varchar) as geo_zip5_cd
+              , cast(null as varchar) as geo_zip4_cd
+              , m.coverage_month
+              , m.file_name
+              , m.file_date
+          from (values
+                ('MBI-GAP', cast('2024-11-01' as date), '02', 'cclf8_2024-11.txt', cast('2024-11-10' as date))
+              , ('MBI-GAP', cast('2024-12-01' as date), '02', 'cclf8_2024-12.txt', cast('2024-12-10' as date))
+              , ('MBI-LATER', cast('2025-05-01' as date), '04', 'cclf8_2025-05.txt', cast('2025-05-10' as date))
+          ) as m (current_bene_mbi_id, coverage_month, bene_dual_stus_cd, file_name, file_date)
+    expect:
+      rows:
+        - {person_id: MBI-GAP, enrollment_start_date: 2024-11-01, enrollment_end_date: 2024-12-31, dual_status_code: '02', x_dual_person_years: null}
+        - {person_id: MBI-GAP, enrollment_start_date: 2025-01-01, enrollment_end_date: 2025-06-30, dual_status_code: '02', x_dual_person_years: 1}
+        - {person_id: MBI-LATER, enrollment_start_date: 2025-01-01, enrollment_end_date: 2025-03-31, dual_status_code: '04', x_dual_person_years: 0.25}
+        - {person_id: MBI-LATER, enrollment_start_date: 2025-05-01, enrollment_end_date: 2025-05-31, dual_status_code: '04', x_dual_person_years: null}
+        - {person_id: MBI-NONE, enrollment_start_date: 2025-01-01, enrollment_end_date: 2025-03-31, dual_status_code: null, x_dual_person_years: 1}
+
+  - name: eligibility_alr_dual_status_picks_delivery_on_raw_code
+    description: >
+      The delivery is chosen on the raw BENE_DUAL_STUS_CD: the latest one
+      whose code is not blank (null, empty or spaces). Only then does 'NA'
+      map to null, so a later 'NA' is kept (02 then NA gives null) rather
+      than skipped to revive an earlier dual code.
+    model: eligibility
+    config:
+      enabled: "{{ var('cms_alr_connector', false) }}"
+      tags: ['cms_alr_connector']
+    overrides:
+      vars:
+        cms_alr_connector: true
+    given:
+      - input: ref('int_eligibility_member_months_combined')
+        format: sql
+        rows: |
+          select
+                m.current_bene_mbi_id
+              , m.current_bene_mbi_id as bene_mbi_id
+              , m.coverage_month
+              , m.eligibility_flag
+              , m.data_sharing_flag
+              , 0 as inferred_eligibility_flag
+              , cast(null as date) as enrollment_start_date
+              , cast(null as date) as enrollment_end_date
+              , cast(null as varchar) as bene_first_name
+              , cast(null as varchar) as bene_last_name
+              , cast(null as varchar) as enrollment_bene_sex_cd
+              , cast(null as varchar) as enrollment_bene_race_cd
+              , cast(null as date) as bene_birth_date
+              , cast(null as date) as bene_death_date
+              , m.bene_psnyrs_dual
+              , cast(null as varchar) as lti_status
+              , cast(null as varchar) as geo_ssa_cnty_cd_name
+              , cast(null as varchar) as geo_ssa_state_name
+              , cast(null as varchar) as enrollment_file_name
+              , cast(null as date) as enrollment_file_date
+              , cast(null as varchar) as bene_hic_num
+              , cast(null as varchar) as bene_fips_state_cd
+              , cast(null as varchar) as bene_fips_cnty_cd
+              , cast(null as varchar) as bene_zip_cd
+              , cast(null as date) as bene_dob
+              , cast(null as varchar) as demographics_bene_sex_cd
+              , cast(null as varchar) as demographics_bene_race_cd
+              , cast(null as varchar) as bene_mdcr_stus_cd
+              , m.bene_dual_stus_cd
+              , cast(null as date) as bene_death_dt
+              , cast(null as date) as bene_rng_bgn_dt
+              , cast(null as date) as bene_rng_end_dt
+              , cast(null as varchar) as bene_1st_name
+              , cast(null as varchar) as bene_midl_name
+              , cast(null as varchar) as demographics_bene_last_name
+              , cast(null as varchar) as bene_orgnl_entlmt_rsn_cd
+              , cast(null as varchar) as bene_entlmt_buyin_ind
+              , cast(null as date) as bene_part_a_enrlmt_bgn_dt
+              , cast(null as date) as bene_part_b_enrlmt_bgn_dt
+              , cast(null as varchar) as bene_line_1_adr
+              , cast(null as varchar) as bene_line_2_adr
+              , cast(null as varchar) as bene_line_3_adr
+              , cast(null as varchar) as bene_line_4_adr
+              , cast(null as varchar) as bene_line_5_adr
+              , cast(null as varchar) as bene_line_6_adr
+              , cast(null as varchar) as geo_zip_plc_name
+              , cast(null as varchar) as geo_usps_state_cd
+              , cast(null as varchar) as geo_zip5_cd
+              , cast(null as varchar) as geo_zip4_cd
+              , cast(null as varchar) as demographics_file_name
+              , cast(null as date) as demographics_file_date
+          from (values
+                ('MBI-FULL-NA', cast('2025-01-01' as date), 1, 1, '1.0000000000', '02')
+              , ('MBI-FULL-NA', cast('2025-02-01' as date), 1, 1, '1.0000000000', '02')
+              , ('MBI-FULL-NA', cast('2025-03-01' as date), 1, 1, '1.0000000000', 'NA')
+              , ('MBI-NA-FULL', cast('2025-01-01' as date), 1, 1, '1.0000000000', 'NA')
+              , ('MBI-NA-FULL', cast('2025-02-01' as date), 1, 1, '1.0000000000', 'NA')
+              , ('MBI-NA-FULL', cast('2025-03-01' as date), 1, 1, '1.0000000000', '02')
+              , ('MBI-BLANK', cast('2025-01-01' as date), 1, 1, '1.0000000000', '02')
+              , ('MBI-BLANK', cast('2025-02-01' as date), 1, 1, '1.0000000000', '02')
+              , ('MBI-BLANK', cast('2025-03-01' as date), 1, 1, '1.0000000000', '')
+              , ('MBI-SPACES', cast('2025-01-01' as date), 1, 1, '1.0000000000', '02')
+              , ('MBI-SPACES', cast('2025-02-01' as date), 1, 1, '1.0000000000', '02')
+              , ('MBI-SPACES', cast('2025-03-01' as date), 1, 1, '1.0000000000', '   ')
+              , ('MBI-NULL', cast('2025-01-01' as date), 1, 1, '1.0000000000', '02')
+              , ('MBI-NULL', cast('2025-02-01' as date), 1, 1, '1.0000000000', '02')
+              , ('MBI-NULL', cast('2025-03-01' as date), 1, 1, '1.0000000000', cast(null as varchar))
+          ) as m (current_bene_mbi_id, coverage_month, eligibility_flag, data_sharing_flag, bene_psnyrs_dual, bene_dual_stus_cd)
+      - input: ref('int_beneficiary_demographics_deduped')
+        format: sql
+        rows: |
+          select
+                m.current_bene_mbi_id
+              , cast(null as varchar) as bene_hic_num
+              , cast(null as varchar) as bene_fips_state_cd
+              , cast(null as varchar) as bene_fips_cnty_cd
+              , cast(null as varchar) as bene_zip_cd
+              , cast(null as date) as bene_dob
+              , cast(null as varchar) as bene_sex_cd
+              , cast(null as varchar) as bene_race_cd
+              , cast(null as varchar) as bene_mdcr_stus_cd
+              , m.bene_dual_stus_cd
+              , cast(null as date) as bene_death_dt
+              , cast(null as date) as bene_rng_bgn_dt
+              , cast(null as date) as bene_rng_end_dt
+              , cast(null as varchar) as bene_1st_name
+              , cast(null as varchar) as bene_midl_name
+              , cast(null as varchar) as bene_last_name
+              , cast(null as varchar) as bene_orgnl_entlmt_rsn_cd
+              , cast(null as varchar) as bene_entlmt_buyin_ind
+              , cast(null as date) as bene_part_a_enrlmt_bgn_dt
+              , cast(null as date) as bene_part_b_enrlmt_bgn_dt
+              , cast(null as varchar) as bene_line_1_adr
+              , cast(null as varchar) as bene_line_2_adr
+              , cast(null as varchar) as bene_line_3_adr
+              , cast(null as varchar) as bene_line_4_adr
+              , cast(null as varchar) as bene_line_5_adr
+              , cast(null as varchar) as bene_line_6_adr
+              , cast(null as varchar) as geo_zip_plc_name
+              , cast(null as varchar) as geo_usps_state_cd
+              , cast(null as varchar) as geo_zip5_cd
+              , cast(null as varchar) as geo_zip4_cd
+              , m.coverage_month
+              , m.file_name
+              , m.file_date
+          from (values
+                ('MBI-FULL-NA', cast('2025-01-01' as date), '02', 'cclf8_2025-01.txt', cast('2025-01-10' as date))
+              , ('MBI-FULL-NA', cast('2025-02-01' as date), '02', 'cclf8_2025-02.txt', cast('2025-02-10' as date))
+              , ('MBI-FULL-NA', cast('2025-03-01' as date), 'NA', 'cclf8_2025-03.txt', cast('2025-03-10' as date))
+              , ('MBI-NA-FULL', cast('2025-01-01' as date), 'NA', 'cclf8_2025-01.txt', cast('2025-01-10' as date))
+              , ('MBI-NA-FULL', cast('2025-02-01' as date), 'NA', 'cclf8_2025-02.txt', cast('2025-02-10' as date))
+              , ('MBI-NA-FULL', cast('2025-03-01' as date), '02', 'cclf8_2025-03.txt', cast('2025-03-10' as date))
+              , ('MBI-BLANK', cast('2025-01-01' as date), '02', 'cclf8_2025-01.txt', cast('2025-01-10' as date))
+              , ('MBI-BLANK', cast('2025-02-01' as date), '02', 'cclf8_2025-02.txt', cast('2025-02-10' as date))
+              , ('MBI-BLANK', cast('2025-03-01' as date), '', 'cclf8_2025-03.txt', cast('2025-03-10' as date))
+              , ('MBI-SPACES', cast('2025-01-01' as date), '02', 'cclf8_2025-01.txt', cast('2025-01-10' as date))
+              , ('MBI-SPACES', cast('2025-02-01' as date), '02', 'cclf8_2025-02.txt', cast('2025-02-10' as date))
+              , ('MBI-SPACES', cast('2025-03-01' as date), '   ', 'cclf8_2025-03.txt', cast('2025-03-10' as date))
+              , ('MBI-NULL', cast('2025-01-01' as date), '02', 'cclf8_2025-01.txt', cast('2025-01-10' as date))
+              , ('MBI-NULL', cast('2025-02-01' as date), '02', 'cclf8_2025-02.txt', cast('2025-02-10' as date))
+              , ('MBI-NULL', cast('2025-03-01' as date), cast(null as varchar), 'cclf8_2025-03.txt', cast('2025-03-10' as date))
+          ) as m (current_bene_mbi_id, coverage_month, bene_dual_stus_cd, file_name, file_date)
+    expect:
+      rows:
+        - {person_id: MBI-FULL-NA, enrollment_start_date: 2025-01-01, enrollment_end_date: 2025-03-31, dual_status_code: null, x_dual_person_years: 1}
+        - {person_id: MBI-NA-FULL, enrollment_start_date: 2025-01-01, enrollment_end_date: 2025-03-31, dual_status_code: '02', x_dual_person_years: 1}
+        - {person_id: MBI-BLANK, enrollment_start_date: 2025-01-01, enrollment_end_date: 2025-03-31, dual_status_code: '02', x_dual_person_years: 1}
+        - {person_id: MBI-SPACES, enrollment_start_date: 2025-01-01, enrollment_end_date: 2025-03-31, dual_status_code: '02', x_dual_person_years: 1}
+        - {person_id: MBI-NULL, enrollment_start_date: 2025-01-01, enrollment_end_date: 2025-03-31, dual_status_code: '02', x_dual_person_years: 1}
+
+  # The same rule on the CCLF-only branch (the default parse). The fixture
+  # seeds cannot hold an empty or all-space code, since a blank CSV cell
+  # loads as null, so those cases are covered here.
+  - name: eligibility_cclf_dual_status_picks_delivery_on_raw_code
+    description: >
+      Without cms_alr_connector, each enrollment row takes dual_status_code
+      from the latest CCLF8 delivery on or before its last month whose raw
+      code is not blank, else the earliest later one; 'NA' then maps to
+      null. Blank codes never reach the output as ''.
+    model: eligibility
+    overrides:
+      vars:
+        cms_alr_connector: false
+    given:
+      - input: ref('int_enrollment')
+        format: sql
+        rows: |
+          select 'C-FULL-NA' as current_bene_mbi_id, cast('2025-01-01' as date) as enrollment_start_date, cast('2025-03-31' as date) as enrollment_end_date
+          union all select 'C-NA-FULL' as current_bene_mbi_id, cast('2025-01-01' as date) as enrollment_start_date, cast('2025-03-31' as date) as enrollment_end_date
+          union all select 'C-BLANK' as current_bene_mbi_id, cast('2025-01-01' as date) as enrollment_start_date, cast('2025-03-31' as date) as enrollment_end_date
+          union all select 'C-SPACES' as current_bene_mbi_id, cast('2025-01-01' as date) as enrollment_start_date, cast('2025-03-31' as date) as enrollment_end_date
+          union all select 'C-LATER' as current_bene_mbi_id, cast('2025-01-01' as date) as enrollment_start_date, cast('2025-03-31' as date) as enrollment_end_date
+          union all select 'C-BLANK-ONLY' as current_bene_mbi_id, cast('2025-01-01' as date) as enrollment_start_date, cast('2025-03-31' as date) as enrollment_end_date
+          union all select 'C-NONE' as current_bene_mbi_id, cast('2025-01-01' as date) as enrollment_start_date, cast('2025-03-31' as date) as enrollment_end_date
+      - input: ref('int_beneficiary_demographics_deduped')
+        format: sql
+        rows: |
+          select
+                m.current_bene_mbi_id
+              , cast(null as varchar) as bene_hic_num
+              , cast(null as varchar) as bene_fips_state_cd
+              , cast(null as varchar) as bene_fips_cnty_cd
+              , cast(null as varchar) as bene_zip_cd
+              , cast(null as date) as bene_dob
+              , cast(null as varchar) as bene_sex_cd
+              , cast(null as varchar) as bene_race_cd
+              , cast(null as varchar) as bene_mdcr_stus_cd
+              , m.bene_dual_stus_cd
+              , cast(null as date) as bene_death_dt
+              , cast(null as date) as bene_rng_bgn_dt
+              , cast(null as date) as bene_rng_end_dt
+              , cast(null as varchar) as bene_1st_name
+              , cast(null as varchar) as bene_midl_name
+              , cast(null as varchar) as bene_last_name
+              , cast(null as varchar) as bene_orgnl_entlmt_rsn_cd
+              , cast(null as varchar) as bene_entlmt_buyin_ind
+              , cast(null as date) as bene_part_a_enrlmt_bgn_dt
+              , cast(null as date) as bene_part_b_enrlmt_bgn_dt
+              , cast(null as varchar) as bene_line_1_adr
+              , cast(null as varchar) as bene_line_2_adr
+              , cast(null as varchar) as bene_line_3_adr
+              , cast(null as varchar) as bene_line_4_adr
+              , cast(null as varchar) as bene_line_5_adr
+              , cast(null as varchar) as bene_line_6_adr
+              , cast(null as varchar) as geo_zip_plc_name
+              , cast(null as varchar) as geo_usps_state_cd
+              , cast(null as varchar) as geo_zip5_cd
+              , cast(null as varchar) as geo_zip4_cd
+              , m.coverage_month
+              , m.file_name
+              , m.file_date
+          from (values
+                ('C-FULL-NA', cast('2025-01-01' as date), '02', 'cclf8_2025-01.txt', cast('2025-01-10' as date))
+              , ('C-FULL-NA', cast('2025-03-01' as date), 'NA', 'cclf8_2025-03.txt', cast('2025-03-10' as date))
+              , ('C-NA-FULL', cast('2025-01-01' as date), 'NA', 'cclf8_2025-01.txt', cast('2025-01-10' as date))
+              , ('C-NA-FULL', cast('2025-03-01' as date), '02', 'cclf8_2025-03.txt', cast('2025-03-10' as date))
+              , ('C-BLANK', cast('2025-01-01' as date), '02', 'cclf8_2025-01.txt', cast('2025-01-10' as date))
+              , ('C-BLANK', cast('2025-03-01' as date), '', 'cclf8_2025-03.txt', cast('2025-03-10' as date))
+              , ('C-SPACES', cast('2025-01-01' as date), '02', 'cclf8_2025-01.txt', cast('2025-01-10' as date))
+              , ('C-SPACES', cast('2025-03-01' as date), '   ', 'cclf8_2025-03.txt', cast('2025-03-10' as date))
+              , ('C-LATER', cast('2025-05-01' as date), '04', 'cclf8_2025-05.txt', cast('2025-05-10' as date))
+              , ('C-LATER', cast('2025-06-01' as date), 'NA', 'cclf8_2025-06.txt', cast('2025-06-10' as date))
+              , ('C-BLANK-ONLY', cast('2025-02-01' as date), '', 'cclf8_2025-02.txt', cast('2025-02-10' as date))
+          ) as m (current_bene_mbi_id, coverage_month, bene_dual_stus_cd, file_name, file_date)
+    expect:
+      rows:
+        - {person_id: C-FULL-NA, dual_status_code: null}
+        - {person_id: C-NA-FULL, dual_status_code: '02'}
+        - {person_id: C-BLANK, dual_status_code: '02'}
+        - {person_id: C-SPACES, dual_status_code: '02'}
+        - {person_id: C-LATER, dual_status_code: '04'}
+        - {person_id: C-BLANK-ONLY, dual_status_code: null}
+        - {person_id: C-NONE, dual_status_code: null}
+

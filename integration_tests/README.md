@@ -87,7 +87,7 @@ so stacked PRs get the same checks. Pull requests to `main` also run
 | Check | What it runs |
 | --- | --- |
 | `uv lock check` | `uv lock --check`: `uv.lock` is the single toolchain pin. |
-| `dbt build / duckdb` | deps, parse, connector unit tests, fixture seeds, connector build. No secrets; runs on fork PRs too. |
+| `dbt build / duckdb` | deps, parse, connector unit tests (then the `cms_alr_connector` unit tests in a second parse with that var on), fixture seeds, connector build. No secrets; runs on fork PRs too. |
 | `dbt build / snowflake` | Same steps, then builds the connector and every installed package (the_tuva_project and its dependencies) downstream. Same-repo PRs only. |
 | `CI / Snowflake` | Commit status on the PR head carrying the Snowflake build's result. Same-repo PRs get it from `ci.yml`; fork PRs only from [External PR CI](#fork-pull-requests). |
 | `release label` | The PR has exactly one release label (see the Releasing section of the root README). |
