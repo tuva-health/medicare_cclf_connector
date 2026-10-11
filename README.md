@@ -215,7 +215,7 @@ following columns:
 ### Step 4: Configure Input Database and Schema
 Next you need to tell dbt where your Medicare CCLF source data is located.  Do this using the variables `input_database` and `input_schema` in the `dbt_project.yml` file.  You also need to configure your `profile` in the `dbt_project.yml`.
 
-The connector always reads these tables through `source('medicare_cclf', ...)` and ships no demo data. Releases before v0.3.0 had a `demo_data_only` var that switched to bundled, header-only seeds; that var and the seeds are gone, and setting it now has no effect. Development and CI runs use the `integration_tests` project, which loads fixture seeds where `source()` expects the raw tables (see [integration_tests/README.md](integration_tests/README.md)).
+The connector always reads these tables through `source('medicare_cclf', ...)` and ships no demo data. Releases before v1.0.0 had a `demo_data_only` var that switched to bundled, header-only seeds; that var and the seeds are gone, and setting it now has no effect. Development and CI runs use the `integration_tests` project, which loads fixture seeds where `source()` expects the raw tables (see [integration_tests/README.md](integration_tests/README.md)).
 <br/><br/> 
 
 ### Step 5: Run
@@ -254,6 +254,18 @@ workflow** from `main`; it reuses an existing tag only when the tag points to th
 packages:
   - git: https://github.com/tuva-health/medicare_cclf_connector.git
     revision: v1.0.0
+```
+
+dbt reads `flags:` only from the root project, so the connector's own flag does not
+apply when it is installed as a package. The project that runs `dbt build` (for example
+`cms_alr_connector`) must set what Tuva Core 1.0 requires in its own `dbt_project.yml`:
+
+```yaml
+flags:
+  require_ref_searches_node_package_before_root: true
+
+vars:
+  claims_enabled: true
 ```
 <br/><br/>
 
