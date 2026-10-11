@@ -4,6 +4,12 @@ config-version: 2
 
 profile: default
 
+flags:
+  # Tuva Core 1.0 resolves refs inside a package before the root project.
+  # CI runs this project as the root, so the flag has to live here as well
+  # as in the connector's dbt_project.yml.
+  require_ref_searches_node_package_before_root: true
+
 vars:
   # This is the canonical commented inventory of medicare_cclf_connector vars.
   # Keep every var the connector reads documented here when its lookup is
@@ -49,11 +55,3 @@ clean-targets:
 
 on-run-start:
   - "{{ ensure_unit_test_schemas() }}"
-
-models:
-  # the_tuva_project places elementary's models in a prefixed schema, but that
-  # config only applies when the_tuva_project is the root project. Repeat it
-  # here so a CI run's elementary tables stay inside the run's schemas.
-  elementary:
-    +schema: |
-      {%- if var('tuva_schema_prefix', None) != None -%}{{ var('tuva_schema_prefix') }}_elementary{% else %}elementary{%- endif -%}

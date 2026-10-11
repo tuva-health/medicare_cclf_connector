@@ -1,8 +1,12 @@
 name: 'medicare_cclf_connector'
-version: '0.1.2'
+version: '1.0.0'
 config-version: 2
 
 profile: default
+
+flags:
+  # Tuva Core 1.0 resolves refs inside a package before the root project.
+  require_ref_searches_node_package_before_root: true
 
 vars:
   ## Set the database and schema where raw CCLF data is stored

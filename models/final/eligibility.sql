@@ -173,7 +173,7 @@ select
             when '1' then 'male'
             when '2' then 'female'
           end
-      ) as gender
+      ) as sex
     , coalesce(
         case latest_span_record.enrollment_bene_race_cd
             when '0' then 'unknown'
@@ -215,9 +215,17 @@ select
     , cast(coalesce(latest_span_record.bene_psnyrs_dual, nullif(trim(latest_span_record.bene_dual_stus_cd), 'NA')) as {{ dbt.type_string() }}) as dual_status_code
     , cast(latest_span_record.bene_mdcr_stus_cd as {{ dbt.type_string() }}) as medicare_status_code
     , cast(null as {{ dbt.type_string() }}) as enrollment_status
-    , cast(null as {{ dbt.type_string() }}) as hospice_flag
-    , cast(null as {{ dbt.type_string() }}) as institutional_snp_flag
-    , cast(latest_span_record.lti_status as {{ dbt.type_string() }}) as long_term_institutional_flag
+    , cast(null as integer) as hospice_flag
+    , cast(null as integer) as institutional_snp_flag
+    , {{ try_to_cast_int('latest_span_record.lti_status') }} as long_term_institutional_flag
+    , cast(null as integer) as medicaid_indicator
+    , cast(null as {{ dbt.type_string() }}) as part_d_raf_type
+    , cast(null as integer) as low_income_subsidy_indicator
+    , cast(null as {{ dbt.type_string() }}) as metal_level
+    , cast(null as integer) as csr_indicator
+    , cast(null as integer) as enrollment_duration_months
+    , cast(null as integer) as esrd_status
+    , cast(null as integer) as transplant_duration_months
     , cast(null as {{ dbt.type_string() }}) as group_id
     , cast(null as {{ dbt.type_string() }}) as group_name
     , cast(latest_span_record.bene_entlmt_buyin_ind as {{ dbt.type_string() }}) as medicare_entitlement_buyin_indicator
@@ -260,8 +268,8 @@ select
         when latest_span_record.eligibility_flag = 1 then 'cms alr connector'
         else 'medicare cclf'
       end as {{ dbt.type_string() }}) as x_file_type
-    , cast(latest_span_record.eligibility_flag as integer) as x_eligibility_flag
-    , cast(latest_span_record.data_sharing_flag as integer) as x_data_sharing_flag
+    , cast(latest_span_record.eligibility_flag as integer) as x_eligibility_indicator
+    , cast(latest_span_record.data_sharing_flag as integer) as x_data_sharing_indicator
     , cast(case
         when latest_span_record.inferred_eligibility_flag = 1 then 'cclf_extended_from_alr'
         when latest_span_record.eligibility_flag = 1 and latest_span_record.data_sharing_flag = 1 then 'alr_and_cclf'
@@ -420,7 +428,7 @@ with demographics as (
             when '0' then 'unknown'
             when '1' then 'male'
             when '2' then 'female'
-          end as gender
+          end as sex
         , case demographics.bene_race_cd
             when '0' then 'unknown'
             when '1' then 'white'
@@ -454,9 +462,9 @@ with demographics as (
         , cast(nullif(trim(demographics.bene_dual_stus_cd), 'NA') as {{ dbt.type_string() }} ) as dual_status_code
         , cast(demographics.bene_mdcr_stus_cd as {{ dbt.type_string() }} ) as medicare_status_code
         , cast(null as {{ dbt.type_string() }} ) as enrollment_status
-        , cast(null as {{ dbt.type_string() }} ) as hospice_flag
-        , cast(null as {{ dbt.type_string() }} ) as institutional_snp_flag
-        , cast(null as {{ dbt.type_string() }} ) as long_term_institutional_flag
+        , cast(null as integer) as hospice_flag
+        , cast(null as integer) as institutional_snp_flag
+        , cast(null as integer) as long_term_institutional_flag
         , cast(null as {{ dbt.type_string() }} ) as group_id
         , cast(null as {{ dbt.type_string() }} ) as group_name
         , cast(demographics.bene_entlmt_buyin_ind as {{ dbt.type_string() }} ) as medicare_entitlement_buyin_indicator
@@ -505,7 +513,7 @@ select
       person_id
     , member_id
     , subscriber_id
-    , gender
+    , sex
     , race
     , birth_date
     , death_date
@@ -523,6 +531,14 @@ select
     , hospice_flag
     , institutional_snp_flag
     , long_term_institutional_flag
+    , cast(null as integer) as medicaid_indicator
+    , cast(null as {{ dbt.type_string() }}) as part_d_raf_type
+    , cast(null as integer) as low_income_subsidy_indicator
+    , cast(null as {{ dbt.type_string() }}) as metal_level
+    , cast(null as integer) as csr_indicator
+    , cast(null as integer) as enrollment_duration_months
+    , cast(null as integer) as esrd_status
+    , cast(null as integer) as transplant_duration_months
     , group_id
     , group_name
     , nullif(trim(medicare_entitlement_buyin_indicator),'') as medicare_entitlement_buyin_indicator
@@ -546,8 +562,8 @@ select
     , eligibility_flag
     , data_sharing_flag
     , data_source as x_file_type
-    , eligibility_flag as x_eligibility_flag
-    , data_sharing_flag as x_data_sharing_flag
+    , eligibility_flag as x_eligibility_indicator
+    , data_sharing_flag as x_data_sharing_indicator
     , eligibility_source as x_eligibility_source
 from joined
 WHERE row_num = 1

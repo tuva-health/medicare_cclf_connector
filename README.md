@@ -145,6 +145,17 @@ rules for building `eligibility` from that source and the beneficiary demographi
   codes, so the connector maps `NA` to null and passes every other value through. The CMS-HCC
   mart treats a null dual status as non-dual, so risk scores are unchanged. This rule is our
   choice. It applies with or without `cms_alr_connector`.
+- **Sex is the Tuva Core 1.0 column.** `BENE_SEX_CD` is published as `sex` (`male`,
+  `female`, or `unknown`), the name and values the Tuva Core 1.0 eligibility contract
+  requires. Columns the CCLF files do not supply (`medicaid_indicator`, `part_d_raf_type`,
+  `low_income_subsidy_indicator`, `metal_level`, `csr_indicator`,
+  `enrollment_duration_months`, `esrd_status`, `transplant_duration_months`) are null.
+  `hospice_flag`, `institutional_snp_flag`, and `long_term_institutional_flag` are
+  integers, with null meaning unknown. The connector still publishes
+  `eligibility_flag` and `data_sharing_flag` on its own `eligibility` model.
+  The copies that pass through to Tuva Core are `x_eligibility_indicator` and
+  `x_data_sharing_indicator`, because Tuva Core 1.0 reserves the `_flag` suffix
+  for its own public binary flags.
 
 ## 🔌 Database Support
 
@@ -158,11 +169,11 @@ release. Other warehouses may work but are not tested.
 ## ✅ Quickstart Guide
 
 ### Step 1: Clone or Fork this Repository
-Unlike [the Tuva Project](https://github.com/tuva-health/the_tuva_project), this repo is a dbt project, not a dbt package.  Clone or fork this repository to your local machine.
+Unlike [Tuva Core](https://github.com/tuva-health/tuva-core), this repo is a dbt project, not a dbt package. The dbt package name is still `the_tuva_project`. Clone or fork this repository to your local machine.
 <br/><br/> 
 
-### Step 2: Import the Tuva Project
-Next you need to import the Tuva Project dbt package into the Medicare CCLF Connector dbt project.  For example, using dbt CLI you would `cd` into the directly where you cloned this project to and run `dbt deps` to import the latest version of the Tuva Project.
+### Step 2: Import Tuva Core
+`packages.yml` pins Tuva Core 1.0.0 from the published GitHub tag `v1.0.0` (`tuva-health/tuva-core`). From the project root, run `dbt deps` to install that pin. The dbt package name remains `the_tuva_project`.
 <br/><br/> 
 
 ### Step 3: Data Preparation
@@ -204,7 +215,7 @@ following columns:
 ### Step 4: Configure Input Database and Schema
 Next you need to tell dbt where your Medicare CCLF source data is located.  Do this using the variables `input_database` and `input_schema` in the `dbt_project.yml` file.  You also need to configure your `profile` in the `dbt_project.yml`.
 
-The connector always reads these tables through `source('medicare_cclf', ...)` and ships no demo data. Releases before v0.3.0 had a `demo_data_only` var that switched to bundled, header-only seeds; that var and the seeds are gone, and setting it now has no effect. Development and CI runs use the `integration_tests` project, which loads fixture seeds where `source()` expects the raw tables (see [integration_tests/README.md](integration_tests/README.md)).
+The connector always reads these tables through `source('medicare_cclf', ...)` and ships no demo data. Releases before v1.0.0 had a `demo_data_only` var that switched to bundled, header-only seeds; that var and the seeds are gone, and setting it now has no effect. Development and CI runs use the `integration_tests` project, which loads fixture seeds where `source()` expects the raw tables (see [integration_tests/README.md](integration_tests/README.md)).
 <br/><br/> 
 
 ### Step 5: Run
@@ -216,7 +227,7 @@ Now you're ready to do claims data analytics!
 ## 🚀 Releasing
 
 The `version:` in `dbt_project.yml` is the release version. Releases are tagged `v<version>`
-(for example `v0.3.0`); the older tags `0.1.0`, `0.1.1` and `0.2.0` predate this process.
+(for example `v1.0.0`); the older tags `0.1.0`, `0.1.1` and `0.2.0` predate this process.
 There is no changelog: release notes are generated from the merged PRs, grouped by their
 release label (see `.github/release.yml`). Every PR carries exactly one of
 `breaking-change`, `enhancement`, `bug`, `docs` or `ignore-for-release`; the
@@ -242,7 +253,19 @@ workflow** from `main`; it reuses an existing tag only when the tag points to th
 ```yaml
 packages:
   - git: https://github.com/tuva-health/medicare_cclf_connector.git
-    revision: v0.3.0
+    revision: v1.0.0
+```
+
+dbt reads `flags:` only from the root project, so the connector's own flag does not
+apply when it is installed as a package. The project that runs `dbt build` (for example
+`cms_alr_connector`) must set what Tuva Core 1.0 requires in its own `dbt_project.yml`:
+
+```yaml
+flags:
+  require_ref_searches_node_package_before_root: true
+
+vars:
+  claims_enabled: true
 ```
 <br/><br/>
 
