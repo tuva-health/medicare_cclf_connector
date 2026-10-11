@@ -158,6 +158,33 @@ with member_months as (
 
 )
 
+/*
+    dual_status_code comes from CCLF8 BENE_DUAL_STUS_CD only. The ALR's
+    BENE_PSNYRS_DUAL is dual person-years (months dually eligible / 12), not
+    a dual status code, so it is published separately as x_dual_person_years.
+    The span's last month often has no CCLF8 delivery, so the code is picked
+    by the same rule as the CCLF-only path; see select_span_dual_status_code.
+*/
+, cclf8_dual_status as (
+
+    select
+          current_bene_mbi_id
+        , coverage_month
+        , bene_dual_stus_cd
+    from {{ ref('int_beneficiary_demographics_deduped') }}
+
+)
+
+, span_dual_status as (
+
+    {{ select_span_dual_status_code(
+        spans='rollup_groups',
+        demographics='cclf8_dual_status',
+        span_keys=['current_bene_mbi_id', 'eligibility_flag', 'data_sharing_flag', 'row_group']
+    ) }}
+
+)
+
 select
       cast(latest_span_record.current_bene_mbi_id as {{ dbt.type_string() }}) as person_id
     , cast(latest_span_record.current_bene_mbi_id as {{ dbt.type_string() }}) as member_id
@@ -200,19 +227,19 @@ select
            when coalesce(latest_span_record.bene_death_date, latest_span_record.bene_death_dt) is null then 0
            else 1
       end as integer) as death_flag
-    , {{ extract_year('rollup_groups.enrollment_start_date') }} as reference_year
-    , cast(rollup_groups.enrollment_start_date as date) as enrollment_start_date
+    , {{ extract_year('span_dual_status.enrollment_start_date') }} as reference_year
+    , cast(span_dual_status.enrollment_start_date as date) as enrollment_start_date
     , case
-        when rollup_groups.enrollment_end_date >= cast({{ dbt.current_timestamp() }} as date)
+        when span_dual_status.enrollment_end_date >= cast({{ dbt.current_timestamp() }} as date)
         then {{ last_day(dbt.current_timestamp(), 'month') }}
-        when rollup_groups.enrollment_end_date is null then {{ last_day(dbt.current_timestamp(), 'month') }}
-        else cast(rollup_groups.enrollment_end_date as date)
+        when span_dual_status.enrollment_end_date is null then {{ last_day(dbt.current_timestamp(), 'month') }}
+        else cast(span_dual_status.enrollment_end_date as date)
       end as enrollment_end_date
     , cast('medicare' as {{ dbt.type_string() }}) as payer
     , cast('medicare' as {{ dbt.type_string() }}) as payer_type
     , cast('medicare' as {{ dbt.type_string() }}) as {{ quote_column('plan') }}
     , cast(latest_span_record.bene_orgnl_entlmt_rsn_cd as {{ dbt.type_string() }}) as original_reason_entitlement_code
-    , cast(coalesce(latest_span_record.bene_psnyrs_dual, nullif(trim(latest_span_record.bene_dual_stus_cd), 'NA')) as {{ dbt.type_string() }}) as dual_status_code
+    , span_dual_status.dual_status_code
     , cast(latest_span_record.bene_mdcr_stus_cd as {{ dbt.type_string() }}) as medicare_status_code
     , cast(null as {{ dbt.type_string() }}) as enrollment_status
     , cast(null as integer) as hospice_flag
@@ -276,12 +303,14 @@ select
         when latest_span_record.eligibility_flag = 1 then 'alr_only'
         else 'cclf_data_sharing_only'
       end as {{ dbt.type_string() }}) as x_eligibility_source
+    /* ALR BENE_PSNYRS_DUAL from the span's last month, when that month has an ALR row */
+    , {{ try_to_cast_fraction('latest_span_record.bene_psnyrs_dual') }} as x_dual_person_years
 from latest_span_record
-inner join rollup_groups
-    on latest_span_record.current_bene_mbi_id = rollup_groups.current_bene_mbi_id
-    and latest_span_record.eligibility_flag = rollup_groups.eligibility_flag
-    and latest_span_record.data_sharing_flag = rollup_groups.data_sharing_flag
-    and latest_span_record.row_group = rollup_groups.row_group
+inner join span_dual_status
+    on latest_span_record.current_bene_mbi_id = span_dual_status.current_bene_mbi_id
+    and latest_span_record.eligibility_flag = span_dual_status.eligibility_flag
+    and latest_span_record.data_sharing_flag = span_dual_status.data_sharing_flag
+    and latest_span_record.row_group = span_dual_status.row_group
 
 {% else %}
 
@@ -355,6 +384,22 @@ with demographics as (
 )
 
 /*
+    dual_status_code for each enrollment row, by the rule shared with the
+    cms_alr_connector path: see select_span_dual_status_code. It can come
+    from a different delivery than the snapshot below, because a delivery
+    with a blank code is skipped.
+*/
+, enrollment_dual_status as (
+
+    {{ select_span_dual_status_code(
+        spans='enrollment',
+        demographics='demographics',
+        span_keys=['current_bene_mbi_id', 'enrollment_start_date', 'enrollment_end_date']
+    ) }}
+
+)
+
+/*
     Pick one CCLF8 snapshot for each enrollment row. CCLF8 is delivered
     monthly and coverage_month is the month of its file date, so a snapshot
     rarely exists for every enrollment month. Use the snapshot for the
@@ -367,6 +412,7 @@ with demographics as (
           enrollment.current_bene_mbi_id
         , enrollment.enrollment_start_date
         , enrollment.enrollment_end_date
+        , enrollment.dual_status_code
         , demographics.coverage_month as demographics_coverage_month
         , row_number() over (
             partition by
@@ -385,7 +431,7 @@ with demographics as (
                   end desc
                 , demographics.coverage_month asc
           ) as snapshot_rank
-    from enrollment
+    from enrollment_dual_status as enrollment
     left join demographics
         on enrollment.current_bene_mbi_id = demographics.current_bene_mbi_id
 
@@ -458,8 +504,7 @@ with demographics as (
         , 'medicare' as payer_type
         , 'medicare' as {{ quote_column('plan') }}
         , cast(demographics.bene_orgnl_entlmt_rsn_cd as {{ dbt.type_string() }} ) as original_reason_entitlement_code
-        /* CCLF8 reports non-duals as 'NA', which Tuva does not accept; see README */
-        , cast(nullif(trim(demographics.bene_dual_stus_cd), 'NA') as {{ dbt.type_string() }} ) as dual_status_code
+        , enrollment.dual_status_code
         , cast(demographics.bene_mdcr_stus_cd as {{ dbt.type_string() }} ) as medicare_status_code
         , cast(null as {{ dbt.type_string() }} ) as enrollment_status
         , cast(null as integer) as hospice_flag
@@ -565,6 +610,8 @@ select
     , eligibility_flag as x_eligibility_indicator
     , data_sharing_flag as x_data_sharing_indicator
     , eligibility_source as x_eligibility_source
+    /* ALR dual person-years; only the cms_alr_connector path has it */
+    , cast(null as {{ fraction_type() }}) as x_dual_person_years
 from joined
 WHERE row_num = 1
 
