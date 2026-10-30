@@ -237,8 +237,13 @@ with sort_adjusted_claims as (
     from filter_claims
         left join revenue_center
             on filter_claims.cur_clm_uniq_id = revenue_center.cur_clm_uniq_id
-            /* adding part a natural keys to prevent duplicate lines  */
-            and filter_claims.clm_blg_prvdr_oscar_num = prvdr_oscar_num
+            /*
+                adding part a natural keys to prevent duplicate lines. CCLF2 carries
+                PRVDR_OSCAR_NUM, so it is matched to the header's PRVDR_OSCAR_NUM (ccn):
+                CLM_BLG_PRVDR_OSCAR_NUM comes from a different source system and can differ
+                from it (IP v43 2.8), for example when PRVDR_OSCAR_NUM is '~'
+            */
+            and filter_claims.ccn = revenue_center.prvdr_oscar_num
             and filter_claims.clm_from_dt = revenue_center.clm_from_dt
             and filter_claims.clm_thru_dt = revenue_center.clm_thru_dt
             and filter_claims.current_bene_mbi_id = revenue_center.current_bene_mbi_id
@@ -475,8 +480,8 @@ with sort_adjusted_claims as (
         , diagnosis_poa_24
         , diagnosis_poa_25
         , case
-            when cast(procedure_icd_ind as {{ dbt.type_string() }} ) = '0' then 'icd-10-cm'
-            when cast(procedure_icd_ind as {{ dbt.type_string() }} ) = '9' then 'icd-9-cm'
+            when cast(procedure_icd_ind as {{ dbt.type_string() }} ) = '0' then 'icd-10-pcs'
+            when cast(procedure_icd_ind as {{ dbt.type_string() }} ) = '9' then 'icd-9-pcs'
             else cast(procedure_icd_ind as {{ dbt.type_string() }} )
           end as procedure_code_type
         , procedure_code_1
