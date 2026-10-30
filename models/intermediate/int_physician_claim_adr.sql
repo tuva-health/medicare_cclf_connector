@@ -175,8 +175,12 @@ with staged_data as (
         , file_date
     from add_row_num
     where row_num = 1
-        -- Exclude denied claims
-        and not ((upper(trim(clm_prcsg_ind_cd)) not in ('A','O','S','R')) or clm_carr_pmt_dnl_cd = '0')
+        /*
+            Exclude denied claims (see README, "Denied claims"). Part B physician claims are
+            dropped on CLM_CARR_PMT_DNL_CD and their line items on CLM_PRCSG_IND_CD. A missing
+            CLM_CARR_PMT_DNL_CD is not a denial code, so it does not drop the claim.
+        */
+        and not ((upper(trim(clm_prcsg_ind_cd)) not in ('A','O','S','R')) or coalesce(clm_carr_pmt_dnl_cd, '') = '0')
 )
 
 /*
