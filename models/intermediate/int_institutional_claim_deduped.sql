@@ -475,8 +475,8 @@ with sort_adjusted_claims as (
         , diagnosis_poa_24
         , diagnosis_poa_25
         , case
-            when cast(procedure_icd_ind as {{ dbt.type_string() }} ) = '0' then 'icd-10-cm'
-            when cast(procedure_icd_ind as {{ dbt.type_string() }} ) = '9' then 'icd-9-cm'
+            when cast(procedure_icd_ind as {{ dbt.type_string() }} ) = '0' then 'icd-10-pcs'
+            when cast(procedure_icd_ind as {{ dbt.type_string() }} ) = '9' then 'icd-9-pcs'
             else cast(procedure_icd_ind as {{ dbt.type_string() }} )
           end as procedure_code_type
         , procedure_code_1
