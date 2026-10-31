@@ -407,6 +407,18 @@ jobs:
           uv run --locked dbt test --project-dir "$DBT_PROJECT_DIR" --vars "$CI_DBT_VARS"
           --select "package:medicare_cclf_connector,test_type:unit"
 
+      # The eligibility model's cms_alr_connector branch reads
+      # int_eligibility_member_months_combined, which exists only when the
+      # var is set at parse time. Its unit tests (tag cms_alr_connector) are
+      # enabled only then, so they run in a second parse with the var on.
+      # That parse resolves ref('enrollment') to the fixture seed.
+      - name: Run cms_alr_connector unit tests
+        shell: bash
+        run: >-
+          uv run --locked dbt test --project-dir "$DBT_PROJECT_DIR"
+          --vars "$(jq -c '. + {cms_alr_connector: true}' <<< "$CI_DBT_VARS")"
+          --select "package:medicare_cclf_connector,test_type:unit,tag:cms_alr_connector"
+
       - name: Load fixture seeds
         run: >-
           uv run --locked dbt seed --full-refresh --project-dir "$DBT_PROJECT_DIR" --vars "$CI_DBT_VARS"
@@ -523,6 +535,18 @@ jobs:
         run: >-
           uv run --locked dbt test --project-dir "$DBT_PROJECT_DIR" --vars "$CI_DBT_VARS"
           --select "package:medicare_cclf_connector,test_type:unit"
+
+      # The eligibility model's cms_alr_connector branch reads
+      # int_eligibility_member_months_combined, which exists only when the
+      # var is set at parse time. Its unit tests (tag cms_alr_connector) are
+      # enabled only then, so they run in a second parse with the var on.
+      # That parse resolves ref('enrollment') to the fixture seed.
+      - name: Run cms_alr_connector unit tests
+        shell: bash
+        run: >-
+          uv run --locked dbt test --project-dir "$DBT_PROJECT_DIR"
+          --vars "$(jq -c '. + {cms_alr_connector: true}' <<< "$CI_DBT_VARS")"
+          --select "package:medicare_cclf_connector,test_type:unit,tag:cms_alr_connector"
 
       - name: Load fixture seeds
         run: >-
