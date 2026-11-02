@@ -2118,3 +2118,469 @@ unit_tests:
         union all select 'dme-middle', 2
         union all select 'inst-older', 3
         union all select 'same-branch', 1
+
+  - name: int_physician_claim_deduped_final_claim_carries_own_amounts
+    description: >
+      A Part B physician final claim line carries its own payment and allowed amounts, not the
+      signed sum of its related set. When the cancellation and adjustment arrive without the
+      original they replace (the original predates the loaded files), netting gives only the
+      difference between the two (3.19 here). A complete set (original, cancellation,
+      adjustment) gives the same result either way.
+    model: int_physician_claim_deduped
+    given:
+      - input: ref('int_physician_claim_adr')
+        format: sql
+        rows: |
+          select
+              'PHY-CANCEL' as cur_clm_uniq_id
+            , '1' as clm_line_num
+            , 'MBI-1' as bene_mbi_id
+            , 'MBI-1' as current_bene_mbi_id
+            , '2025-08-11' as clm_from_dt
+            , '2025-08-11' as clm_thru_dt
+            , '11' as clm_pos_cd
+            , '2025-08-11' as clm_line_from_dt
+            , '2025-08-11' as clm_line_thru_dt
+            , '99214' as clm_line_hcpcs_cd
+            , -98.21 as clm_line_cvrd_pd_amt
+            , 'TIN-1' as clm_rndrg_prvdr_tax_num
+            , '1999900081' as rndrg_prvdr_npi_num
+            , '1' as clm_adjsmt_type_cd
+            , '2025-10-20' as clm_efctv_dt
+            , 'CTRL-PHY-1' as clm_cntl_num
+            , -125.33 as clm_line_alowd_chrg_amt
+            , '1' as clm_line_srvc_unit_qty
+            , '11' as clm_prvdr_spclty_cd
+            , '71' as clm_type_cd
+            , null as hcpcs_1_mdfr_cd
+            , null as hcpcs_2_mdfr_cd
+            , null as hcpcs_3_mdfr_cd
+            , null as hcpcs_4_mdfr_cd
+            , null as hcpcs_5_mdfr_cd
+            , 'I10' as clm_dgns_1_cd
+            , null as clm_dgns_2_cd
+            , null as clm_dgns_3_cd
+            , null as clm_dgns_4_cd
+            , null as clm_dgns_5_cd
+            , null as clm_dgns_6_cd
+            , null as clm_dgns_7_cd
+            , null as clm_dgns_8_cd
+            , '0' as dgns_prcdr_icd_ind
+            , null as clm_dgns_9_cd
+            , null as clm_dgns_10_cd
+            , null as clm_dgns_11_cd
+            , null as clm_dgns_12_cd
+            , 'phys_dec.csv' as file_name
+            , cast('2025-12-08' as date) as file_date
+            , '' as adjustment_key
+            , 2 as row_num
+          union all
+          select
+              'PHY-ADJ', '1', 'MBI-1', 'MBI-1', '2025-08-11', '2025-08-11', '11', '2025-08-11', '2025-08-11',
+              '99214', 101.40, 'TIN-1', '1999900081', '2', '2025-10-20', 'CTRL-PHY-1', 129.40, '1', '11', '71',
+              null, null, null, null, null, 'I10', null, null, null, null, null, null, null, '0', null, null, null,
+              null, 'phys_dec.csv', cast('2025-12-08' as date), '', 1
+          union all
+          select
+              'PHY-FULL-ORIG', '1', 'MBI-2', 'MBI-2', '2025-09-08', '2025-09-08', '11', '2025-09-08', '2025-09-08',
+              '99213', 90.00, 'TIN-2', '1999900099', '0', '2025-09-20', 'CTRL-PHY-2', 130.00, '1', '06', '71',
+              null, null, null, null, null, 'E785', null, null, null, null, null, null, null, '0', null, null, null,
+              null, 'phys_nov.csv', cast('2025-11-10' as date), '', 3
+          union all
+          select
+              'PHY-FULL-CANCEL', '1', 'MBI-2', 'MBI-2', '2025-09-08', '2025-09-08', '11', '2025-09-08', '2025-09-08',
+              '99213', -90.00, 'TIN-2', '1999900099', '1', '2025-11-04', 'CTRL-PHY-2', -130.00, '1', '06', '71',
+              null, null, null, null, null, 'E785', null, null, null, null, null, null, null, '0', null, null, null,
+              null, 'phys_dec.csv', cast('2025-12-08' as date), '', 2
+          union all
+          select
+              'PHY-FULL-ADJ', '1', 'MBI-2', 'MBI-2', '2025-09-08', '2025-09-08', '11', '2025-09-08', '2025-09-08',
+              '99214', 120.00, 'TIN-2', '1999900099', '2', '2025-11-04', 'CTRL-PHY-2', 160.00, '1', '06', '71',
+              null, null, null, null, null, 'E785', null, null, null, null, null, null, null, '0', null, null, null,
+              null, 'phys_dec.csv', cast('2025-12-08' as date), '', 1
+    expect:
+      format: sql
+      rows: |
+        select
+              'PHY-ADJ' as claim_id
+            , 1 as claim_line_number
+            , 'professional' as claim_type
+            , 'MBI-1' as bene_mbi_id
+            , 'MBI-1' as current_bene_mbi_id
+            , 'MBI-1' as person_id
+            , 'MBI-1' as member_id
+            , 'medicare' as payer
+            , 'medicare' as plan
+            , cast('2025-08-11' as date) as claim_start_date
+            , cast('2025-08-11' as date) as claim_end_date
+            , cast('2025-08-11' as date) as claim_line_start_date
+            , cast('2025-08-11' as date) as claim_line_end_date
+            , null as admission_date
+            , null as discharge_date
+            , null as admit_source_code
+            , null as admit_type_code
+            , null as discharge_disposition_code
+            , '11' as place_of_service_code
+            , null as bill_type_code
+            , null as ms_drg_code
+            , null as apr_drg_code
+            , null as revenue_center_code
+            , 1.00 as service_unit_quantity
+            , '11' as claim_provider_specialty_code
+            , '99214' as hcpcs_code
+            , null as hcpcs_modifier_1
+            , null as hcpcs_modifier_2
+            , null as hcpcs_modifier_3
+            , null as hcpcs_modifier_4
+            , null as hcpcs_modifier_5
+            , '71' as clm_type_cd
+            , '1999900081' as rendering_npi
+            , 'TIN-1' as rendering_tin
+            , null as billing_npi
+            , null as billing_tin
+            , null as facility_npi
+            , cast('2025-10-20' as date) as paid_date
+            , 101.40 as paid_amount
+            , 129.40 as allowed_amount
+            , 129.40 as charge_amount
+            , null as coinsurance_amount
+            , null as copayment_amount
+            , null as deductible_amount
+            , null as total_cost_amount
+            , 'icd-10-cm' as diagnosis_code_type
+            , 'I10' as diagnosis_code_1
+            , null as diagnosis_code_2
+            , null as diagnosis_code_3
+            , null as diagnosis_code_4
+            , null as diagnosis_code_5
+            , null as diagnosis_code_6
+            , null as diagnosis_code_7
+            , null as diagnosis_code_8
+            , null as diagnosis_code_9
+            , null as diagnosis_code_10
+            , null as diagnosis_code_11
+            , null as diagnosis_code_12
+            , null as diagnosis_code_13
+            , null as diagnosis_code_14
+            , null as diagnosis_code_15
+            , null as diagnosis_code_16
+            , null as diagnosis_code_17
+            , null as diagnosis_code_18
+            , null as diagnosis_code_19
+            , null as diagnosis_code_20
+            , null as diagnosis_code_21
+            , null as diagnosis_code_22
+            , null as diagnosis_code_23
+            , null as diagnosis_code_24
+            , null as diagnosis_code_25
+            , null as diagnosis_poa_1
+            , null as diagnosis_poa_2
+            , null as diagnosis_poa_3
+            , null as diagnosis_poa_4
+            , null as diagnosis_poa_5
+            , null as diagnosis_poa_6
+            , null as diagnosis_poa_7
+            , null as diagnosis_poa_8
+            , null as diagnosis_poa_9
+            , null as diagnosis_poa_10
+            , null as diagnosis_poa_11
+            , null as diagnosis_poa_12
+            , null as diagnosis_poa_13
+            , null as diagnosis_poa_14
+            , null as diagnosis_poa_15
+            , null as diagnosis_poa_16
+            , null as diagnosis_poa_17
+            , null as diagnosis_poa_18
+            , null as diagnosis_poa_19
+            , null as diagnosis_poa_20
+            , null as diagnosis_poa_21
+            , null as diagnosis_poa_22
+            , null as diagnosis_poa_23
+            , null as diagnosis_poa_24
+            , null as diagnosis_poa_25
+            , null as procedure_code_type
+            , null as procedure_code_1
+            , null as procedure_code_2
+            , null as procedure_code_3
+            , null as procedure_code_4
+            , null as procedure_code_5
+            , null as procedure_code_6
+            , null as procedure_code_7
+            , null as procedure_code_8
+            , null as procedure_code_9
+            , null as procedure_code_10
+            , null as procedure_code_11
+            , null as procedure_code_12
+            , null as procedure_code_13
+            , null as procedure_code_14
+            , null as procedure_code_15
+            , null as procedure_code_16
+            , null as procedure_code_17
+            , null as procedure_code_18
+            , null as procedure_code_19
+            , null as procedure_code_20
+            , null as procedure_code_21
+            , null as procedure_code_22
+            , null as procedure_code_23
+            , null as procedure_code_24
+            , null as procedure_code_25
+            , null as procedure_date_1
+            , null as procedure_date_2
+            , null as procedure_date_3
+            , null as procedure_date_4
+            , null as procedure_date_5
+            , null as procedure_date_6
+            , null as procedure_date_7
+            , null as procedure_date_8
+            , null as procedure_date_9
+            , null as procedure_date_10
+            , null as procedure_date_11
+            , null as procedure_date_12
+            , null as procedure_date_13
+            , null as procedure_date_14
+            , null as procedure_date_15
+            , null as procedure_date_16
+            , null as procedure_date_17
+            , null as procedure_date_18
+            , null as procedure_date_19
+            , null as procedure_date_20
+            , null as procedure_date_21
+            , null as procedure_date_22
+            , null as procedure_date_23
+            , null as procedure_date_24
+            , null as procedure_date_25
+            , 1 as in_network_flag
+            , 'medicare cclf' as data_source
+            , 'phys_dec.csv' as file_name
+            , '2025-12-08' as ingest_datetime
+            , 'd713099b63bd36efa196aa086895364b' as branch_row_key
+        union all
+        select 'PHY-FULL-ADJ', 1, 'professional', 'MBI-2', 'MBI-2', 'MBI-2', 'MBI-2', 'medicare', 'medicare',
+              cast('2025-09-08' as date), cast('2025-09-08' as date), cast('2025-09-08' as date),
+              cast('2025-09-08' as date), null, null, null, null, null, '11', null, null, null, null, 1.00, '06',
+              '99214', null, null, null, null, null, '71', '1999900099', 'TIN-2', null, null, null,
+              cast('2025-11-04' as date), 120.00, 160.00, 160.00, null, null, null, null, 'icd-10-cm', 'E785',
+              null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null,
+              null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null,
+              null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null,
+              null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null,
+              null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null,
+              null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null,
+              null, null, null, null, 1, 'medicare cclf', 'phys_dec.csv', '2025-12-08',
+              '2672b49251f58f2cf927b0ee9b179c21'
+
+  - name: int_dme_claim_deduped_final_claim_carries_own_amounts
+    description: >
+      A Part B DME final claim line carries its own payment and allowed amounts, not the signed
+      sum of its related set. When the cancellation and adjustment arrive without the original
+      they replace, netting leaves a line whose amount was unchanged at 0.00 and a line whose
+      amount was reduced at a negative payment (-2.68 here).
+    model: int_dme_claim_deduped
+    given:
+      - input: ref('int_dme_claim_adr')
+        format: sql
+        rows: |
+          select
+              'DME-CANCEL' as cur_clm_uniq_id
+            , '1' as clm_line_num
+            , 'MBI-1' as bene_mbi_id
+            , 'MBI-1' as current_bene_mbi_id
+            , '2025-04-01' as clm_from_dt
+            , '2025-04-30' as clm_thru_dt
+            , '12' as clm_pos_cd
+            , '2025-04-01' as clm_line_from_dt
+            , '2025-04-30' as clm_line_thru_dt
+            , 'E0601' as clm_line_hcpcs_cd
+            , -71.30 as clm_line_cvrd_pd_amt
+            , '1999900123' as payto_prvdr_npi_num
+            , '1999900131' as ordrg_prvdr_npi_num
+            , '1' as clm_adjsmt_type_cd
+            , '2025-06-03' as clm_efctv_dt
+            , 'CTRL-DME-1' as clm_cntl_num
+            , -90.97 as clm_line_alowd_chrg_amt
+            , 'dme_jul.csv' as file_name
+            , cast('2025-07-07' as date) as file_date
+            , '' as adjustment_key
+            , 2 as row_num
+          union all
+          select
+              'DME-CANCEL', '2', 'MBI-1', 'MBI-1', '2025-04-01', '2025-04-30', '12', '2025-04-01', '2025-04-30',
+              'A7035', -21.08, '1999900123', '1999900131', '1', '2025-06-03', 'CTRL-DME-1', -26.90,
+              'dme_jul.csv', cast('2025-07-07' as date), '', 2
+          union all
+          select
+              'DME-ADJ', '1', 'MBI-1', 'MBI-1', '2025-04-01', '2025-04-30', '12', '2025-04-01', '2025-04-30',
+              'E0601', 71.30, '1999900123', '1999900131', '2', '2025-06-03', 'CTRL-DME-1', 90.97,
+              'dme_jul.csv', cast('2025-07-07' as date), '', 1
+          union all
+          select
+              'DME-ADJ', '2', 'MBI-1', 'MBI-1', '2025-04-01', '2025-04-30', '12', '2025-04-01', '2025-04-30',
+              'A7035', 18.40, '1999900123', '1999900131', '2', '2025-06-03', 'CTRL-DME-1', 23.48,
+              'dme_jul.csv', cast('2025-07-07' as date), '', 1
+    expect:
+      format: sql
+      rows: |
+        select
+              'DME-ADJ' as claim_id
+            , 1 as claim_line_number
+            , 'professional' as claim_type
+            , 'MBI-1' as bene_mbi_id
+            , 'MBI-1' as current_bene_mbi_id
+            , 'MBI-1' as person_id
+            , 'MBI-1' as member_id
+            , 'medicare' as payer
+            , 'medicare' as plan
+            , cast('2025-04-01' as date) as claim_start_date
+            , cast('2025-04-30' as date) as claim_end_date
+            , cast('2025-04-01' as date) as claim_line_start_date
+            , cast('2025-04-30' as date) as claim_line_end_date
+            , null as admission_date
+            , null as discharge_date
+            , null as admit_source_code
+            , null as admit_type_code
+            , null as discharge_disposition_code
+            , '12' as place_of_service_code
+            , null as bill_type_code
+            , null as ms_drg_code
+            , null as apr_drg_code
+            , null as revenue_center_code
+            , null as service_unit_quantity
+            , 'E0601' as hcpcs_code
+            , null as hcpcs_modifier_1
+            , null as hcpcs_modifier_2
+            , null as hcpcs_modifier_3
+            , null as hcpcs_modifier_4
+            , null as hcpcs_modifier_5
+            , '1999900131' as rendering_npi
+            , null as rendering_tin
+            , '1999900123' as billing_npi
+            , null as billing_tin
+            , null as facility_npi
+            , cast('2025-06-03' as date) as paid_date
+            , 71.30 as paid_amount
+            , 90.97 as allowed_amount
+            , 90.97 as charge_amount
+            , null as coinsurance_amount
+            , null as copayment_amount
+            , null as deductible_amount
+            , null as total_cost_amount
+            , null as diagnosis_code_type
+            , null as diagnosis_code_1
+            , null as diagnosis_code_2
+            , null as diagnosis_code_3
+            , null as diagnosis_code_4
+            , null as diagnosis_code_5
+            , null as diagnosis_code_6
+            , null as diagnosis_code_7
+            , null as diagnosis_code_8
+            , null as diagnosis_code_9
+            , null as diagnosis_code_10
+            , null as diagnosis_code_11
+            , null as diagnosis_code_12
+            , null as diagnosis_code_13
+            , null as diagnosis_code_14
+            , null as diagnosis_code_15
+            , null as diagnosis_code_16
+            , null as diagnosis_code_17
+            , null as diagnosis_code_18
+            , null as diagnosis_code_19
+            , null as diagnosis_code_20
+            , null as diagnosis_code_21
+            , null as diagnosis_code_22
+            , null as diagnosis_code_23
+            , null as diagnosis_code_24
+            , null as diagnosis_code_25
+            , null as diagnosis_poa_1
+            , null as diagnosis_poa_2
+            , null as diagnosis_poa_3
+            , null as diagnosis_poa_4
+            , null as diagnosis_poa_5
+            , null as diagnosis_poa_6
+            , null as diagnosis_poa_7
+            , null as diagnosis_poa_8
+            , null as diagnosis_poa_9
+            , null as diagnosis_poa_10
+            , null as diagnosis_poa_11
+            , null as diagnosis_poa_12
+            , null as diagnosis_poa_13
+            , null as diagnosis_poa_14
+            , null as diagnosis_poa_15
+            , null as diagnosis_poa_16
+            , null as diagnosis_poa_17
+            , null as diagnosis_poa_18
+            , null as diagnosis_poa_19
+            , null as diagnosis_poa_20
+            , null as diagnosis_poa_21
+            , null as diagnosis_poa_22
+            , null as diagnosis_poa_23
+            , null as diagnosis_poa_24
+            , null as diagnosis_poa_25
+            , null as procedure_code_type
+            , null as procedure_code_1
+            , null as procedure_code_2
+            , null as procedure_code_3
+            , null as procedure_code_4
+            , null as procedure_code_5
+            , null as procedure_code_6
+            , null as procedure_code_7
+            , null as procedure_code_8
+            , null as procedure_code_9
+            , null as procedure_code_10
+            , null as procedure_code_11
+            , null as procedure_code_12
+            , null as procedure_code_13
+            , null as procedure_code_14
+            , null as procedure_code_15
+            , null as procedure_code_16
+            , null as procedure_code_17
+            , null as procedure_code_18
+            , null as procedure_code_19
+            , null as procedure_code_20
+            , null as procedure_code_21
+            , null as procedure_code_22
+            , null as procedure_code_23
+            , null as procedure_code_24
+            , null as procedure_code_25
+            , null as procedure_date_1
+            , null as procedure_date_2
+            , null as procedure_date_3
+            , null as procedure_date_4
+            , null as procedure_date_5
+            , null as procedure_date_6
+            , null as procedure_date_7
+            , null as procedure_date_8
+            , null as procedure_date_9
+            , null as procedure_date_10
+            , null as procedure_date_11
+            , null as procedure_date_12
+            , null as procedure_date_13
+            , null as procedure_date_14
+            , null as procedure_date_15
+            , null as procedure_date_16
+            , null as procedure_date_17
+            , null as procedure_date_18
+            , null as procedure_date_19
+            , null as procedure_date_20
+            , null as procedure_date_21
+            , null as procedure_date_22
+            , null as procedure_date_23
+            , null as procedure_date_24
+            , null as procedure_date_25
+            , 1 as in_network_flag
+            , 'medicare cclf' as data_source
+            , 'dme_jul.csv' as file_name
+            , '2025-07-07' as ingest_datetime
+            , '0c1237ff921ad54bee705fdbc8e731c8' as branch_row_key
+        union all
+        select 'DME-ADJ', 2, 'professional', 'MBI-1', 'MBI-1', 'MBI-1', 'MBI-1', 'medicare', 'medicare',
+              cast('2025-04-01' as date), cast('2025-04-30' as date), cast('2025-04-01' as date),
+              cast('2025-04-30' as date), null, null, null, null, null, '12', null, null, null, null, null,
+              'A7035', null, null, null, null, null, '1999900131', null, '1999900123', null, null,
+              cast('2025-06-03' as date), 18.40, 23.48, 23.48, null, null, null, null, null, null, null, null,
+              null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null,
+              null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null,
+              null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null,
+              null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null,
+              null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null,
+              null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null,
+              null, null, 1, 'medicare cclf', 'dme_jul.csv', '2025-07-07', '308c5d19c5d50f5cf5279c22b02dd161'

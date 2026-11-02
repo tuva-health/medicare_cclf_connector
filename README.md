@@ -45,8 +45,7 @@ Where the IP leaves a choice open, the rule below is marked as our choice.
   adjustment, one version wins, ranked by effective date (latest first, missing dates last),
   then *our choice* on a tie: adjustment, then original, then cancellation, as a
   cancellation is always paired with an earlier claim (IP 5.3.2 Table 6). Claim ID is the
-  last key, for claims that tie on both. A winning cancellation is dropped, and the winner
-  still carries the signed (debit/credit) sum of its set's lines.
+  last key, for claims that tie on both. A winning cancellation is dropped.
 - **Part D.** The file holds final action claims, so the most recent claim in a related set
   wins (IP 3.3). *Our choice* of what "most recent" means: latest delivery file, then latest
   effective date and IDR load date (missing dates last), then adjustment, cancellation,
@@ -55,14 +54,17 @@ Where the IP leaves a choice open, the rule below is marked as our choice.
   (IP 5.2.1), so each original is kept as its own claim with its own amounts. The
   `adjustment_key` column on the Part B `int_*_claim_adr` models is the claim ID for those
   sets and a constant otherwise.
-- **Part A paid amount.** A final action claim carries its own payment and charges. When the
-  related set's full history is in the loaded files, the survivors' own payments add up to
-  the set's signed debit/credit sum (IP 5.3), so totals are unchanged. The two differ only
-  when a cancellation's partner is missing from the files: netting then gives only the
-  change since the versions present. In fixture scenario S08 a cancellation ($6,400) and
-  its adjustment ($6,650) arrive without the original. The adjustment keeps its own
-  $6,650, where netting would give $250. A cancellation that matches no claim adds no
-  claim.
+- **Paid amount (Part A and Part B).** A final action claim carries its own payment,
+  charges and allowed amounts. When the related set's full history is in the loaded files,
+  the survivors' own payments add up to the set's signed debit/credit sum (IP 5.3), so
+  totals are unchanged. The two differ only when a cancellation's partner is missing from
+  the files: netting then gives only the change since the versions present. In fixture
+  scenario S08 a Part A cancellation ($6,400) and its adjustment ($6,650) arrive without
+  the original. The adjustment keeps its own $6,650, where netting would give $250. A
+  Part B line whose cancellation and adjustment arrive without the original keeps the
+  adjustment's own amount, where netting would give the difference between the two (zero
+  when the amount did not change, negative when it was reduced). A cancellation that
+  matches no claim adds no claim.
 - **Limitation: missing originals.** The connector can tell that a natural-key group has no
   original claim, or holds a cancellation that matches nothing, but not that the original is
   missing from the files altogether. A corrected thru date moves the adjustment to a new
