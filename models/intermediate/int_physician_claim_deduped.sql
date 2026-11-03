@@ -41,21 +41,21 @@ with sort_adjusted_claims as (
         , clm_dgns_12_cd
         , file_name
         , file_date
-        , adjustment_key
-        , row_num
+        , final_action_flag
     from {{ ref('int_physician_claim_adr') }}
 
 )
 
 /*
-    keep the final version of each claim line (see int_physician_claim_adr) and drop a winning
-    cancellation. The final version carries its own line payment and allowed amounts,
-    as a Part A final action claim does. When the related set's full history is in the
-    loaded files these equal the set's signed debit/credit sum (CCLF IP 5.3); when the
-    original predates the loaded files they do not, and netting the versions present
-    would give only the change since them (a zero or negative payment when the
-    cancellation and adjustment are close in amount). Debit/credit netting is for
-    beneficiary-level spend.
+    keep the final action lines of each related set (see int_physician_claim_adr): the lines left once
+    each cancellation is paired with the line it cancels and the pairs are removed. A
+    cancellation is never one, and a set can keep more than one. A final action line
+    carries its own line payment and allowed amounts, as a Part A final action claim
+    does. When the related set's full history is in the loaded files these add up to the
+    set's signed debit/credit sum (CCLF IP 5.3); when the original predates the loaded
+    files they do not, and netting the versions present would give only the change since
+    them (a zero or negative payment when the cancellation and adjustment are close in
+    amount). Debit/credit netting is for beneficiary-level spend.
 */
 , filter_claims as (
 
@@ -101,8 +101,7 @@ with sort_adjusted_claims as (
         , sort_adjusted_claims.file_name
         , sort_adjusted_claims.file_date
     from sort_adjusted_claims
-    where sort_adjusted_claims.row_num = 1
-    and sort_adjusted_claims.clm_adjsmt_type_cd <> '1'
+    where sort_adjusted_claims.final_action_flag = 1
 
 )
 

@@ -41,19 +41,24 @@ Where the IP leaves a choice open, the rule below is marked as our choice.
   (fixture S30). Known residual: in a client profile, about 0.2% of Part A related sets
   that contain a cancellation (15 of 7,194) can't be resolved by any exact-amount rule, for
   example when an original was re-priced, so its cancellation no longer matches it.
-- **Part B physician and DME.** Within a related set that contains a cancellation or
-  adjustment, one version wins, ranked by effective date (latest first, missing dates last),
-  then *our choice* on a tie: adjustment, then original, then cancellation, as a
-  cancellation is always paired with an earlier claim (IP 5.3.2 Table 6). Claim ID is the
-  last key, for claims that tie on both. A winning cancellation is dropped.
+- **Part B physician and DME.** The Part A rule, applied line by line within the Part B
+  related set (claim control number, most recent MBI and line number) on the line payment
+  amount: each cancellation removes an equal-amount original, else an equal-amount
+  adjustment that strictly precedes it (same eligibility and age order as Part A); an
+  unmatched cancellation is dropped; every line left is a final action line at its own
+  amounts. A set can keep more than one final action line (IP 5.2.2), as in the IP 5.3.2
+  Table 6 example, where the cancellation shares its effective date with the surviving
+  original and cancels the older one. Effective date, adjustment type and claim ID never
+  rank a winner: a cancellation and its replacement adjustment are usually processed
+  together and share an effective date, and so can an original and its cancellation.
+  Adjustments (type 2) do occur in CCLF5 and CCLF6 although the IP describes Part B as
+  original + cancellation.
 - **Part D.** The file holds final action claims, so the most recent claim in a related set
   wins (IP 3.3). *Our choice* of what "most recent" means: latest delivery file, then latest
   effective date and IDR load date (missing dates last), then adjustment, cancellation,
   original, then claim ID. A winning cancellation is dropped.
 - A related set made up only of original claims is a set of distinct final action claims
-  (IP 5.2.1), so each original is kept as its own claim with its own amounts. The
-  `adjustment_key` column on the Part B `int_*_claim_adr` models is the claim ID for those
-  sets and a constant otherwise.
+  (IP 5.2.1), so each original is kept as its own claim with its own amounts.
 - **Paid amount (Part A and Part B).** A final action claim carries its own payment,
   charges and allowed amounts. When the related set's full history is in the loaded files,
   the survivors' own payments add up to the set's signed debit/credit sum (IP 5.3), so
@@ -64,7 +69,8 @@ Where the IP leaves a choice open, the rule below is marked as our choice.
   Part B line whose cancellation and adjustment arrive without the original keeps the
   adjustment's own amount, where netting would give the difference between the two (zero
   when the amount did not change, negative when it was reduced). A cancellation that
-  matches no claim adds no claim.
+  matches no claim adds no claim, and a cancelled line is never counted: an original that
+  shares its effective date with its cancellation is removed with it, not kept in full.
 - **Limitation: missing originals.** The connector can tell that a natural-key group has no
   original claim, or holds a cancellation that matches nothing, but not that the original is
   missing from the files altogether. A corrected thru date moves the adjustment to a new
