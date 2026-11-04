@@ -20,38 +20,21 @@ with sort_adjusted_claims as (
         , clm_line_alowd_chrg_amt
         , file_name
         , file_date
-        , adjustment_key
-        , row_num
+        , final_action_flag
     from {{ ref('int_dme_claim_adr') }}
 
 )
 
 /*
-    sum the adjusted line amounts
-
-    (CCLF docs ref: 5.3 Calculating Beneficiary-Level Expenditures)
-*/
-, line_totals as (
-
-    select
-          clm_cntl_num
-        , clm_line_num
-        , current_bene_mbi_id
-        , adjustment_key
-        , sum(clm_line_cvrd_pd_amt) as sum_clm_line_cvrd_pd_amt
-        , sum(clm_line_alowd_chrg_amt) as sum_clm_line_alowd_chrg_amt
-    from sort_adjusted_claims
-    group by
-        clm_cntl_num
-      , clm_line_num
-      , current_bene_mbi_id
-      , adjustment_key
-
-)
-
-/*
-    apply final adjustment logic by selecting latest version of claim,
-    removing any remaining claims with a canceled status, and adding line totals.
+    keep the final action lines of each related set (see int_dme_claim_adr): the lines left once
+    each cancellation is paired with the line it cancels and the pairs are removed. A
+    cancellation is never one, and a set can keep more than one. A final action line
+    carries its own line payment and allowed amounts, as a Part A final action claim
+    does. When the related set's full history is in the loaded files these add up to the
+    set's signed debit/credit sum (CCLF IP 5.3); when the original predates the loaded
+    files they do not, and netting the versions present would give only the change since
+    them (a zero or negative payment when the cancellation and adjustment are close in
+    amount). Debit/credit netting is for beneficiary-level spend.
 */
 , filter_claims as (
 
@@ -66,23 +49,17 @@ with sort_adjusted_claims as (
         , sort_adjusted_claims.clm_line_from_dt
         , sort_adjusted_claims.clm_line_thru_dt
         , sort_adjusted_claims.clm_line_hcpcs_cd
-        , line_totals.sum_clm_line_cvrd_pd_amt as clm_line_cvrd_pd_amt
+        , sort_adjusted_claims.clm_line_cvrd_pd_amt
         , sort_adjusted_claims.payto_prvdr_npi_num
         , sort_adjusted_claims.ordrg_prvdr_npi_num
         , sort_adjusted_claims.clm_adjsmt_type_cd
         , sort_adjusted_claims.clm_efctv_dt
         , sort_adjusted_claims.clm_cntl_num
-        , line_totals.sum_clm_line_alowd_chrg_amt as clm_line_alowd_chrg_amt
+        , sort_adjusted_claims.clm_line_alowd_chrg_amt
         , sort_adjusted_claims.file_name
         , sort_adjusted_claims.file_date
     from sort_adjusted_claims
-        left join line_totals
-            on sort_adjusted_claims.clm_cntl_num = line_totals.clm_cntl_num
-            and sort_adjusted_claims.clm_line_num = line_totals.clm_line_num
-            and sort_adjusted_claims.current_bene_mbi_id = line_totals.current_bene_mbi_id
-            and sort_adjusted_claims.adjustment_key = line_totals.adjustment_key
-    where sort_adjusted_claims.row_num = 1
-    and sort_adjusted_claims.clm_adjsmt_type_cd <> '1'
+    where sort_adjusted_claims.final_action_flag = 1
 
 )
 
