@@ -373,8 +373,16 @@ with sort_adjusted_claims as (
           end as discharge_date
         , clm_admsn_src_cd as admit_source_code
         , clm_admsn_type_cd as admit_type_code
-        /* make sure we get 2 digits for discharge disposition for readmissions mart*/ 
-        , right(concat('00', bene_ptnt_stus_cd), 2) as discharge_disposition_code
+        /*
+            Pad the patient status to the two digits the readmissions mart
+            expects. CMS sends '~' when the status is missing; padding it
+            would give '0~', which the '~' to null mapping in medical_claim
+            cannot recognise, so map it (and a blank status) to null here.
+        */
+        , case
+            when {{ cclf_placeholder_to_null('bene_ptnt_stus_cd') }} is not null
+            then right(concat('00', bene_ptnt_stus_cd), 2)
+          end as discharge_disposition_code
         , cast(null as {{ dbt.type_string() }} ) as place_of_service_code
         , {{ dbt.concat(
             [
