@@ -519,3 +519,69 @@ unit_tests:
         - {person_id: C-BLANK-ONLY, dual_status_code: null}
         - {person_id: C-NONE, dual_status_code: null}
 
+  - name: eligibility_cclf_open_ended_span_takes_latest_cclf8_delivery
+    description: >
+      Without cms_alr_connector, an enrollment row with no end date is open:
+      the model reports it as covered through the current month, so its
+      demographics (name, address, status codes, file date) come from the
+      latest CCLF8 delivery, the same delivery its dual_status_code already
+      comes from. A row with an end date still takes the delivery for its
+      last month, else the latest earlier one.
+    model: eligibility
+    overrides:
+      vars:
+        cms_alr_connector: false
+    given:
+      - input: ref('int_enrollment')
+        format: sql
+        rows: |
+          select 'C-OPEN' as current_bene_mbi_id, cast('2025-01-01' as date) as enrollment_start_date, cast(null as date) as enrollment_end_date
+          union all select 'C-CLOSED' as current_bene_mbi_id, cast('2025-01-01' as date) as enrollment_start_date, cast('2025-02-28' as date) as enrollment_end_date
+      - input: ref('int_beneficiary_demographics_deduped')
+        format: sql
+        rows: |
+          select
+                m.current_bene_mbi_id
+              , cast(null as varchar) as bene_hic_num
+              , cast(null as varchar) as bene_fips_state_cd
+              , cast(null as varchar) as bene_fips_cnty_cd
+              , cast(null as varchar) as bene_zip_cd
+              , cast(null as date) as bene_dob
+              , cast(null as varchar) as bene_sex_cd
+              , cast(null as varchar) as bene_race_cd
+              , m.bene_mdcr_stus_cd
+              , m.bene_dual_stus_cd
+              , cast(null as date) as bene_death_dt
+              , cast(null as date) as bene_rng_bgn_dt
+              , cast(null as date) as bene_rng_end_dt
+              , cast(null as varchar) as bene_1st_name
+              , cast(null as varchar) as bene_midl_name
+              , cast(null as varchar) as bene_last_name
+              , cast(null as varchar) as bene_orgnl_entlmt_rsn_cd
+              , cast(null as varchar) as bene_entlmt_buyin_ind
+              , cast(null as date) as bene_part_a_enrlmt_bgn_dt
+              , cast(null as date) as bene_part_b_enrlmt_bgn_dt
+              , m.bene_line_1_adr
+              , cast(null as varchar) as bene_line_2_adr
+              , cast(null as varchar) as bene_line_3_adr
+              , cast(null as varchar) as bene_line_4_adr
+              , cast(null as varchar) as bene_line_5_adr
+              , cast(null as varchar) as bene_line_6_adr
+              , cast(null as varchar) as geo_zip_plc_name
+              , cast(null as varchar) as geo_usps_state_cd
+              , cast(null as varchar) as geo_zip5_cd
+              , cast(null as varchar) as geo_zip4_cd
+              , m.coverage_month
+              , m.file_name
+              , m.file_date
+          from (values
+                ('C-OPEN', cast('2025-01-01' as date), '10', '02', '1 OLD ST', 'cclf8_2025-01.txt', cast('2025-01-10' as date))
+              , ('C-OPEN', cast('2025-03-01' as date), '20', '02', '2 MID ST', 'cclf8_2025-03.txt', cast('2025-03-10' as date))
+              , ('C-OPEN', cast('2025-05-01' as date), '21', '04', '3 NEW ST', 'cclf8_2025-05.txt', cast('2025-05-10' as date))
+              , ('C-CLOSED', cast('2025-01-01' as date), '10', '02', '1 OLD ST', 'cclf8_2025-01.txt', cast('2025-01-10' as date))
+              , ('C-CLOSED', cast('2025-03-01' as date), '20', '02', '2 MID ST', 'cclf8_2025-03.txt', cast('2025-03-10' as date))
+          ) as m (current_bene_mbi_id, coverage_month, bene_mdcr_stus_cd, bene_dual_stus_cd, bene_line_1_adr, file_name, file_date)
+    expect:
+      rows:
+        - {person_id: C-OPEN, enrollment_start_date: 2025-01-01, medicare_status_code: '21', dual_status_code: '04', address: 3 NEW ST, file_name: cclf8_2025-05.txt, file_date: 2025-05-10}
+        - {person_id: C-CLOSED, enrollment_start_date: 2025-01-01, medicare_status_code: '10', dual_status_code: '02', address: 1 OLD ST, file_name: cclf8_2025-01.txt, file_date: 2025-01-10}

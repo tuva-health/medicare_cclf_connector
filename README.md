@@ -138,7 +138,8 @@ rules for building `eligibility` from that source and the beneficiary demographi
   delivery rarely exists for every enrollment month. Each eligibility row takes its
   demographics (name, address and so on) from the CCLF8 delivered in the
   row's last month. If there is none, it uses the latest earlier delivery, and if there is
-  no earlier one, the earliest later delivery. This rule is our choice. Dual status follows
+  no earlier one, the earliest later delivery. A row with no end date takes the latest
+  delivery. This rule is our choice. Dual status follows
   the same rule but skips deliveries with a blank code; see
   [Dual status](#-dual-status-with-or-without-cms_alr_connector).
 - **A death date applies to the whole person.** CCLF8 reports `BENE_DEATH_DT` "if a
