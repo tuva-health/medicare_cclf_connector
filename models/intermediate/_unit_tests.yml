@@ -2382,8 +2382,9 @@ unit_tests:
     description: >
       discharge_disposition_code pads BENE_PTNT_STUS_CD to two digits. CMS sends the
       placeholder '~' when the status is missing (TUVA-95); padding it gave '0~', which
-      the '~' to null mapping in medical_claim does not recognise. A '~' or blank status
-      must give a null discharge_disposition_code; a real status is still padded.
+      the '~' to null mapping in medical_claim does not recognise. A '~', null, empty or
+      space-only status must give a null discharge_disposition_code; a real status is
+      still padded.
     model: int_institutional_claim_deduped
     given:
       - input: ref('int_institutional_claim_adr')
@@ -2425,6 +2426,12 @@ unit_tests:
               '55555', 'MBI-1', 'MBI-1', '2025-11-10', '2025-11-10', '1', '3', 100.00, cast(null as varchar), cast(null as varchar), '76543', '40', '1000000001', cast(null as varchar), '1000000002', cast(null as varchar), '0', '2026-07-28', '~', '~', '1', '0', 150.00, '76543', 'file_sep.csv', cast('2026-09-20' as date), 1
           union all
           select
+              '44444', 'MBI-1', 'MBI-1', '2025-11-10', '2025-11-10', '1', '3', 100.00, '', cast(null as varchar), '76543', '40', '1000000001', cast(null as varchar), '1000000002', cast(null as varchar), '0', '2026-07-28', '~', '~', '1', '0', 120.00, '76543', 'file_sep.csv', cast('2026-09-20' as date), 1
+          union all
+          select
+              '33333', 'MBI-1', 'MBI-1', '2025-11-10', '2025-11-10', '1', '3', 100.00, ' ', cast(null as varchar), '76543', '40', '1000000001', cast(null as varchar), '1000000002', cast(null as varchar), '0', '2026-07-28', '~', '~', '1', '0', 130.00, '76543', 'file_sep.csv', cast('2026-09-20' as date), 1
+          union all
+          select
               '77777', 'MBI-1', 'MBI-1', '2025-11-10', '2025-11-10', '1', '3', 100.00, '1', cast(null as varchar), '76543', '60', '1000000001', cast(null as varchar), '1000000002', cast(null as varchar), '0', '2026-07-28', '1', '1', '1', '0', 900.00, '76543', 'file_sep.csv', cast('2026-09-20' as date), 1
       - input: ref('int_revenue_center_deduped')
         format: sql
@@ -2453,6 +2460,12 @@ unit_tests:
           union all
           select
               '55555', 'MBI-1', '76543', '2025-11-10', '2025-11-10', '1', '2025-11-10', '2025-11-10', '38383', '0450', '1', '150.00', cast(null as varchar), cast(null as varchar), cast(null as varchar), cast(null as varchar), cast(null as varchar)
+          union all
+          select
+              '44444', 'MBI-1', '76543', '2025-11-10', '2025-11-10', '1', '2025-11-10', '2025-11-10', '38383', '0450', '1', '120.00', cast(null as varchar), cast(null as varchar), cast(null as varchar), cast(null as varchar), cast(null as varchar)
+          union all
+          select
+              '33333', 'MBI-1', '76543', '2025-11-10', '2025-11-10', '1', '2025-11-10', '2025-11-10', '38383', '0450', '1', '130.00', cast(null as varchar), cast(null as varchar), cast(null as varchar), cast(null as varchar), cast(null as varchar)
           union all
           select
               '77777', 'MBI-1', '76543', '2025-11-10', '2025-11-10', '1', '2025-11-10', '2025-11-10', '38383', '0450', '1', '900.00', cast(null as varchar), cast(null as varchar), cast(null as varchar), cast(null as varchar), cast(null as varchar)
@@ -2577,6 +2590,8 @@ unit_tests:
         - {claim_id: '12345', discharge_disposition_code: '01'}
         - {claim_id: '98765', discharge_disposition_code: null}
         - {claim_id: '55555', discharge_disposition_code: null}
+        - {claim_id: '44444', discharge_disposition_code: null}
+        - {claim_id: '33333', discharge_disposition_code: null}
         - {claim_id: '77777', discharge_disposition_code: '01'}
 
   - name: int_institutional_claim_deduped_maps_procedure_code_type_to_icd_pcs

@@ -377,11 +377,14 @@ with sort_adjusted_claims as (
             Pad the patient status to the two digits the readmissions mart
             expects. CMS sends '~' when the status is missing; padding it
             would give '0~', which the '~' to null mapping in medical_claim
-            cannot recognise, so map it (and a blank status) to null here.
+            cannot recognise, so map it to null here. Staging keeps the
+            status as delivered, so a blank or space-only status is mapped
+            to null too and a real one is trimmed before padding.
         */
         , case
-            when {{ cclf_placeholder_to_null('bene_ptnt_stus_cd') }} is not null
-            then right(concat('00', bene_ptnt_stus_cd), 2)
+            when nullif(trim(bene_ptnt_stus_cd), '') is not null
+                and {{ cclf_placeholder_to_null('bene_ptnt_stus_cd') }} is not null
+            then right(concat('00', trim(bene_ptnt_stus_cd)), 2)
           end as discharge_disposition_code
         , cast(null as {{ dbt.type_string() }} ) as place_of_service_code
         , {{ dbt.concat(
