@@ -404,8 +404,19 @@ with demographics as (
     monthly and coverage_month is the month of its file date, so a snapshot
     rarely exists for every enrollment month. Use the snapshot for the
     enrollment row's last month when there is one, otherwise the latest
-    earlier snapshot, otherwise the earliest later one.
+    earlier snapshot, otherwise the earliest later one. A row with no end
+    date is open (it is reported as covered through the current month), so
+    its last month is treated as 9999-12 and it takes the latest snapshot,
+    the same rule select_span_dual_status_code applies to its dual status.
 */
+{%- set span_last_month -%}
+    {{ date_from_parts(
+        'year(coalesce(enrollment.enrollment_end_date, cast(\'9999-12-31\' as date)))',
+        'month(coalesce(enrollment.enrollment_end_date, cast(\'9999-12-31\' as date)))',
+        1
+    ) }}
+{%- endset -%}
+
 , enrollment_demographics as (
 
     select
@@ -421,12 +432,12 @@ with demographics as (
                 , enrollment.enrollment_end_date
             order by
                   case
-                    when demographics.coverage_month <= {{ date_from_parts('year(enrollment.enrollment_end_date)', 'month(enrollment.enrollment_end_date)', 1) }}
+                    when demographics.coverage_month <= {{ span_last_month }}
                     then 0
                     else 1
                   end
                 , case
-                    when demographics.coverage_month <= {{ date_from_parts('year(enrollment.enrollment_end_date)', 'month(enrollment.enrollment_end_date)', 1) }}
+                    when demographics.coverage_month <= {{ span_last_month }}
                     then demographics.coverage_month
                   end desc
                 , demographics.coverage_month asc
