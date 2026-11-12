@@ -119,6 +119,8 @@ before they reach the Tuva Input Layer:
     than the `0~` or `00` that padding the status to two digits used to produce.
   - A claim whose `CLM_ADMSN_TYPE_CD` is `~` has no admission, so it gets no
     `admission_date` or `discharge_date`.
+  - `drg_code` is null where `DGNS_DRG_CD` is `0000` (claims with no DRG), `~` or blank,
+    rather than the `000` that dropping the leading zero used to produce.
   - The staging and intermediate models keep `~` as delivered. The related-claims logic
     groups and joins on raw source values (`PRVDR_OSCAR_NUM` joins the Part A files),
     and nulls would not match in those joins.

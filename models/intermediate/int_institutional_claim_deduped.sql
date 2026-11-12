@@ -395,7 +395,17 @@ with sort_adjusted_claims as (
             ]
           ) }} as bill_type_code
         , 'ms-drg' as drg_code_type
-        , RIGHT(dgns_drg_cd, 3) as drg_code
+        /*
+            DGNS_DRG_CD is four characters with a leading zero; MS-DRGs have
+            three. Claims with no DRG (outpatient, home health, hospice and
+            most SNF claims) carry '0000', and '000' is not an MS-DRG, so a
+            zero-filled, empty or space-only code gives a null drg_code.
+            '~' is kept as delivered; medical_claim maps it to null.
+        */
+        , case
+            when ltrim(trim(dgns_drg_cd), '0') = '' then null
+            else right(trim(dgns_drg_cd), 3)
+          end as drg_code
         , clm_line_prod_rev_ctr_cd as revenue_center_code
         , clm_line_srvc_unit_qty as service_unit_quantity
         , clm_line_hcpcs_cd as hcpcs_code
