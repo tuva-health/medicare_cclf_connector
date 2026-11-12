@@ -115,6 +115,8 @@ before they reach the Tuva Input Layer:
   - Code and identifier columns of `medical_claim` and `pharmacy_claim` are null where
     the source value is `~`. `ccn` is null where `PRVDR_OSCAR_NUM` is `~` and on claims
     with no CCN (professional and DME), rather than the `000000` DuckDB used to produce.
+    `discharge_disposition_code` is null where `BENE_PTNT_STUS_CD` is `~` or blank, rather
+    than the `0~` or `00` that padding the status to two digits used to produce.
   - A claim whose `CLM_ADMSN_TYPE_CD` is `~` has no admission, so it gets no
     `admission_date` or `discharge_date`.
   - `drg_code` is null where `DGNS_DRG_CD` is `0000` (claims with no DRG), `~` or blank,
