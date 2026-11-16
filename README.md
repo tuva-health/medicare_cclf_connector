@@ -298,7 +298,7 @@ workflow** from `main`; it reuses an existing tag only when the tag points to th
 ```yaml
 packages:
   - git: https://github.com/tuva-health/medicare_cclf_connector.git
-    revision: v1.0.1
+    revision: v1.0.2
 ```
 
 dbt reads `flags:` only from the root project, so the connector's own flag does not
