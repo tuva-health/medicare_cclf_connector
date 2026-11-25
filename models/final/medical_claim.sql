@@ -90,7 +90,7 @@ select
     , 'medicare' as data_source
     , file_name
     , cast(file_date as date) as file_date
-    , ingest_datetime
+    , cast(ingest_datetime as {{ dbt.type_timestamp() }}) as ingest_datetime
     , data_source as x_file_type
 from {{ ref('int_medical_claim') }}
 where row_num = 1
