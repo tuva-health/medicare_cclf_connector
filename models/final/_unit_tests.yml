@@ -585,3 +585,52 @@ unit_tests:
       rows:
         - {person_id: C-OPEN, enrollment_start_date: 2025-01-01, medicare_status_code: '21', dual_status_code: '04', address: 3 NEW ST, file_name: cclf8_2025-05.txt, file_date: 2025-05-10}
         - {person_id: C-CLOSED, enrollment_start_date: 2025-01-01, medicare_status_code: '10', dual_status_code: '02', address: 1 OLD ST, file_name: cclf8_2025-01.txt, file_date: 2025-01-10}
+
+  - name: pharmacy_claim_carries_file_date
+    description: >
+      Each Part D claim line carries the file_date of the CCLF7 delivery it was
+      taken from. It was hard-coded to null, so every pharmacy_claim row had a
+      null file_date although int_pharmacy_claim_deduped carries it.
+    model: pharmacy_claim
+    given:
+      - input: ref('int_pharmacy_claim_deduped')
+        format: sql
+        rows: |
+          select
+                '71001' as claim_id
+              , 1 as claim_line_number
+              , 'MBI-1' as bene_mbi_id
+              , 'MBI-1' as current_bene_mbi_id
+              , 'MBI-1' as person_id
+              , 'MBI-1' as member_id
+              , 'medicare' as payer
+              , 'medicare' as plan
+              , '1999900156' as prescribing_provider_npi
+              , '1999900149' as dispensing_provider_npi
+              , cast('2025-11-01' as date) as dispensing_date
+              , '00003089421' as ndc_code
+              , 30 as quantity
+              , 30 as days_supply
+              , '0' as refills
+              , cast('2025-11-01' as date) as paid_date
+              , 47.00 as paid_amount
+              , cast(null as varchar) as allowed_amount
+              , cast(null as varchar) as charge_amount
+              , cast(null as varchar) as coinsurance_amount
+              , 47.00 as copayment_amount
+              , cast(null as varchar) as deductible_amount
+              , 1 as in_network_flag
+              , 'medicare cclf' as data_source
+              , 'P.A0000.ACO.ZC7Y25.D251120.T1200000' as file_name
+              , cast('2025-11-20' as date) as file_date
+              , cast('2025-11-20' as date) as ingest_datetime
+          union all
+          select
+                '71002', 1, 'MBI-1', 'MBI-1', 'MBI-1', 'MBI-1', 'medicare', 'medicare', '1999900156', '1999900149'
+              , cast('2025-12-01' as date), '00093715698', 90, 90, '0', cast('2025-12-01' as date), 12.40
+              , cast(null as varchar), cast(null as varchar), cast(null as varchar), 12.40, cast(null as varchar)
+              , 1, 'medicare cclf', 'P.A0000.ACO.ZC7Y25.D251220.T1200000', cast('2025-12-20' as date), cast('2025-12-20' as date)
+    expect:
+      rows:
+        - {claim_id: '71001', file_name: 'P.A0000.ACO.ZC7Y25.D251120.T1200000', file_date: '2025-11-20'}
+        - {claim_id: '71002', file_name: 'P.A0000.ACO.ZC7Y25.D251220.T1200000', file_date: '2025-12-20'}
