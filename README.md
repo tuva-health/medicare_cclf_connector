@@ -155,6 +155,11 @@ rules for building `eligibility` from that source and the beneficiary demographi
 - **State is the USPS abbreviation.** `state` comes from CCLF8 `GEO_USPS_STATE_CD`
   (IP v43 Table 21), the two-letter code the Tuva input layer expects, not the numeric
   `BENE_FIPS_STATE_CD`. This applies with or without `cms_alr_connector`.
+- **Race is a Tuva race terminology description.** `BENE_RACE_CD` (CCLF8, or the ALR with
+  `cms_alr_connector`) maps to the description the Tuva input layer expects:
+  `0` unknown, `1` white, `2` black or african american, `3` other race, `4` asian,
+  `6` american indian or alaska native. The terminology has no Hispanic race, so `5`
+  (Hispanic) maps to other race. This applies with or without `cms_alr_connector`.
 - **Dual status comes from CCLF8.** See
   [Dual status](#-dual-status-with-or-without-cms_alr_connector).
 - **Sex is the Tuva Core 1.0 column.** `BENE_SEX_CD` is published as `sex` (`male`,

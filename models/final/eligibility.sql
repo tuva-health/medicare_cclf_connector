@@ -201,24 +201,25 @@ select
             when '2' then 'female'
           end
       ) as sex
+    /* Tuva race terminology descriptions; it has no Hispanic race, so 5 is other race */
     , coalesce(
         case latest_span_record.enrollment_bene_race_cd
             when '0' then 'unknown'
             when '1' then 'white'
-            when '2' then 'black'
-            when '3' then 'other'
+            when '2' then 'black or african american'
+            when '3' then 'other race'
             when '4' then 'asian'
-            when '5' then 'hispanic'
-            when '6' then 'north american native'
+            when '5' then 'other race'
+            when '6' then 'american indian or alaska native'
           end,
         case latest_span_record.demographics_bene_race_cd
             when '0' then 'unknown'
             when '1' then 'white'
-            when '2' then 'black'
-            when '3' then 'other'
+            when '2' then 'black or african american'
+            when '3' then 'other race'
             when '4' then 'asian'
-            when '5' then 'hispanic'
-            when '6' then 'north american native'
+            when '5' then 'other race'
+            when '6' then 'american indian or alaska native'
           end
       ) as race
     , coalesce(cast(latest_span_record.bene_birth_date as date), cast(latest_span_record.bene_dob as date)) as birth_date
@@ -486,14 +487,15 @@ with demographics as (
             when '1' then 'male'
             when '2' then 'female'
           end as sex
+        /* Tuva race terminology descriptions; it has no Hispanic race, so 5 is other race */
         , case demographics.bene_race_cd
             when '0' then 'unknown'
             when '1' then 'white'
-            when '2' then 'black'
-            when '3' then 'other'
+            when '2' then 'black or african american'
+            when '3' then 'other race'
             when '4' then 'asian'
-            when '5' then 'hispanic'
-            when '6' then 'north american native'
+            when '5' then 'other race'
+            when '6' then 'american indian or alaska native'
           end as race
         , {{ try_to_cast_date('demographics.bene_dob', 'YYYY-MM-DD') }} as birth_date
         , {{ try_to_cast_date('death_dates.bene_death_dt', 'YYYY-MM-DD') }} as death_date

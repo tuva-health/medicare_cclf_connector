@@ -586,6 +586,225 @@ unit_tests:
         - {person_id: C-OPEN, enrollment_start_date: 2025-01-01, medicare_status_code: '21', dual_status_code: '04', address: 3 NEW ST, file_name: cclf8_2025-05.txt, file_date: 2025-05-10}
         - {person_id: C-CLOSED, enrollment_start_date: 2025-01-01, medicare_status_code: '10', dual_status_code: '02', address: 1 OLD ST, file_name: cclf8_2025-01.txt, file_date: 2025-01-10}
 
+  - name: eligibility_alr_race_uses_tuva_race_terminology
+    description: >
+      With cms_alr_connector, race comes from the ALR BENE_RACE_CD, else from
+      CCLF8. Both use the same codes, and each maps to a description in the
+      Tuva race terminology (terminology__race), which the input layer
+      expects and the data quality race check looks up. Hispanic (5) is not
+      a race in that terminology and maps to other race.
+    model: eligibility
+    config:
+      enabled: "{{ var('cms_alr_connector', false) }}"
+      tags: ['cms_alr_connector']
+    overrides:
+      vars:
+        cms_alr_connector: true
+    given:
+      - input: ref('int_eligibility_member_months_combined')
+        format: sql
+        rows: |
+          select
+                m.current_bene_mbi_id
+              , m.current_bene_mbi_id as bene_mbi_id
+              , m.coverage_month
+              , m.eligibility_flag
+              , m.data_sharing_flag
+              , 0 as inferred_eligibility_flag
+              , cast(null as date) as enrollment_start_date
+              , cast(null as date) as enrollment_end_date
+              , cast(null as varchar) as bene_first_name
+              , cast(null as varchar) as bene_last_name
+              , cast(null as varchar) as enrollment_bene_sex_cd
+              , m.enrollment_bene_race_cd
+              , cast(null as date) as bene_birth_date
+              , cast(null as date) as bene_death_date
+              , cast(null as varchar) as bene_psnyrs_dual
+              , cast(null as varchar) as lti_status
+              , cast(null as varchar) as geo_ssa_cnty_cd_name
+              , cast(null as varchar) as geo_ssa_state_name
+              , cast(null as varchar) as enrollment_file_name
+              , cast(null as date) as enrollment_file_date
+              , cast(null as varchar) as bene_hic_num
+              , cast(null as varchar) as bene_fips_state_cd
+              , cast(null as varchar) as bene_fips_cnty_cd
+              , cast(null as varchar) as bene_zip_cd
+              , cast(null as date) as bene_dob
+              , cast(null as varchar) as demographics_bene_sex_cd
+              , m.demographics_bene_race_cd
+              , cast(null as varchar) as bene_mdcr_stus_cd
+              , cast(null as varchar) as bene_dual_stus_cd
+              , cast(null as date) as bene_death_dt
+              , cast(null as date) as bene_rng_bgn_dt
+              , cast(null as date) as bene_rng_end_dt
+              , cast(null as varchar) as bene_1st_name
+              , cast(null as varchar) as bene_midl_name
+              , cast(null as varchar) as demographics_bene_last_name
+              , cast(null as varchar) as bene_orgnl_entlmt_rsn_cd
+              , cast(null as varchar) as bene_entlmt_buyin_ind
+              , cast(null as date) as bene_part_a_enrlmt_bgn_dt
+              , cast(null as date) as bene_part_b_enrlmt_bgn_dt
+              , cast(null as varchar) as bene_line_1_adr
+              , cast(null as varchar) as bene_line_2_adr
+              , cast(null as varchar) as bene_line_3_adr
+              , cast(null as varchar) as bene_line_4_adr
+              , cast(null as varchar) as bene_line_5_adr
+              , cast(null as varchar) as bene_line_6_adr
+              , cast(null as varchar) as geo_zip_plc_name
+              , cast(null as varchar) as geo_usps_state_cd
+              , cast(null as varchar) as geo_zip5_cd
+              , cast(null as varchar) as geo_zip4_cd
+              , cast(null as varchar) as demographics_file_name
+              , cast(null as date) as demographics_file_date
+          from (values
+                ('A-RACE-0', cast('2025-01-01' as date), 1, 1, '0', cast(null as varchar))
+              , ('A-RACE-1', cast('2025-01-01' as date), 1, 1, '1', cast(null as varchar))
+              , ('A-RACE-2', cast('2025-01-01' as date), 1, 1, '2', cast(null as varchar))
+              , ('A-RACE-3', cast('2025-01-01' as date), 1, 1, '3', cast(null as varchar))
+              , ('A-RACE-4', cast('2025-01-01' as date), 1, 1, '4', cast(null as varchar))
+              , ('A-RACE-5', cast('2025-01-01' as date), 1, 1, '5', cast(null as varchar))
+              , ('A-RACE-6', cast('2025-01-01' as date), 1, 1, '6', cast(null as varchar))
+              , ('A-RACE-CCLF8', cast('2025-01-01' as date), 1, 1, cast(null as varchar), '2')
+              , ('A-RACE-NONE', cast('2025-01-01' as date), 1, 1, cast(null as varchar), cast(null as varchar))
+          ) as m (current_bene_mbi_id, coverage_month, eligibility_flag, data_sharing_flag, enrollment_bene_race_cd, demographics_bene_race_cd)
+      - input: ref('int_beneficiary_demographics_deduped')
+        format: sql
+        rows: |
+          select
+                m.current_bene_mbi_id
+              , cast(null as varchar) as bene_hic_num
+              , cast(null as varchar) as bene_fips_state_cd
+              , cast(null as varchar) as bene_fips_cnty_cd
+              , cast(null as varchar) as bene_zip_cd
+              , cast(null as date) as bene_dob
+              , cast(null as varchar) as bene_sex_cd
+              , cast(null as varchar) as bene_race_cd
+              , cast(null as varchar) as bene_mdcr_stus_cd
+              , cast(null as varchar) as bene_dual_stus_cd
+              , cast(null as date) as bene_death_dt
+              , cast(null as date) as bene_rng_bgn_dt
+              , cast(null as date) as bene_rng_end_dt
+              , cast(null as varchar) as bene_1st_name
+              , cast(null as varchar) as bene_midl_name
+              , cast(null as varchar) as bene_last_name
+              , cast(null as varchar) as bene_orgnl_entlmt_rsn_cd
+              , cast(null as varchar) as bene_entlmt_buyin_ind
+              , cast(null as date) as bene_part_a_enrlmt_bgn_dt
+              , cast(null as date) as bene_part_b_enrlmt_bgn_dt
+              , cast(null as varchar) as bene_line_1_adr
+              , cast(null as varchar) as bene_line_2_adr
+              , cast(null as varchar) as bene_line_3_adr
+              , cast(null as varchar) as bene_line_4_adr
+              , cast(null as varchar) as bene_line_5_adr
+              , cast(null as varchar) as bene_line_6_adr
+              , cast(null as varchar) as geo_zip_plc_name
+              , cast(null as varchar) as geo_usps_state_cd
+              , cast(null as varchar) as geo_zip5_cd
+              , cast(null as varchar) as geo_zip4_cd
+              , m.coverage_month
+              , m.file_name
+              , m.file_date
+          from (values
+                ('A-RACE-CCLF8', cast('2025-01-01' as date), 'cclf8_2025-01.txt', cast('2025-01-10' as date))
+          ) as m (current_bene_mbi_id, coverage_month, file_name, file_date)
+    expect:
+      rows:
+        - {person_id: A-RACE-0, race: unknown}
+        - {person_id: A-RACE-1, race: white}
+        - {person_id: A-RACE-2, race: black or african american}
+        - {person_id: A-RACE-3, race: other race}
+        - {person_id: A-RACE-4, race: asian}
+        - {person_id: A-RACE-5, race: other race}
+        - {person_id: A-RACE-6, race: american indian or alaska native}
+        - {person_id: A-RACE-CCLF8, race: black or african american}
+        - {person_id: A-RACE-NONE, race: null}
+
+  - name: eligibility_cclf_race_uses_tuva_race_terminology
+    description: >
+      Without cms_alr_connector, CCLF8 BENE_RACE_CD maps to a description in
+      the Tuva race terminology (terminology__race), which the input layer
+      expects and the data quality race check looks up. Hispanic (5) is not
+      a race in that terminology and maps to other race. A beneficiary in no
+      CCLF8 delivery gets null.
+    model: eligibility
+    overrides:
+      vars:
+        cms_alr_connector: false
+    given:
+      - input: ref('int_enrollment')
+        format: sql
+        rows: |
+          select
+                e.current_bene_mbi_id
+              , cast('2025-01-01' as date) as enrollment_start_date
+              , cast('2025-01-31' as date) as enrollment_end_date
+          from (values
+                ('C-RACE-0')
+              , ('C-RACE-1')
+              , ('C-RACE-2')
+              , ('C-RACE-3')
+              , ('C-RACE-4')
+              , ('C-RACE-5')
+              , ('C-RACE-6')
+              , ('C-RACE-NONE')
+          ) as e (current_bene_mbi_id)
+      - input: ref('int_beneficiary_demographics_deduped')
+        format: sql
+        rows: |
+          select
+                m.current_bene_mbi_id
+              , cast(null as varchar) as bene_hic_num
+              , cast(null as varchar) as bene_fips_state_cd
+              , cast(null as varchar) as bene_fips_cnty_cd
+              , cast(null as varchar) as bene_zip_cd
+              , cast(null as date) as bene_dob
+              , cast(null as varchar) as bene_sex_cd
+              , m.bene_race_cd
+              , cast(null as varchar) as bene_mdcr_stus_cd
+              , cast(null as varchar) as bene_dual_stus_cd
+              , cast(null as date) as bene_death_dt
+              , cast(null as date) as bene_rng_bgn_dt
+              , cast(null as date) as bene_rng_end_dt
+              , cast(null as varchar) as bene_1st_name
+              , cast(null as varchar) as bene_midl_name
+              , cast(null as varchar) as bene_last_name
+              , cast(null as varchar) as bene_orgnl_entlmt_rsn_cd
+              , cast(null as varchar) as bene_entlmt_buyin_ind
+              , cast(null as date) as bene_part_a_enrlmt_bgn_dt
+              , cast(null as date) as bene_part_b_enrlmt_bgn_dt
+              , cast(null as varchar) as bene_line_1_adr
+              , cast(null as varchar) as bene_line_2_adr
+              , cast(null as varchar) as bene_line_3_adr
+              , cast(null as varchar) as bene_line_4_adr
+              , cast(null as varchar) as bene_line_5_adr
+              , cast(null as varchar) as bene_line_6_adr
+              , cast(null as varchar) as geo_zip_plc_name
+              , cast(null as varchar) as geo_usps_state_cd
+              , cast(null as varchar) as geo_zip5_cd
+              , cast(null as varchar) as geo_zip4_cd
+              , cast('2025-01-01' as date) as coverage_month
+              , 'cclf8_2025-01.txt' as file_name
+              , cast('2025-01-10' as date) as file_date
+          from (values
+                ('C-RACE-0', '0')
+              , ('C-RACE-1', '1')
+              , ('C-RACE-2', '2')
+              , ('C-RACE-3', '3')
+              , ('C-RACE-4', '4')
+              , ('C-RACE-5', '5')
+              , ('C-RACE-6', '6')
+          ) as m (current_bene_mbi_id, bene_race_cd)
+    expect:
+      rows:
+        - {person_id: C-RACE-0, race: unknown}
+        - {person_id: C-RACE-1, race: white}
+        - {person_id: C-RACE-2, race: black or african american}
+        - {person_id: C-RACE-3, race: other race}
+        - {person_id: C-RACE-4, race: asian}
+        - {person_id: C-RACE-5, race: other race}
+        - {person_id: C-RACE-6, race: american indian or alaska native}
+        - {person_id: C-RACE-NONE, race: null}
+
   - name: pharmacy_claim_carries_file_date
     description: >
       Each Part D claim line carries the file_date of the CCLF7 delivery it was
