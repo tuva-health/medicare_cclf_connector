@@ -232,7 +232,8 @@ alias to the config.
 The field `file_date` is used throughout this connector to deduplicate data 
 received across regular and run-out CCLFs. We recommend parsing this date from 
 the filename (e.g., P.A****.ACO.ZC1Y**.Dyymmdd.Thhmmsst) and formatting it as 
-"YYYY-MM-DD".
+"YYYY-MM-DD". Every `medical_claim` and `pharmacy_claim` row carries the
+`file_date` of the CCLF file its claim was taken from.
 
 #### Enrollment Dates:
 The CCLF specification does not have a field that can be mapped directly 
